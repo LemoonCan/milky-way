@@ -1,4 +1,4 @@
-package test.java.lemoon.can.milkyway;
+package lemoon.can.milkyway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
