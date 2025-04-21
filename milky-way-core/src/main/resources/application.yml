@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: milky-way
+
+server:
+  port: 8081
