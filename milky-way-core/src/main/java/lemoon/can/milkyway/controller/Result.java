@@ -20,6 +20,13 @@ public class Result<T> {
         return result;
     }
 
+    public static Result<Void> success() {
+        Result<Void> result = new Result<>();
+        result.setCode("success");
+        result.setMsg("成功");
+        return result;
+    }
+
     public static <T> Result<T> fail(String code, String msg) {
         Result<T> result = new Result<>();
         result.setCode(code);

@@ -18,6 +18,10 @@ public class User {
      */
     private String openId;
     /**
+     * 手机号
+     */
+    private String phone;
+    /**
      * 密码
      */
     private String password;

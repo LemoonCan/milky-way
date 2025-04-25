@@ -6,10 +6,6 @@ package lemoon.can.milkyway.domain.user;
  */
 public class RealNameInfo {
     /**
-     * 手机号
-     */
-    private String phone;
-    /**
      * 姓名
      */
     private String name;
