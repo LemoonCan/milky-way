@@ -8,10 +8,13 @@ allprojects{
     version = '1.0.0-SNAPSHOT'
 
     repositories {
+        // 先检查本地
+        mavenLocal()
+        // 阿里云镜像
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-        mavenLocal()
+        // 最后检查公开仓库
         mavenCentral()
     }
 }
@@ -22,6 +25,8 @@ subprojects {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:3.4.4"
         }
-
+        dependencies {
+            dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6"
+        }
     }
 }

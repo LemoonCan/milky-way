@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void logout(Long openId) {
+    public void logout(String openId) {
 
     }
 }

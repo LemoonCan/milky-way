@@ -1,6 +1,10 @@
 spring:
   application:
     name: milky-way
+  profiles:
+    include: openapi
 
 server:
   port: 8081
+
+

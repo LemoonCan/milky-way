@@ -24,5 +24,5 @@ public interface UserService {
      * 用户登出
      * @param openId 开放Id
      */
-    void logout(Long openId);
+    void logout(String openId);
 }

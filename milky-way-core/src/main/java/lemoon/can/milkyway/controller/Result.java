@@ -27,11 +27,20 @@ public class Result<T> {
         return result;
     }
 
+
     public static <T> Result<T> fail(String code, String msg) {
         Result<T> result = new Result<>();
         result.setCode(code);
         result.setMsg(msg);
         return result;
+    }
+
+    public static <T> Result<T> fail(Errors errors) {
+        return fail(errors.name(), errors.getMsg());
+    }
+
+    public static <T> Result<T> fail(Errors errors, String msg) {
+        return fail(errors.name(), msg);
     }
 
     public static <T> Result<T> fail(String msg) {

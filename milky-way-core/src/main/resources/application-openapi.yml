@@ -1,0 +1,6 @@
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html   # Swagger UI 路径
+  api-docs:
+    path: /v3/api-docs       # OpenAPI JSON 路径
+  packages-to-scan: lemoon.can.milkyway.controller  # 扫描的包
