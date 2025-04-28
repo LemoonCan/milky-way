@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public class UserQueryRepositoryImpl implements UserQueryRepository {
+
     @Override
     public UserDTO getByOpenId(String openId) {
         return null;

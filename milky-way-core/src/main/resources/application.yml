@@ -2,7 +2,7 @@ spring:
   application:
     name: milky-way
   profiles:
-    include: datasource,openapi
+    include: datasource,security,openapi
 
 server:
   port: 8081

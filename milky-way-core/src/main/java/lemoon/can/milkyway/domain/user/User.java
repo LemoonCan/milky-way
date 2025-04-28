@@ -1,5 +1,8 @@
 package lemoon.can.milkyway.domain.user;
 
+import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -7,10 +10,13 @@ import java.util.List;
  * @author lemoon
  * @since 2025/4/21
  */
+@Entity
+@Getter
 public class User {
     /**
      * 主键
      */
+    @Id
     private Long id;
 
     /**
@@ -29,6 +35,7 @@ public class User {
     /**
      * 实名信息
      */
+    @Embedded
     private RealNameInfo realNameInfo;
 
     /**
@@ -53,11 +60,13 @@ public class User {
     /**
      * 登录信息
      */
+    @Embedded
     private LoginInfo loginInfo;
 
     /**
      * 朋友列表
      */
+    @OneToMany
     private List<User> friends;
 
     /**

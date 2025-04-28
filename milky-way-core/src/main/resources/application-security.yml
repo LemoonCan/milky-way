@@ -1,0 +1,24 @@
+server:
+    ssl:
+        key-store: ${SSL_KEY_STORE}
+        key-store-password: ${SSL_KEY_PASSWORD}
+        key-password: ${SSL_KEY_PASSWORD}
+        key-store-type: ${SSL_KEY_STORE_TYPE}
+
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  session-token-validity: 86400000      # 1天
+  remember-token-validity: 2592000000   # 30天
+
+security:
+  permitUrls:
+    - /auth/**
+    - v3/api-docs
+    - /v3/api-docs/**
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /swagger-resources/**
+    - /webjars/**
+  cors:
+    allowed-origins:
+      - http://localhost:3000
