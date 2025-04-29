@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.domain.user;
 
 import jakarta.persistence.*;
+import lemoon.can.milkyway.domain.friend.Friend;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.List;
  * @author lemoon
  * @since 2025/4/21
  */
-@Entity
+@Entity(name = "users")
 @Getter
 public class User {
     /**
@@ -33,12 +34,6 @@ public class User {
     private String password;
 
     /**
-     * 实名信息
-     */
-    @Embedded
-    private RealNameInfo realNameInfo;
-
-    /**
      * 昵称
      */
     private String nickName;
@@ -51,11 +46,17 @@ public class User {
      */
     private String individualSignature;
 
-
     /**
      * 注册时间
      */
     private LocalDateTime registerTime;
+
+
+    /**
+     * 实名信息
+     */
+    @Embedded
+    private RealNameInfo realNameInfo;
 
     /**
      * 登录信息
@@ -66,8 +67,8 @@ public class User {
     /**
      * 朋友列表
      */
-    @OneToMany
-    private List<User> friends;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Friend> friends;
 
     /**
      * 修改密码
@@ -115,10 +116,10 @@ public class User {
     /**
      * 添加朋友
      *
-     * @param user 朋友
+     * @param friend 朋友
      */
-    public void addFriend(User user) {
-        this.friends.add(user);
+    public void addFriend(Friend friend) {
+        this.friends.add(friend);
     }
 
 }

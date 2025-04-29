@@ -1,14 +1,24 @@
 package lemoon.can.milkyway.domain.user;
 
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+
 /**
  * @author lemoon
  * @since 2025/4/21
  */
+@Embeddable
 public class RealNameInfo {
     /**
      * 姓名
      */
     private String name;
+    /**
+     * 性别
+     */
+    @Enumerated(EnumType.STRING)
+    private GenderEnum gender;
     /**
      * 身份证号
      */
