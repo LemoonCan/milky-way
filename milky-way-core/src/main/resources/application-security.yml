@@ -1,3 +1,4 @@
+#https证书配置
 server:
     ssl:
         key-store: ${SSL_KEY_STORE}
@@ -7,8 +8,7 @@ server:
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
-  session-token-validity: 86400000      # 1天
-  remember-token-validity: 2592000000   # 30天
+  token-validity: 2592000000   # 30天
 
 security:
   permitUrls:

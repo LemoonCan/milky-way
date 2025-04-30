@@ -3,9 +3,13 @@ package lemoon.can.milkyway.domain.user;
 import jakarta.persistence.*;
 import lemoon.can.milkyway.domain.friend.Friend;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author lemoon
@@ -13,11 +17,14 @@ import java.util.List;
  */
 @Entity(name = "users")
 @Getter
+@NoArgsConstructor
 public class User {
     /**
      * 主键
+     * 使用自增主键
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
@@ -69,6 +76,18 @@ public class User {
      */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Friend> friends;
+
+    public User(String openId, String phone, String password) {
+        this.openId = StringUtils.hasLength(openId) ? openId : generateOpenId();
+        this.phone = phone;
+        this.password = password;
+    }
+
+    private String generateOpenId() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String dateTime = LocalDateTime.now().format(formatter);
+        return "milky_" + dateTime + new Random().nextInt(10, 100);
+    }
 
     /**
      * 修改密码

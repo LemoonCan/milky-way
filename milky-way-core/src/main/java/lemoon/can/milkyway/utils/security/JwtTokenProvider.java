@@ -1,5 +1,4 @@
-package lemoon.can.milkyway.config.security;
-
+package lemoon.can.milkyway.utils.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -12,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -22,25 +22,24 @@ import java.util.List;
 @Slf4j
 @Component
 public class JwtTokenProvider {
-    @Value("${jwt.session-token-validity}")
-    private long SESSION_TOKEN_VALIDITY;
-    @Value("${jwt.remember-token-validity}")
-    private long REMEMBER_TOKEN_VALIDITY;
+    @Value("${jwt.token-validity}")
+    private long TOKEN_VALIDITY;
     private final SecretKey key;
 
-    public JwtTokenProvider(@Value("${jwt.secret-key}") String secretKey){
+    public JwtTokenProvider(@Value("${jwt.secret-key}") String secretKey) {
+        // 对称加密算法
         key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * 创建带有不同过期时间的令牌
+     *
      * @param authentication 认证信息
-     * @param rememberMe 是否记住我
      * @return JWT令牌
      */
-    public String createToken(Authentication authentication, boolean rememberMe) {
+    public String createToken(Authentication authentication) {
         long now = System.currentTimeMillis();
-        long tokenValidity = rememberMe ? REMEMBER_TOKEN_VALIDITY : SESSION_TOKEN_VALIDITY;
+        long tokenValidity = TOKEN_VALIDITY;
         Date validity = new Date(now + tokenValidity);
 
         return Jwts.builder()
@@ -52,6 +51,13 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
+        if (!StringUtils.hasLength(token)) {
+            return null;
+        }
+        if (!validateToken(token)) {
+            return null;
+        }
+
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

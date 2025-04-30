@@ -18,11 +18,5 @@ public interface UserService {
      * 用户手机登录
      * @param param 登录参数
      */
-    void loginByPhone(UserPhoneLoginParam param);
-
-    /**
-     * 用户登出
-     * @param openId 开放Id
-     */
-    void logout(String openId);
+    String loginByPhone(UserPhoneLoginParam param);
 }

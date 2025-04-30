@@ -1,10 +1,10 @@
 package lemoon.can.milkyway.controller.user;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import lemoon.can.milkyway.utils.security.HttpHeaderToken;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
@@ -34,14 +34,17 @@ public class AuthController {
     @PatchMapping("/loginByPhone")
     @Operation(summary = "手机号登录")
     public ResponseEntity<Result<Void>> loginByPhone(@RequestBody @Valid UserPhoneLoginParam param){
-        userService.loginByPhone(param);
-        return ResponseEntity.ok(Result.success());
+        String token = userService.loginByPhone(param);
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaderToken.key(), HttpHeaderToken.wrapToken(token))
+                .body(Result.success());
     }
 
     @PatchMapping("/logout")
     @Operation(summary = "登出")
     public ResponseEntity<Result<Void>> logout(@RequestParam @NotBlank String openId){
-        userService.logout(openId);
+        //JWT 无状态方案，只需前端删除本地 token 即可
         return ResponseEntity.ok(Result.success());
     }
 }

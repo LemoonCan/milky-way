@@ -1,7 +1,7 @@
 -- 创建用户主表
 CREATE TABLE users
 (
-    id                   BIGINT PRIMARY KEY COMMENT '主键ID',
+    id                   BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
     open_id              VARCHAR(255) UNIQUE NOT NULL COMMENT '用户唯一标识',
     phone                VARCHAR(20) UNIQUE  NOT NULL COMMENT '手机号',
     password             VARCHAR(255)        NOT NULL COMMENT '密码',
@@ -11,13 +11,14 @@ CREATE TABLE users
     register_time        TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
     update_time          TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     -- 登录信息嵌入字段
+    online               TINYINT(1) DEFAULT 0 COMMENT '是否在线',
     last_login_time      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后登录时间',
     last_login_ip        VARCHAR(50) COMMENT '最后登录IP',
     last_login_device    VARCHAR(50) COMMENT '最后登录设备',
     -- 实名信息嵌入字段
     name                 VARCHAR(64) COMMENT '真实姓名',
     gender               VARCHAR(8) COMMENT '性别',
-    id_card_number       VARCHAR(64) COMMENT '身份证号',
+    id_card              VARCHAR(64) COMMENT '身份证号',
     id_card_front        VARCHAR(20) COMMENT '身份证正面',
     id_card_back         VARCHAR(20) COMMENT '身份证反面'
 );
