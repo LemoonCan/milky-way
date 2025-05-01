@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
  * @author lemoon
  * @since 2025/4/26
  */
-public class OpenApiConfigure {
+public class OpenApiConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
