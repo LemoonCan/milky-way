@@ -2,10 +2,7 @@ package lemoon.can.milkyway.infrastructure.repository;
 
 import org.springframework.stereotype.Repository;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -38,6 +35,13 @@ public class FileRepositoryImpl implements FileRepository {
     private String filePath(String userOpenId, String fileId, String fileType) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        return userOpenId + "/" + now.format(formatter) + "/" + fileId + "." + fileType;
+        String dir = "house/files/"+ userOpenId + "/" + now.format(formatter) + "/";
+        File directory = new File(dir);
+        directory.mkdirs();
+        return dir + fileId + "." + fileType;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(System.getProperty("user.dir"));
     }
 }
