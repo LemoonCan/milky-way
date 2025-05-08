@@ -38,5 +38,5 @@ out/
 .vscode/
 
 *.env
-
 *.p12
+/house

@@ -3,13 +3,12 @@ package lemoon.can.milkyway.infrastructure.service;
 import lemoon.can.milkyway.config.Env;
 import lemoon.can.milkyway.domain.file.FileMetaInfo;
 import lemoon.can.milkyway.facade.param.FileParam;
+import lemoon.can.milkyway.facade.service.FileService;
 import lemoon.can.milkyway.infrastructure.repository.FileMetaInfoRepository;
 import lemoon.can.milkyway.infrastructure.repository.FileRepository;
-import lemoon.can.milkyway.facade.service.FileService;
 import lemoon.can.milkyway.utils.Snowflake;
+import lemoon.can.milkyway.utils.security.UserInfoHolder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,18 +28,16 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String upload(FileParam fileParam, MultipartFile multipartFile) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-
-        String path;
-        String id = fileSnowFlake.nextId();
+        String fileId = fileSnowFlake.nextId();
         String fileType = fileParam.getType();
+        String path;
         try {
-            path = fileRepository.storage(multipartFile.getInputStream(), userDetails.getUsername(), id, fileType);
+            path = fileRepository.storage(multipartFile.getInputStream(), UserInfoHolder.userId(), fileId, fileType);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         FileMetaInfo fileMetaInfo = FileMetaInfo.builder()
-                .id(id)
+                .id(fileId)
                 .name(fileParam.getName())
                 .type(fileType)
                 .size(multipartFile.getSize())

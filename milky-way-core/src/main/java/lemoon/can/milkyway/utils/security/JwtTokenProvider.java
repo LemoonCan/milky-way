@@ -51,13 +51,9 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        if (!StringUtils.hasLength(token)) {
+        if(!validateToken(token)){
             return null;
         }
-        if (!validateToken(token)) {
-            return null;
-        }
-
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
@@ -70,6 +66,9 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String token) {
+        if (!StringUtils.hasLength(token)) {
+            return false;
+        }
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;

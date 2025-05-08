@@ -24,10 +24,21 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileController {
     private final FileService fileService;
 
+    /**
+     * 上传文件
+     *
+     * @param file      文件
+     * @param fileParam 文件信息
+     * @return 文件地址
+     *
+     * 说明：
+     * 1. @RequestPart 声明在对象上，支持application/json的数据类型，但目前swagger无对于@RequestPart复杂对象的支持(swagger不会指定content-type，导致处理失败)
+     * 2. @ModelAttribute @ParameterObject 可在swagger中以查询参数形式传递
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传")
-    public ResponseEntity<Result<String>> upload(@RequestParam("file") MultipartFile file,
-                                                 @RequestBody @Valid FileParam fileParam) {
+    public ResponseEntity<Result<String>> upload(@RequestPart MultipartFile file,
+                                                 @RequestPart @Valid FileParam fileParam) {
         String url = fileService.upload(fileParam, file);
         return ResponseEntity.ok(Result.success(url));
     }
