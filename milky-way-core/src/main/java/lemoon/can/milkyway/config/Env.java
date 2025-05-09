@@ -13,5 +13,5 @@ import org.springframework.stereotype.Component;
 @Data
 public class Env {
     private String domain;
-    private String fileviewUrl;
+    private String fileAccessUrl;
 }

@@ -18,6 +18,6 @@ logging:
 
 env:
   domain: https://localhost:8081/
-  fileviewUrl: files
+  fileAccessUrl: files/
 
 
