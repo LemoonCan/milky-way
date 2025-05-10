@@ -2,19 +2,10 @@ spring:
   application:
     name: milky-way
   profiles:
-    include: datasource,security,openapi
+    include: datasource,security,openapi,log
 
 server:
   port: 8081
-
-logging:
-  level:
-    org:
-      springframework:
-        security: TRACE
-        web: DEBUG
-    lemoon:
-      messageboard: DEBUG
 
 env:
   domain: https://localhost:8081/

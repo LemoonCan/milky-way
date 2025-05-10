@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FileDTO;
+import lemoon.can.milkyway.facade.exception.BusinessException;
+import lemoon.can.milkyway.facade.exception.ErrorCode;
 import lemoon.can.milkyway.facade.service.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -43,17 +45,24 @@ public class FileController {
         return ResponseEntity.ok(Result.success(url));
     }
 
-    @GetMapping("/{accessToken}")
-    public ResponseEntity<Resource> access(@PathVariable String accessToken) {
+    @GetMapping("/{accessCode}")
+    public ResponseEntity<Resource> access(@PathVariable String accessCode) {
         // 1. 获取文件资源
-        FileDTO fileDTO = fileService.loadFileAsResource(accessToken);
+        FileDTO fileDTO = fileService.loadFileAsResource(accessCode);
 
         // 2. 获取文件名
         String filename = fileDTO.getFileId();
+        MediaType mediaType;
+        try {
+            mediaType = MediaType.valueOf(fileDTO.getFileType());
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED,
+                    String.format("不支持的文件类型%s", fileDTO.getFileType()));
+        }
 
         // 3. 构建响应头
         return ResponseEntity.ok()
-                .contentType(MediaType.valueOf(fileDTO.getFileType()))
+                .contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(fileDTO.getResource());

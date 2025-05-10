@@ -26,4 +26,4 @@ security:
 
 file:
   access:
-    secret-key: 000
+    secret-key: sun

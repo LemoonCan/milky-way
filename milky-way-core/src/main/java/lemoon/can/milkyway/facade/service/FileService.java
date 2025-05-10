@@ -12,10 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface FileService {
     String upload(MultipartFile multipartFile);
 
-    FileDTO loadFileAsResource(String accessToken);
+    FileDTO loadFileAsResource(String accessCode);
 
     String generateTemporaryUrl(String fileId, Long expireInSeconds);
-
-    AccessToken validateAccessToken(String token);
-
 }

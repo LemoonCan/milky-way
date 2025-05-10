@@ -1,8 +1,9 @@
 package lemoon.can.milkyway.utils.security;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lemoon.can.milkyway.facade.dto.AccessToken;
+import lemoon.can.milkyway.facade.exception.BusinessException;
+import lemoon.can.milkyway.facade.exception.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -10,51 +11,85 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Base64;
 
 /**
+ * 令牌管理器
+ * token = Base64UrlWithoutPadding( fileId + "." + expire + "." + sig8 )
+ * 生成约 40 字符的 URL-Safe 字符串
+ *
  * @author lemoon
  * @since 2025/5/9
  */
 @Component
+@Slf4j
 public class AccessTokenManager {
-    public String generateSignature(String data, String key){
+
+    /* ---------------- 生成签名（截取 6 字节 → 8 字符） ---------------- */
+    private String shortSignature(String data, String key) {
         try {
-            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            sha256_HMAC.init(secretKeySpec);
-            byte[] hash = sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            String fullSignature = Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
-            // 只返回前16个字符
-            return fullSignature.substring(0, 16);
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+            byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+            byte[] first6 = Arrays.copyOf(hash, 6); // 48 bit
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(first6); // 8 字符
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new RuntimeException("生成HMAC签名失败", e);
+            log.error(String.format("生成 HMAC 签名失败, data: %s, key: %s", data, key), e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR);
         }
     }
 
-    public String encode(AccessToken token) {
-        try {
-            // 将token对象转换为JSON字符串
-            String jsonToken = new ObjectMapper().writeValueAsString(token);
-            // Base64 URL安全编码
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(
-                    jsonToken.getBytes(StandardCharsets.UTF_8)
-            );
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("令牌编码失败", e);
-        }
+    /**
+     * 生成 token
+     *
+     * @param objectId    对象ID
+     * @param expireAtSec 过期时间（秒）
+     * @param secretKey   密钥
+     * @return accessCode 令牌
+     */
+    public String build(String objectId, long expireAtSec, String secretKey) {
+        String sig8 = shortSignature(objectId + ":" + expireAtSec, secretKey);
+        String raw = objectId + "." + expireAtSec + "." + sig8;
+        return Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(raw.getBytes(StandardCharsets.UTF_8));
     }
 
-    public AccessToken decode(String encodedToken) {
-        try {
-            // Base64 URL 解码
-            byte[] jsonBytes = Base64.getUrlDecoder().decode(encodedToken);
-            String jsonString = new String(jsonBytes, StandardCharsets.UTF_8);
-
-            // JSON 字符串转换为 AccessToken 对象
-            return new ObjectMapper().readValue(jsonString, AccessToken.class);
-        } catch (Exception e) {
-            throw new RuntimeException("令牌解码失败", e);
+    /**
+     * 解析 + 校验 accessCode
+     *
+     * @param accessCode 令牌
+     * @param secretKey  密钥
+     * @return AccessToken 对象
+     */
+    public AccessToken parseAndValidate(String accessCode, String secretKey) {
+        // 1. Base64 解码
+        String raw = new String(Base64.getUrlDecoder().decode(accessCode), StandardCharsets.UTF_8);
+        String[] parts = raw.split("\\.");
+        if (parts.length != 3) {
+            throw new IllegalArgumentException("非法 token");
         }
+
+        String objectId = parts[0];
+        long expireAtSec = Long.parseLong(parts[1]);
+        String sig8 = parts[2];
+
+        // 2. 过期检查
+        if (System.currentTimeMillis() / 1000 > expireAtSec) {
+            throw new IllegalArgumentException("令牌已过期");
+        }
+
+        // 3. 签名校验
+        String expectedSig = shortSignature(objectId + ":" + expireAtSec, secretKey);
+        if (!expectedSig.equals(sig8)) {
+            throw new IllegalArgumentException("签名不匹配");
+        }
+
+        // 4. 构造 AccessToken 对象
+        AccessToken at = new AccessToken();
+        at.setObjectId(objectId);
+        at.setExpireAt(expireAtSec * 1000);
+        at.setSignature(sig8);
+        return at;
     }
 }

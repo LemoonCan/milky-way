@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.controller;
 
+import lemoon.can.milkyway.facade.exception.ErrorCode;
 import lombok.Data;
 
 /**
@@ -35,12 +36,12 @@ public class Result<T> {
         return result;
     }
 
-    public static <T> Result<T> fail(Errors errors) {
-        return fail(errors.name(), errors.getMsg());
+    public static <T> Result<T> fail(ErrorCode err) {
+        return fail(err.name(), err.getMessage());
     }
 
-    public static <T> Result<T> fail(Errors errors, String msg) {
-        return fail(errors.name(), msg);
+    public static <T> Result<T> fail(ErrorCode err, String msg) {
+        return fail(err.name(), msg);
     }
 
     public static <T> Result<T> fail(String msg) {

@@ -1,5 +1,7 @@
 package lemoon.can.milkyway.infrastructure.repository;
 
+import lemoon.can.milkyway.facade.exception.BusinessException;
+import lemoon.can.milkyway.facade.exception.ErrorCode;
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
@@ -28,7 +30,8 @@ public class FileRepositoryImpl implements FileRepository {
         try {
             type = MimeTypes.getDefaultMimeTypes().forName(fileType);
         } catch (MimeTypeException e) {
-            throw new RuntimeException(e);
+            throw new BusinessException(ErrorCode.UNSUPPORTED,
+                    String.format("不支持的文件类型%s", fileType));
         }
         String path = filePath(userOpenId, fileId, type.getExtension());
         Path filePath = Paths.get(path);
@@ -50,7 +53,6 @@ public class FileRepositoryImpl implements FileRepository {
             if (Files.size(filePath) == 0) {
                 throw new IOException("文件写入失败：文件大小为0");
             }
-
             if (Files.size(filePath) != totalWritten) {
                 throw new IOException("文件写入不完整：预期大小 " + totalWritten + "，实际大小 " + Files.size(filePath));
             }
