@@ -25,8 +25,13 @@ import java.util.Base64;
 @Component
 @Slf4j
 public class AccessTokenManager {
-
-    /* ---------------- 生成签名（截取 6 字节 → 8 字符） ---------------- */
+    /**
+     * 生成签名（截取 6 字节 → 8 字符）
+     *
+     * @param data 待签名数据
+     * @param key  密钥
+     * @return 签名
+     */
     private String shortSignature(String data, String key) {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
