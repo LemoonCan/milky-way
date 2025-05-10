@@ -35,7 +35,7 @@ public class AccessTokenManager {
             byte[] first6 = Arrays.copyOf(hash, 6); // 48 bit
             return Base64.getUrlEncoder().withoutPadding().encodeToString(first6); // 8 字符
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            log.error(String.format("生成 HMAC 签名失败, data: %s, key: %s", data, key), e);
+            log.error("生成 HMAC 签名失败, data: {}, key: {}", data, key, e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR);
         }
     }

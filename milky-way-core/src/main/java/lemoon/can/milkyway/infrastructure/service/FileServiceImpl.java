@@ -50,7 +50,8 @@ public class FileServiceImpl implements FileService {
             fileType = new Tika().detect(tis);
             path = fileRepository.storage(tis, UserInfoHolder.userId(), fileId, fileType);
         } catch (IOException e) {
-            log.error(String.format("文件%s上传失败", multipartFile.getOriginalFilename()), e);
+            //最佳实践：有其他信息需要打印时，将异常放在最后，保证能打印出堆栈信息
+            log.error("文件{}上传失败", multipartFile.getOriginalFilename(), e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
         }
         FileMetaInfo fileMetaInfo = FileMetaInfo.builder()
@@ -70,7 +71,7 @@ public class FileServiceImpl implements FileService {
         AccessToken accessToken = accessTokenManager.parseAndValidate(accessCode, secretKey);
         //1.从文件元信息表中查询文件路径
         FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(accessToken.getObjectId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "元数据不存在"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
 
         //2.从本地存储系统加载文件并构建Resource
         Resource resource = new FileSystemResource(fileMetaInfo.getStoragePath());
