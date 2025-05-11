@@ -9,6 +9,6 @@ server:
 
 env:
   domain: https://localhost:8081/
-  fileAccessUrl: files/
+  fileAccessUrl: files
 
 

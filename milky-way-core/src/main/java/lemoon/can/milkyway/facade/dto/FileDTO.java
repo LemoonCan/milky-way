@@ -11,7 +11,7 @@ import org.springframework.core.io.Resource;
 @Data
 @AllArgsConstructor
 public class FileDTO {
-    private String fileId;
+    private String fileName;
     private String fileType;
     private Resource resource;
 }

@@ -4,9 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FileDTO;
-import lemoon.can.milkyway.facade.exception.BusinessException;
-import lemoon.can.milkyway.facade.exception.ErrorCode;
+import lemoon.can.milkyway.facade.dto.FileInfoDTO;
+import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.facade.service.FileService;
+import lemoon.can.milkyway.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -14,8 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 /**
  * @author lemoon
@@ -40,30 +39,39 @@ public class FileController {
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传")
-    public ResponseEntity<Result<String>> upload(@RequestPart MultipartFile file) {
-        String url = fileService.upload(file);
-        return ResponseEntity.ok(Result.success(url));
+    public ResponseEntity<Result<FileInfoDTO>> upload(@RequestPart MultipartFile file,
+                                                      @RequestPart FileParam fileParam) {
+        FileInfoDTO fileInfoDTO = fileService.upload(file, fileParam);
+        return ResponseEntity.ok(Result.success(fileInfoDTO));
     }
 
-    @GetMapping("/{accessCode}")
-    public ResponseEntity<Resource> access(@PathVariable String accessCode) {
-        // 1. 获取文件资源
-        FileDTO fileDTO = fileService.loadFileAsResource(accessCode);
-
-        // 2. 获取文件名
-        String filename = fileDTO.getFileId();
-        MediaType mediaType;
-        try {
-            mediaType = MediaType.valueOf(fileDTO.getFileType());
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.UNSUPPORTED,
-                    String.format("不支持的文件类型%s", fileDTO.getFileType()));
-        }
-
-        // 3. 构建响应头
+    /**
+     * 访问文件
+     * @param fileId 文件ID
+     * @return 文件
+     */
+    @GetMapping("/{fileId}")
+    @Operation(summary = "访问")
+    public ResponseEntity<Resource> access(@PathVariable String fileId) {
+        FileDTO fileDTO = fileService.loadFile(fileId);
         return ResponseEntity.ok()
-                .contentType(mediaType)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+                .contentType(FileUtil.parseMediaType(fileDTO.getFileType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileDTO.getFileName() + "\"")
+                .body(fileDTO.getResource());
+    }
+
+    /**
+     * 临时访问文件
+     * @param accessCode 访问码
+     * @return 文件
+     */
+    @GetMapping
+    @Operation(summary = "访问")
+    public ResponseEntity<Resource> temporaryAccess(@RequestParam String accessCode) {
+        FileDTO fileDTO = fileService.temporaryLoadFile(accessCode);
+        return ResponseEntity.ok()
+                .contentType(FileUtil.parseMediaType(fileDTO.getFileType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileDTO.getFileName() + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(fileDTO.getResource());
     }

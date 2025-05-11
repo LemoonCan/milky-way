@@ -48,6 +48,7 @@ CREATE TABLE file_meta_info
     type         VARCHAR(50) COMMENT '文件类型',
     storage_path VARCHAR(255) COMMENT '文件存储路径',
     size         BIGINT COMMENT '文件大小(字节)',
+    permission VARCHAR(16) NOT NULL COMMENT '权限',
     create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );

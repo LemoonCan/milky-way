@@ -1,8 +1,9 @@
 package lemoon.can.milkyway.infrastructure.repository;
 
+import lemoon.can.milkyway.common.FilePermissionEnum;
+import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.facade.exception.BusinessException;
 import lemoon.can.milkyway.facade.exception.ErrorCode;
-import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
@@ -23,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 public class FileRepositoryImpl implements FileRepository {
 
     @Override
-    public String storage(InputStream inputStream, String userOpenId, String fileId, String fileType) throws IOException {
+    public String storage(InputStream inputStream, FileParam fileParam, String userOpenId, String fileId, String fileType) throws IOException {
         //目录 用户/每天/具体文件
         //映射扩展名
         MimeType type;
@@ -33,7 +34,7 @@ public class FileRepositoryImpl implements FileRepository {
             throw new BusinessException(ErrorCode.UNSUPPORTED,
                     String.format("不支持的文件类型%s", fileType));
         }
-        String path = filePath(userOpenId, fileId, type.getExtension());
+        String path = filePath(fileParam.getPermission(), userOpenId, fileId, type.getExtension());
         Path filePath = Paths.get(path);
         try (
                 BufferedInputStream bis = new BufferedInputStream(inputStream);
@@ -61,10 +62,10 @@ public class FileRepositoryImpl implements FileRepository {
         }
     }
 
-    private String filePath(String userOpenId, String fileId, String extension) {
+    private String filePath(FilePermissionEnum permission, String userOpenId, String fileId, String extension) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String dir = "house/files/" + userOpenId + "/" + now.format(formatter) + "/";
+        String dir = "house/files/" + permission.name() + "/" + userOpenId + "/" + now.format(formatter) + "/";
         File directory = new File(dir);
         directory.mkdirs();
         return dir + fileId + extension;
