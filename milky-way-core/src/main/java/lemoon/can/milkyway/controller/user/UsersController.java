@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -23,13 +24,13 @@ public class UsersController {
     private final UserQueryRepository userQueryRepository;
     @PostMapping("/matchByOpenId")
     @Operation(summary = "通过openId匹配用户")
-    public ResponseEntity<Result<UserDTO>> matchByOpenId(String openId) {
+    public ResponseEntity<Result<UserDTO>> matchByOpenId(@RequestParam String openId) {
         return ResponseEntity.ok(Result.success(null));
     }
 
     @PostMapping("/matchByPhone")
     @Operation(summary = "通过手机号匹配用户")
-    public ResponseEntity<Result<UserDTO>> matchByPhone(String phone) {
+    public ResponseEntity<Result<UserDTO>> matchByPhone(@RequestParam String phone) {
         return ResponseEntity.ok(Result.success(null));
     }
 }

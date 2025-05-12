@@ -28,7 +28,7 @@ CREATE INDEX idx_users_open_id ON users (open_id);
 CREATE INDEX idx_users_phone ON users (phone);
 
 -- 朋友关系表
-CREATE TABLE user_friends
+CREATE TABLE friend
 (
     user_id     BIGINT      NOT NULL COMMENT '用户ID',
     friend_id   BIGINT      NOT NULL COMMENT '朋友ID',
@@ -40,6 +40,15 @@ CREATE TABLE user_friends
     PRIMARY KEY (user_id, friend_id)
 );
 
+CREATE TABLE friend_application
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    from_user_id BIGINT       NOT NULL COMMENT '申请人唯一标识',
+    to_user_id   BIGINT       NOT NULL COMMENT '接收人唯一标识',
+    apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
+    status       VARCHAR(16)  NOT NULL COMMENT '状态'
+);
+
 -- 文件元信息表
 CREATE TABLE file_meta_info
 (
@@ -48,7 +57,7 @@ CREATE TABLE file_meta_info
     type         VARCHAR(50) COMMENT '文件类型',
     storage_path VARCHAR(255) COMMENT '文件存储路径',
     size         BIGINT COMMENT '文件大小(字节)',
-    permission VARCHAR(16) NOT NULL COMMENT '权限',
+    permission   VARCHAR(16)  NOT NULL COMMENT '权限',
     create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );

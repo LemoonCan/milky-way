@@ -14,4 +14,8 @@ public class SnowFlakeConfig {
     public Snowflake fileSnowFlake(){
         return new Snowflake("FI", 1);
     }
+    @Bean
+    public Snowflake FriendApplicationSnowFlake(){
+        return new Snowflake("FA", 1);
+    }
 }

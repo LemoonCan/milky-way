@@ -3,12 +3,11 @@ package lemoon.can.milkyway.controller.user;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import lemoon.can.milkyway.utils.security.HttpHeaderToken;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 import lemoon.can.milkyway.facade.service.UserService;
+import lemoon.can.milkyway.utils.security.HttpHeaderToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +42,7 @@ public class AuthController {
 
     @PatchMapping("/logout")
     @Operation(summary = "登出")
-    public ResponseEntity<Result<Void>> logout(@RequestParam @NotBlank String openId){
+    public ResponseEntity<Result<Void>> logout(@RequestParam String openId){
         //JWT 无状态方案，只需前端删除本地 token 即可
         return ResponseEntity.ok(Result.success());
     }

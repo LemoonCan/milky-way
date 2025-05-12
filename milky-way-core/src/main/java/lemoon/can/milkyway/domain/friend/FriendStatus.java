@@ -6,17 +6,9 @@ package lemoon.can.milkyway.domain.friend;
  */
 public enum FriendStatus {
     /**
-     * 申请中
-     */
-    APPLYING,
-    /**
      * 已同意
      */
     ESTABLISHED,
-    /**
-     * 已拒绝
-     */
-    REJECTED,
     /**
      * 已删除
      */
