@@ -2,6 +2,7 @@ package lemoon.can.milkyway.controller.file;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FileDTO;
 import lemoon.can.milkyway.facade.dto.FileInfoDTO;
@@ -32,7 +33,7 @@ public class FileController {
      *
      * @param file 文件
      * @return 文件地址
-     * <p>
+     *
      * 说明：
      * 1. @RequestPart 声明在对象上，支持application/json的数据类型，但目前swagger无对于@RequestPart复杂对象的支持(swagger不会指定content-type，导致处理失败)
      * 2. @ModelAttribute @ParameterObject 可在swagger中以查询参数形式传递
@@ -40,7 +41,7 @@ public class FileController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传")
     public ResponseEntity<Result<FileInfoDTO>> upload(@RequestPart MultipartFile file,
-                                                      @RequestPart FileParam fileParam) {
+                                                      @RequestPart @Valid FileParam fileParam) {
         FileInfoDTO fileInfoDTO = fileService.upload(file, fileParam);
         return ResponseEntity.ok(Result.success(fileInfoDTO));
     }
