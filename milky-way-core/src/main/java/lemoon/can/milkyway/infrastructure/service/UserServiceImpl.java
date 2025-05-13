@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author lemoon
@@ -26,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final AuthenticationManager authenticationManager;
 
     @Override
+    @Transactional
     public void register(UserRegisterParam param) {
         User user = new User(param.getOpenId(), param.getPhone(), passwordEncoder.encode(param.getPassword()));
         user.changeInfo(param.getNickName(), param.getAvatar(), param.getIndividualSignature());

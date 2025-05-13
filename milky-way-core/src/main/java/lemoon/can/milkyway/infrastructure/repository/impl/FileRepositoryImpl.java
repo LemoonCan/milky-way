@@ -1,9 +1,10 @@
-package lemoon.can.milkyway.infrastructure.repository;
+package lemoon.can.milkyway.infrastructure.repository.impl;
 
 import lemoon.can.milkyway.common.FilePermissionEnum;
 import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.facade.exception.BusinessException;
 import lemoon.can.milkyway.facade.exception.ErrorCode;
+import lemoon.can.milkyway.infrastructure.repository.FileRepository;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;

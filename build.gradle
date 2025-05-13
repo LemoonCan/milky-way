@@ -10,7 +10,7 @@ allprojects{
     repositories {
         // 先检查本地
         mavenLocal()
-        // 阿里云镜像
+        // 阿里云镜像 https://developer.aliyun.com/mvn/guide
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
@@ -39,6 +39,7 @@ subprojects {
             dependency "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
             dependency "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
             dependency "org.apache.tika:tika-core:3.1.0"
+            dependency "org.hashids:hashids:1.0.3"
         }
     }
 }

@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.facade.repository;
+package lemoon.can.milkyway.facade.query;
 
 import lemoon.can.milkyway.facade.dto.UserDTO;
 

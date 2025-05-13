@@ -8,4 +8,7 @@ import lombok.Data;
  */
 @Data
 public class UserDTO {
+    private String openId;
+    private String nickName;
+    private String avatar;
 }

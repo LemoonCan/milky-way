@@ -1,9 +1,6 @@
 package lemoon.can.milkyway.domain.friend;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,6 +16,7 @@ public class FriendApplication {
      * 主键
      */
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     /**
      * 申请用户ID
@@ -37,4 +35,15 @@ public class FriendApplication {
      */
     @Enumerated(EnumType.STRING)
     private FriendApplyStatus status;
+
+    public FriendApplication(Long fromUserId, Long toUserId, String applyMsg) {
+        this.fromUserId = fromUserId;
+        this.toUserId = toUserId;
+        this.applyMsg = applyMsg;
+        this.status = FriendApplyStatus.APPLYING;
+    }
+
+    public void handle(FriendApplyStatus status) {
+        this.status = status;
+    }
 }

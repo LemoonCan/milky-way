@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class FileServiceImpl implements FileService {
     private String secretKey;
 
     @Override
+    @Transactional
     public FileInfoDTO upload(MultipartFile multipartFile, FileParam fileParam) {
         String fileId = fileSnowFlake.nextId();
         String path;

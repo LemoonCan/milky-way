@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.UserDTO;
-import lemoon.can.milkyway.facade.repository.UserQueryRepository;
+import lemoon.can.milkyway.facade.query.UserQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
