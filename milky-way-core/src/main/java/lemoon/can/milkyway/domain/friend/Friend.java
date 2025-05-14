@@ -40,5 +40,9 @@ public class Friend {
         this.status = FriendStatus.ESTABLISHED;
     }
 
+    public void setExtra(String remark, FriendPermissionEnum permission) {
+        this.remark = remark;
+        this.permission = permission;
+    }
 
 }

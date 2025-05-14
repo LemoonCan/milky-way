@@ -1,5 +1,9 @@
 package lemoon.can.milkyway.facade.service.query;
 
+import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
+
+import java.util.List;
+
 /**
  * @author lemoon
  * @since 2025/5/14
@@ -11,5 +15,5 @@ public interface FriendQueryService {
      * @param toUserOpenId 接收者的 OpenId
      * @return 好友申请列表
      */
-    Object getApplications(String toUserOpenId);
+    List<FriendApplicationDTO> getApplications(String toUserOpenId);
 }

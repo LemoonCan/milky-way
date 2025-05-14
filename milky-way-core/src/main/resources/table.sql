@@ -46,7 +46,10 @@ CREATE TABLE friend_application
     from_user_id BIGINT       NOT NULL COMMENT '申请人唯一标识',
     to_user_id   BIGINT       NOT NULL COMMENT '接收人唯一标识',
     apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
-    status       VARCHAR(16)  NOT NULL COMMENT '状态'
+    status       VARCHAR(16)  NOT NULL COMMENT '状态',
+    permission   VARCHAR(64)  NOT NULL COMMENT '权限',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
 
 -- 文件元信息表

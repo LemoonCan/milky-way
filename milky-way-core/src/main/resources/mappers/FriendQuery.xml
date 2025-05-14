@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.example.mapper.UserMapper">
-
-    <select id="findApplications" resultType="lemoon.can.milkyway.facade.dto.FriendApplicationDTO">
-        select * from user_friends_applications
-    </select>
-</mapper>

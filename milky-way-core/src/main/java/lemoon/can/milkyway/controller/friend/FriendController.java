@@ -24,20 +24,24 @@ import java.util.List;
 public class FriendController {
     private final FriendService friendService;
     private final FriendQueryService friendQueryService;
+
     @GetMapping("/applications/{openId}")
     public ResponseEntity<Result<List<FriendApplicationDTO>>> applications(@PathVariable String openId) {
-        return ResponseEntity.ok(Result.success(friendQueryService.getApplications(openId)));
+        List<FriendApplicationDTO> list = friendQueryService.getApplications(openId);
+        return ResponseEntity.ok(Result.success(list));
     }
 
     @PostMapping("/applications/add")
     @Operation(summary = "添加好友")
     public ResponseEntity<Result<Void>> addFriend(@RequestBody @Valid FriendApplyParam param) {
+        friendService.addFriend(param);
         return ResponseEntity.ok(Result.success());
     }
 
     @PostMapping("/applications/handle")
     @Operation(summary = "处理好友请求")
     public ResponseEntity<Result<Void>> handleApplication(@RequestBody @Valid FriendApplyHandleParam param) {
+        friendService.handleApplication(param);
         return ResponseEntity.ok(Result.success());
     }
 }

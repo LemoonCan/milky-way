@@ -21,4 +21,8 @@ public class FriendApplyHandleParam {
      * 处理结果
      */
     private FriendApplyStatus status;
+    /**
+     * 附加信息
+     */
+    private ApplyExtraInfo extraInfo;
 }

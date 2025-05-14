@@ -1,5 +1,7 @@
 package lemoon.can.milkyway.domain.friend;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,5 +21,6 @@ public class FriendApplicationExtraInfo {
     /**
      * 权限
      */
+    @Enumerated(EnumType.STRING)
     private FriendPermissionEnum permission;
 }

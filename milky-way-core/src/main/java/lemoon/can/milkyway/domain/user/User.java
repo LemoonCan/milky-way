@@ -71,12 +71,6 @@ public class User {
     @Embedded
     private LoginInfo loginInfo;
 
-    /**
-     * 朋友列表
-     */
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Friend> friends;
-
     public User(String openId, String phone, String password) {
         this.openId = StringUtils.hasLength(openId) ? openId : generateOpenId();
         this.phone = phone;
@@ -130,15 +124,6 @@ public class User {
     public void realNameAuth(RealNameInfo realNameInfo) {
         //校验 实名信息是否符合要求
         this.realNameInfo = realNameInfo;
-    }
-
-    /**
-     * 添加朋友
-     *
-     * @param friend 朋友
-     */
-    public void addFriend(Friend friend) {
-        this.friends.add(friend);
     }
 
 }

@@ -10,7 +10,6 @@ import lemoon.can.milkyway.facade.param.FriendApplyParam;
 import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.infrastructure.repository.FriendApplicationRepository;
 import lemoon.can.milkyway.infrastructure.repository.FriendRepository;
-import org.springframework.data.jpa.repository.JpaRepository;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lemoon.can.milkyway.utils.security.SecureId;
 import lombok.RequiredArgsConstructor;
@@ -57,7 +56,10 @@ public class FriendServiceImpl implements FriendService {
 
         //建立好友关系
         Friend friend1 = new Friend(friendApplication.getFromUserId(), friendApplication.getToUserId());
+        friend1.setExtra(friendApplication.getExtraInfo().getRemark(), friendApplication.getExtraInfo().getPermission());
         Friend friend2 = new Friend(friendApplication.getToUserId(), friendApplication.getFromUserId());
+        friend2.setExtra(param.getExtraInfo().getRemark(), param.getExtraInfo().getPermission());
+
         friendRepository.save(friend1);
         friendRepository.save(friend2);
     }
