@@ -6,8 +6,8 @@ import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
-import lemoon.can.milkyway.facade.query.FriendQueryRepository;
-import lemoon.can.milkyway.facade.service.FriendService;
+import lemoon.can.milkyway.facade.service.command.FriendService;
+import lemoon.can.milkyway.facade.service.query.FriendQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +22,11 @@ import java.util.List;
 @RequestMapping("friends")
 @RequiredArgsConstructor
 public class FriendController {
-    private final FriendQueryRepository friendQueryRepository;
     private final FriendService friendService;
+    private final FriendQueryService friendQueryService;
     @GetMapping("/applications/{openId}")
     public ResponseEntity<Result<List<FriendApplicationDTO>>> applications(@PathVariable String openId) {
-        return ResponseEntity.ok(Result.success(friendQueryRepository.findApplications(openId)));
+        return ResponseEntity.ok(Result.success(friendQueryService.getApplications(openId)));
     }
 
     @PostMapping("/applications/add")

@@ -3,6 +3,7 @@ package lemoon.can.milkyway.domain.friend;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * @author lemoon
@@ -35,6 +36,10 @@ public class FriendApplication {
      */
     @Enumerated(EnumType.STRING)
     private FriendApplyStatus status;
+
+    @Setter
+    @Embedded
+    private FriendApplicationExtraInfo extraInfo;
 
     public FriendApplication(Long fromUserId, Long toUserId, String applyMsg) {
         this.fromUserId = fromUserId;

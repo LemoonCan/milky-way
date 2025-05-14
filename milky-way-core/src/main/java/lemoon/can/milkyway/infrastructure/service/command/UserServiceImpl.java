@@ -1,10 +1,10 @@
-package lemoon.can.milkyway.infrastructure.service;
+package lemoon.can.milkyway.infrastructure.service.command;
 
 import lemoon.can.milkyway.utils.security.JwtTokenProvider;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
-import lemoon.can.milkyway.facade.service.UserService;
+import lemoon.can.milkyway.facade.service.command.UserService;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;

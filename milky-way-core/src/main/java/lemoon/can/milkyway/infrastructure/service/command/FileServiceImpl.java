@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.infrastructure.service;
+package lemoon.can.milkyway.infrastructure.service.command;
 
 import lemoon.can.milkyway.config.Env;
 import lemoon.can.milkyway.domain.file.FileMetaInfo;
@@ -8,7 +8,7 @@ import lemoon.can.milkyway.facade.dto.FileInfoDTO;
 import lemoon.can.milkyway.facade.exception.BusinessException;
 import lemoon.can.milkyway.facade.exception.ErrorCode;
 import lemoon.can.milkyway.facade.param.FileParam;
-import lemoon.can.milkyway.facade.service.FileService;
+import lemoon.can.milkyway.facade.service.command.FileService;
 import lemoon.can.milkyway.infrastructure.repository.FileMetaInfoRepository;
 import lemoon.can.milkyway.infrastructure.repository.FileRepository;
 import lemoon.can.milkyway.utils.Snowflake;

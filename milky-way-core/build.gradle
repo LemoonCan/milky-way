@@ -20,5 +20,6 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson'
     implementation 'org.apache.tika:tika-core'
-    implementation "org.hashids:hashids:1.0.3"
+    implementation "org.hashids:hashids"
+    implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter"
 }

@@ -6,7 +6,7 @@ import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
-import lemoon.can.milkyway.facade.service.UserService;
+import lemoon.can.milkyway.facade.service.command.UserService;
 import lemoon.can.milkyway.utils.security.HttpHeaderToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

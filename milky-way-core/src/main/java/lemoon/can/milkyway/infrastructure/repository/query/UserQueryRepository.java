@@ -1,11 +1,13 @@
-package lemoon.can.milkyway.facade.query;
+package lemoon.can.milkyway.infrastructure.repository.query;
 
 import lemoon.can.milkyway.facade.dto.UserDTO;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * @author lemoon
  * @since 2025/4/27
  */
+@Mapper
 public interface UserQueryRepository {
     /**
      * 通过openId匹配用户

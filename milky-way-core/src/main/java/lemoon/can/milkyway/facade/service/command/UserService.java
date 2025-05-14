@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.facade.service;
+package lemoon.can.milkyway.facade.service.command;
 
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;

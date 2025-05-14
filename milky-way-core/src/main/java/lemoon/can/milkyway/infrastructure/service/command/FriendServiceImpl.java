@@ -1,12 +1,16 @@
-package lemoon.can.milkyway.infrastructure.service;
+package lemoon.can.milkyway.infrastructure.service.command;
 
+import lemoon.can.milkyway.domain.friend.Friend;
 import lemoon.can.milkyway.domain.friend.FriendApplication;
+import lemoon.can.milkyway.domain.friend.FriendApplicationExtraInfo;
 import lemoon.can.milkyway.facade.exception.BusinessException;
 import lemoon.can.milkyway.facade.exception.ErrorCode;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
-import lemoon.can.milkyway.facade.service.FriendService;
+import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.infrastructure.repository.FriendApplicationRepository;
+import lemoon.can.milkyway.infrastructure.repository.FriendRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lemoon.can.milkyway.utils.security.SecureId;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class FriendServiceImpl implements FriendService {
     private final UserRepository userRepository;
     private final FriendApplicationRepository friendApplicationRepository;
+    private final FriendRepository friendRepository;
     private final SecureId secureId;
 
     @Override
@@ -30,6 +35,10 @@ public class FriendServiceImpl implements FriendService {
         Long fromUserId = userRepository.findIdByOpenId(param.getFromOpenId());
         Long toUserId = userRepository.findIdByOpenId(param.getToOpenId());
         FriendApplication friendApplication = new FriendApplication(fromUserId, toUserId, param.getApplyMessage());
+        friendApplication.setExtraInfo(new FriendApplicationExtraInfo(
+                param.getExtraInfo().getRemark(),
+                param.getExtraInfo().getPermission()
+        ));
         friendApplicationRepository.save(friendApplication);
     }
 
@@ -46,6 +55,10 @@ public class FriendServiceImpl implements FriendService {
         friendApplication.handle(param.getStatus());
         friendApplicationRepository.save(friendApplication);
 
-        //TODO 建立好友关系
+        //建立好友关系
+        Friend friend1 = new Friend(friendApplication.getFromUserId(), friendApplication.getToUserId());
+        Friend friend2 = new Friend(friendApplication.getToUserId(), friendApplication.getFromUserId());
+        friendRepository.save(friend1);
+        friendRepository.save(friend2);
     }
 }

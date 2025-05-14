@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.facade.service;
+package lemoon.can.milkyway.facade.service.command;
 
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;

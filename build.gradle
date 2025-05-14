@@ -40,6 +40,7 @@ subprojects {
             dependency "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
             dependency "org.apache.tika:tika-core:3.1.0"
             dependency "org.hashids:hashids:1.0.3"
+            dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4"
         }
     }
 }
