@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.utils.security;
+package lemoon.can.milkyway.common.utils.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;

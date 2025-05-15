@@ -1,6 +1,6 @@
 package lemoon.can.milkyway.config;
 
-import lemoon.can.milkyway.utils.Snowflake;
+import lemoon.can.milkyway.common.utils.Snowflake;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

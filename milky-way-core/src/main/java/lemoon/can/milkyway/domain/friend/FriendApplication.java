@@ -1,7 +1,7 @@
 package lemoon.can.milkyway.domain.friend;
 
 import jakarta.persistence.*;
-import lemoon.can.milkyway.common.FriendApplyStatus;
+import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

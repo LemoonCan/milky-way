@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.common;
+package lemoon.can.milkyway.common.enums;
 
 /**
  * @author lemoon

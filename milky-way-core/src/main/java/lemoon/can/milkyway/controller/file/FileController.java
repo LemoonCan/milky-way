@@ -8,7 +8,7 @@ import lemoon.can.milkyway.facade.dto.FileDTO;
 import lemoon.can.milkyway.facade.dto.FileInfoDTO;
 import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.facade.service.command.FileService;
-import lemoon.can.milkyway.utils.FileUtil;
+import lemoon.can.milkyway.common.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;

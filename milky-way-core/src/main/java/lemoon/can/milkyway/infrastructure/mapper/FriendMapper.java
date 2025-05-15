@@ -2,7 +2,7 @@ package lemoon.can.milkyway.infrastructure.mapper;
 
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
-import lemoon.can.milkyway.utils.security.SecureId;
+import lemoon.can.milkyway.common.utils.security.SecureId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

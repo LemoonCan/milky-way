@@ -1,7 +1,7 @@
 package lemoon.can.milkyway.controller;
 
-import lemoon.can.milkyway.facade.exception.BusinessException;
-import lemoon.can.milkyway.facade.exception.ErrorCode;
+import lemoon.can.milkyway.common.exception.BusinessException;
+import lemoon.can.milkyway.common.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

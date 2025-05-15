@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.facade.exception;
+package lemoon.can.milkyway.common.exception;
 
 import lombok.Getter;
 

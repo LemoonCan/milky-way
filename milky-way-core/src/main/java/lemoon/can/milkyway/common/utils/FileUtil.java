@@ -1,7 +1,7 @@
-package lemoon.can.milkyway.utils;
+package lemoon.can.milkyway.common.utils;
 
-import lemoon.can.milkyway.facade.exception.BusinessException;
-import lemoon.can.milkyway.facade.exception.ErrorCode;
+import lemoon.can.milkyway.common.exception.BusinessException;
+import lemoon.can.milkyway.common.exception.ErrorCode;
 import org.springframework.http.MediaType;
 
 /**

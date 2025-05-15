@@ -4,7 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import lemoon.can.milkyway.common.FilePermissionEnum;
+import lemoon.can.milkyway.common.enums.FilePermissionEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

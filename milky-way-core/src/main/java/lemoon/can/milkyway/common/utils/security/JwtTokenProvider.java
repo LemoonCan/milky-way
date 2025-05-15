@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.utils.security;
+package lemoon.can.milkyway.common.utils.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

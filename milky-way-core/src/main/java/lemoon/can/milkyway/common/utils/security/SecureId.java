@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.utils.security;
+package lemoon.can.milkyway.common.utils.security;
 
 import org.hashids.Hashids;
 import org.springframework.stereotype.Component;

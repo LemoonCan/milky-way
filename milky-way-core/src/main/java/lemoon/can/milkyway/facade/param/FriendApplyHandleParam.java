@@ -1,6 +1,6 @@
 package lemoon.can.milkyway.facade.param;
 
-import lemoon.can.milkyway.common.FriendApplyStatus;
+import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lombok.Data;
 
 /**

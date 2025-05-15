@@ -4,8 +4,8 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lemoon.can.milkyway.common.FriendPermissionEnum;
-import lemoon.can.milkyway.common.FriendStatus;
+import lemoon.can.milkyway.common.enums.FriendPermissionEnum;
+import lemoon.can.milkyway.common.enums.FriendStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

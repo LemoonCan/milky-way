@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.utils;
+package lemoon.can.milkyway.common.utils;
 
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;

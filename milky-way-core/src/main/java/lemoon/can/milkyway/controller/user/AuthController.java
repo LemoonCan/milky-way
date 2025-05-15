@@ -7,7 +7,7 @@ import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 import lemoon.can.milkyway.facade.service.command.UserService;
-import lemoon.can.milkyway.utils.security.HttpHeaderToken;
+import lemoon.can.milkyway.common.utils.security.HttpHeaderToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,6 @@
 package lemoon.can.milkyway.controller;
 
-import lemoon.can.milkyway.facade.exception.ErrorCode;
+import lemoon.can.milkyway.common.exception.ErrorCode;
 import lombok.Data;
 
 /**

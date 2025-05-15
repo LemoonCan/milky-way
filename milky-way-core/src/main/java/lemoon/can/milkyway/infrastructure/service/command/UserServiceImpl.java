@@ -1,6 +1,6 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
-import lemoon.can.milkyway.utils.security.JwtTokenProvider;
+import lemoon.can.milkyway.common.utils.security.JwtTokenProvider;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;

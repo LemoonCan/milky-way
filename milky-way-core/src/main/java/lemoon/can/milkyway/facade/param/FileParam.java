@@ -1,7 +1,7 @@
 package lemoon.can.milkyway.facade.param;
 
 import jakarta.validation.constraints.NotNull;
-import lemoon.can.milkyway.common.FilePermissionEnum;
+import lemoon.can.milkyway.common.enums.FilePermissionEnum;
 import lombok.Data;
 
 import java.io.Serializable;
