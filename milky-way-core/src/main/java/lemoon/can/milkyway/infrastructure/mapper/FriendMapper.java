@@ -5,7 +5,6 @@ import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.dto.FriendDTO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendDO;
-import lombok.RequiredArgsConstructor;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
