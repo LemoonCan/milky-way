@@ -8,7 +8,24 @@ import lombok.Data;
  */
 @Data
 public class UserDTO {
+    /**
+     * 开放Id
+     */
     private String openId;
+    /**
+     * 手机号
+     */
+    private String phone;
+    /**
+     * 昵称
+     */
     private String nickName;
+    /**
+     * 头像
+     */
     private String avatar;
+    /**
+     * 个性签名
+     */
+    private String individualSignature;
 }

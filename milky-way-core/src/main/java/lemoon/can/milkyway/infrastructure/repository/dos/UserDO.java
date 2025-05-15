@@ -14,7 +14,6 @@ public class UserDO {
     private Long id;
     private String openId;
     private String phone;
-    private String password;
     private String nickName;
     private String avatar;
     private String individualSignature;

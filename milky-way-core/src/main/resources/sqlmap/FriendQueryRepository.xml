@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.query.FriendQueryRepository">
+    <select id="findApplications" resultMap="FriendApplicationDOMap">
+        select fa.id        as id,
+               fa.apply_msg as apply_msg,
+               u1.open_id   as from_open_id,
+               u1.nick_name as from_nick_name,
+               u1.avatar    as from_avatar,
+               u2.open_id   as to_open_id,
+               u2.nick_name as to_nick_name,
+               u2.avatar    as to_avatar
+        from friend_application fa
+                 left join users u1 on fa.from_user_id = u1.id
+                 left join users u2 on fa.to_user_id = u2.id
+        where fa.to_user_id = #{toUserId}
+    </select>
+    <resultMap id="FriendApplicationDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO">
+        <id property="id" column="id"/> <!-- 主键 -->
+        <result property="applyMsg" column="apply_msg"/> <!-- 普通字段 -->
+
+        <association property="fromUser" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
+            <result property="openId" column="from_open_id"/>
+            <result property="nickName" column="from_nick_name"/>
+            <result property="avatar" column="from_avatar"/>
+        </association>
+        <association property="toUser" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
+            <result property="openId" column="to_open_id"/>
+            <result property="nickName" column="to_nick_name"/>
+            <result property="avatar" column="to_avatar"/>
+        </association>
+    </resultMap>
+
+    <select id="findFriends" resultMap="FriendDOMap">
+        select f.remark         as remark,
+               f.status         as status,
+               f.permission     as permission,
+               u.open_id        as friend_open_id,
+               u.phone          as friend_phone,
+               u.nick_name      as friend_nick_name,
+               u.avatar         as friend_avatar
+        from friend f
+        left join users u on f.friend_id = u.id
+        where f.user_id = #{userId}
+    </select>
+    <resultMap id="FriendDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendDO">
+        <result property="remark" column="remark"/>
+        <result property="status" column="status"/>
+        <result property="permission" column="permission"/>
+
+        <association property="friend" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
+            <result property="openId" column="friend_open_id"/>
+            <result property="phone" column="friend_phone"/>
+            <result property="nickName" column="friend_nick_name"/>
+            <result property="avatar" column="friend_avatar"/>
+        </association>
+    </resultMap>
+</mapper>

@@ -1,29 +1,32 @@
 package lemoon.can.milkyway.infrastructure.mapper;
 
-import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
-import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
 import lemoon.can.milkyway.common.utils.security.SecureId;
+import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
+import lemoon.can.milkyway.facade.dto.FriendDTO;
+import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
+import lemoon.can.milkyway.infrastructure.repository.dos.FriendDO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author lemoon
  * @since 2025/5/14
  */
-@Component
-@RequiredArgsConstructor
-public class FriendMapper {
-    private final SecureId secureId;
-    private final UserMapper userMapper;
-    public FriendApplicationDTO toDTO(FriendApplicationDO friendApplicationDO) {
-        if (friendApplicationDO == null) {
-            return null;
-        }
-        FriendApplicationDTO dto = new FriendApplicationDTO();
-        dto.setId(secureId.encode(friendApplicationDO.getId()));
-        dto.setApplyMsg(friendApplicationDO.getApplyMsg());
-        dto.setFromUser(userMapper.toDTO(friendApplicationDO.getFromUser()));
-        dto.setToUser(userMapper.toDTO(friendApplicationDO.getToUser()));
-        return dto;
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
+public abstract class FriendMapper {
+    @Autowired
+    protected SecureId secureId;
+
+    @Mapping(target = "id", source = "id", qualifiedByName = "encodeId")
+    public abstract FriendApplicationDTO toDTO(FriendApplicationDO friendApplicationDO);
+
+    public abstract FriendDTO toDTO(FriendDO friendDO);
+
+    @Named("encodeId")
+    protected String encodeId(Long id) {
+        return secureId.encode(id);
     }
 }

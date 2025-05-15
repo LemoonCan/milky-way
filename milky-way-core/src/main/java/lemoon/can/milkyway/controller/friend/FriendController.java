@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
+import lemoon.can.milkyway.facade.dto.FriendDTO;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
 import lemoon.can.milkyway.facade.service.command.FriendService;
@@ -26,6 +27,7 @@ public class FriendController {
     private final FriendQueryService friendQueryService;
 
     @GetMapping("/applications/{openId}")
+    @Operation(summary = "获取好友申请列表")
     public ResponseEntity<Result<List<FriendApplicationDTO>>> applications(@PathVariable String openId) {
         List<FriendApplicationDTO> list = friendQueryService.getApplications(openId);
         return ResponseEntity.ok(Result.success(list));
@@ -45,5 +47,10 @@ public class FriendController {
         return ResponseEntity.ok(Result.success());
     }
 
-    public ResponseEntity<Result<List<>>>
+    @GetMapping("/{openId}")
+    @Operation(summary = "获取好友列表")
+    public ResponseEntity<Result<List<FriendDTO>>> friends(@PathVariable String openId) {
+        List<FriendDTO> list = friendQueryService.getFriends(openId);
+        return ResponseEntity.ok(Result.success(list));
+    }
 }
