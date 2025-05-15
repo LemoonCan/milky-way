@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.domain.friend;
+package lemoon.can.milkyway.common;
 
 /**
  * @author lemoon

@@ -3,6 +3,7 @@ package lemoon.can.milkyway.domain.user;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lemoon.can.milkyway.common.GenderEnum;
 
 /**
  * @author lemoon

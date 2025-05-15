@@ -44,4 +44,6 @@ public class FriendController {
         friendService.handleApplication(param);
         return ResponseEntity.ok(Result.success());
     }
+
+    public ResponseEntity<Result<List<>>>
 }
