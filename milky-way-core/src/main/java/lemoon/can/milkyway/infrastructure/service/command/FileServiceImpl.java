@@ -52,7 +52,7 @@ public class FileServiceImpl implements FileService {
         //使用TikaInputStream，可在检测文件类型后，重置流位置
         try (TikaInputStream tis = TikaInputStream.get(multipartFile.getInputStream())) {
             fileType = new Tika().detect(tis);
-            path = fileRepository.storage(tis, fileParam, UserInfoHolder.userId(), fileId, fileType);
+            path = fileRepository.storage(tis, fileParam, UserInfoHolder.openId(), fileId, fileType);
         } catch (IOException e) {
             //最佳实践：有其他信息需要打印时，将异常放在最后，保证能打印出堆栈信息
             log.error("文件{}上传失败", multipartFile.getOriginalFilename(), e);
