@@ -1,8 +1,6 @@
 package lemoon.can.milkyway.domain.chat;
 
 import lemoon.can.milkyway.common.enums.ChatType;
-import lemoon.can.milkyway.domain.user.Long;
-
 import java.util.Set;
 
 /**

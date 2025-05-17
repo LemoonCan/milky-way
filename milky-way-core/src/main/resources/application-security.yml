@@ -23,6 +23,11 @@ security:
   cors:
     allowed-origins:
       - http://localhost:3000
+  secure-id:
+    user-salt: ${USER_SECUREID_SALT}
+    friend-salt: ${FRIEND_SECUREID_SALT}
+    chat-salt: ${CHAT_SECUREID_SALT}
+    message-salt: ${MESSAGE_SECUREID_SALT}
 
 file:
   access:

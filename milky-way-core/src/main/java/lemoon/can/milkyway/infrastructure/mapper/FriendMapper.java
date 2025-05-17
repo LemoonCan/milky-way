@@ -26,6 +26,6 @@ public abstract class FriendMapper {
 
     @Named("encodeId")
     protected String encodeId(Long id) {
-        return secureId.encode(id);
+        return secureId.encode(id, secureId.getFriendSalt());
     }
 }

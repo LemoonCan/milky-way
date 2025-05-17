@@ -1,11 +1,10 @@
 package lemoon.can.milkyway.domain.chat;
 
 import lemoon.can.milkyway.common.enums.ChatType;
-import lemoon.can.milkyway.domain.user.Long;
-
 import java.util.Set;
 
 /**
+ * 聊天室
  * @author lemoon
  * @since 2025/5/16
  */

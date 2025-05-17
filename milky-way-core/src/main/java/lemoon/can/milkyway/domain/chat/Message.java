@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 /**
  * 消息
+ *
  * @author lemoon
  * @since 2025/5/15
  */
@@ -56,7 +57,7 @@ public class Message {
      */
     private LocalDateTime readTime;
 
-    public Message(Long chatId, Long senderId, String content, MessageType type) {
+    public Message(Long chatId, Long senderId, MessageType type, String content) {
         this.chatId = chatId;
         this.senderId = senderId;
         this.content = content;

@@ -1,6 +1,8 @@
 package lemoon.can.milkyway.common.utils.security;
 
+import lombok.Getter;
 import org.hashids.Hashids;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
@@ -12,7 +14,22 @@ import java.util.Base64;
  */
 @Component
 public class SecureId {
-    private final static String FIXED_SALT = "sun-moon";
+    @Value("${security.secure-id.user-salt}")
+    @Getter
+    private String userSalt;
+
+    @Value("${security.secure-id.friend-salt}")
+    @Getter
+    private String friendSalt;
+
+    @Value("${security.secure-id.chat-salt}")
+    @Getter
+    private String chatSalt;
+
+    @Value("${security.secure-id.message-salt}")
+    @Getter
+    private String messageSalt;
+
 
     private String generateRandomSalt() {
         byte[] salt = new byte[8];
@@ -20,32 +37,23 @@ public class SecureId {
         return Base64.getEncoder().encodeToString(salt);
     }
 
-    public String encode(Long id) {
+    public String encode(Long id, String fixedSalt) {
         String randomSalt = generateRandomSalt();
-        Hashids hashids = new Hashids(FIXED_SALT + randomSalt, 12);
+        Hashids hashids = new Hashids(fixedSalt + randomSalt, 12);
         return hashids.encode(id) + "." + randomSalt;
     }
 
-    public Long decode(String encoded) {
+    public Long decode(String encoded, String fixedSalt) {
         String[] parts = encoded.split("\\.");
         if (parts.length != 2) {
             throw new IllegalArgumentException("非法ID");
         }
 
-        Hashids decoder = new Hashids(FIXED_SALT + parts[1], 12);
+        Hashids decoder = new Hashids(fixedSalt + parts[1], 12);
         long[] decoded = decoder.decode(parts[0]);
         if (decoded.length == 0) {
             throw new IllegalArgumentException("非法ID");
         }
         return decoded[0];
-    }
-
-    public static void main(String[] args) {
-        SecureId secureId = new SecureId();
-        String encoded = secureId.encode(123456789L);
-        System.out.println("Encoded: " + encoded);
-
-        Long decoded = secureId.decode(encoded);
-        System.out.println("Decoded: " + decoded);
     }
 }
