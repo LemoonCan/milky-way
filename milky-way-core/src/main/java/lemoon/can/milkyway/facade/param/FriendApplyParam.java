@@ -14,12 +14,12 @@ public class FriendApplyParam {
     /**
      * 申请人openId
      */
-    private String fromOpenId;
+    private String fromUserId;
     /**
      * 好友openId
      */
     @NotBlank(message = "好友信息不能为空")
-    private String toOpenId;
+    private String toUserId;
     /**
      * 申请消息
      */

@@ -13,15 +13,15 @@ public interface FriendQueryService {
     /**
      * 获取好友申请列表
      *
-     * @param toUserOpenId 接收者的 OpenId
+     * @param toUserId 接收者的 OpenId
      * @return 好友申请列表
      */
-    List<FriendApplicationDTO> getApplications(String toUserOpenId);
+    List<FriendApplicationDTO> getApplications(String toUserId);
 
     /**
      * 获取好友列表
-     * @param openId
+     * @param userId
      * @return
      */
-    List<FriendDTO> getFriends(String openId);
+    List<FriendDTO> getFriends(String userId);
 }

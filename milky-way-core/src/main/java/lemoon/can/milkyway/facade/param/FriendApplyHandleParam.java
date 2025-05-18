@@ -12,7 +12,7 @@ public class FriendApplyHandleParam {
     /**
      * 本人openId
      */
-    private String openId;
+    private String userId;
     /**
      * 好友申请ID
      */

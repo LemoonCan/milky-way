@@ -26,10 +26,10 @@ public class FriendController {
     private final FriendService friendService;
     private final FriendQueryService friendQueryService;
 
-    @GetMapping("/applications/{openId}")
+    @GetMapping("/applications/{userId}")
     @Operation(summary = "获取好友申请列表")
-    public ResponseEntity<Result<List<FriendApplicationDTO>>> applications(@PathVariable String openId) {
-        List<FriendApplicationDTO> list = friendQueryService.getApplications(openId);
+    public ResponseEntity<Result<List<FriendApplicationDTO>>> applications(@PathVariable String userId) {
+        List<FriendApplicationDTO> list = friendQueryService.getApplications(userId);
         return ResponseEntity.ok(Result.success(list));
     }
 
@@ -47,10 +47,10 @@ public class FriendController {
         return ResponseEntity.ok(Result.success());
     }
 
-    @GetMapping("/{openId}")
+    @GetMapping("/{userId}")
     @Operation(summary = "获取好友列表")
-    public ResponseEntity<Result<List<FriendDTO>>> friends(@PathVariable String openId) {
-        List<FriendDTO> list = friendQueryService.getFriends(openId);
+    public ResponseEntity<Result<List<FriendDTO>>> friends(@PathVariable String userId) {
+        List<FriendDTO> list = friendQueryService.getFriends(userId);
         return ResponseEntity.ok(Result.success(list));
     }
 }

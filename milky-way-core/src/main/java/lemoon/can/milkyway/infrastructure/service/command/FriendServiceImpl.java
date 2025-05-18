@@ -31,8 +31,8 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void addFriend(FriendApplyParam param) {
-        Long fromUserId = userRepository.findIdByOpenId(param.getFromOpenId());
-        Long toUserId = userRepository.findIdByOpenId(param.getToOpenId());
+        Long fromUserId = secureId.decode(param.getFromUserId(), secureId.getUserSalt());
+        Long toUserId = secureId.decode(param.getToUserId(), secureId.getUserSalt());
         FriendApplication friendApplication = new FriendApplication(fromUserId, toUserId, param.getApplyMessage());
         friendApplication.setExtraInfo(new FriendApplicationExtraInfo(
                 param.getExtraInfo().getRemark(),
@@ -44,7 +44,7 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void handleApplication(FriendApplyHandleParam param) {
-        Long userId = userRepository.findIdByOpenId(param.getOpenId());
+        Long userId = secureId.decode(param.getUserId(), secureId.getUserSalt());
         Long id = secureId.decode(param.getFriendApplicationId(), secureId.getFriendSalt());
         //申请处理
         FriendApplication friendApplication = friendApplicationRepository.findById(id).orElseThrow();

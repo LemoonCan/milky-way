@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.config.security;
 
+import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,9 +35,11 @@ public class SecurityConfig {
     private final SecurityProperties securityProperties;
     private final JwtAuthorizationFilter jwtAuthorizationFilter;
     private final UserRepository userRepository;
+    private final SecureId secureId;
 
     /**
      * Spring Security 过滤器链
+     *
      * @param http HttpSecurity
      * @return SecurityFilterChain
      * @throws Exception 异常
@@ -57,12 +60,12 @@ public class SecurityConfig {
                         .anyRequest().authenticated()) // 其他接口需认证
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class); // JWT认证过滤器(先于路径匹配执行)
 
-
         return http.build();
     }
 
     /**
      * 跨域配置
+     *
      * @return CorsConfigurationSource
      */
     @Bean
@@ -80,6 +83,7 @@ public class SecurityConfig {
 
     /**
      * 身份验证管理器
+     *
      * @param authenticationConfiguration 身份验证配置
      * @return AuthenticationManager
      * @throws Exception 异常
@@ -91,6 +95,7 @@ public class SecurityConfig {
 
     /**
      * 密码编码器
+     *
      * @return PasswordEncoder
      */
     @Bean
@@ -105,7 +110,8 @@ public class SecurityConfig {
         public UserDetails loadUserByUsername(String openId) throws UsernameNotFoundException {
             Optional<lemoon.can.milkyway.domain.user.User> userOptional = userRepository.findByOpenId(openId);
             lemoon.can.milkyway.domain.user.User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
-            return new User(user.getOpenId(), user.getPassword(), List.of());
+
+            return new User(secureId.encode(user.getId(), secureId.getUserSalt()), user.getPassword(), List.of());
         }
     }
 } 

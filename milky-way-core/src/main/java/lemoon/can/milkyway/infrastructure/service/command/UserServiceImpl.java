@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
 import lemoon.can.milkyway.common.utils.security.JwtTokenProvider;
+import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
@@ -25,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final SecureId secureId;
 
     @Override
     @Transactional
@@ -37,8 +39,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public String loginByPhone(UserPhoneLoginParam param) {
         User user = userRepository.findByPhone(param.getPhone()).orElseThrow();
+        String userId = secureId.encode(user.getId(), secureId.getUserSalt());
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getOpenId(), param.getPassword()));
+                new UsernamePasswordAuthenticationToken(userId, param.getPassword()));
         return jwtTokenProvider.createToken(authentication);
     }
 }
