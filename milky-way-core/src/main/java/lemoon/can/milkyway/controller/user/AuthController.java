@@ -42,7 +42,7 @@ public class AuthController {
 
     @PatchMapping("/logout")
     @Operation(summary = "登出")
-    public ResponseEntity<Result<Void>> logout(@RequestParam String openId){
+    public ResponseEntity<Result<Void>> logout(@RequestParam String id){
         //JWT 无状态方案，只需前端删除本地 token 即可
         return ResponseEntity.ok(Result.success());
     }

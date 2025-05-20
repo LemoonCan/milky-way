@@ -9,6 +9,10 @@ import lombok.Data;
 @Data
 public class UserDTO {
     /**
+     * 用户Id
+     */
+    private String id;
+    /**
      * 开放Id
      */
     private String openId;
