@@ -1,0 +1,31 @@
+package lemoon.can.milkyway.facade.param;
+
+import lemoon.can.milkyway.common.enums.ChatType;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * @author lemoon
+ * @since 2025/5/21
+ */
+@Data
+public class ChatCreateParam implements Serializable {
+    /**
+     * 聊天类型
+     */
+    private ChatType chatType;
+    /**
+     * 名称
+     */
+    private String name;
+    /**
+     * 公告
+     */
+    private String bulletin;
+    /**
+     * 聊天室成员
+     */
+    private List<ChatMemberParam> members;
+}

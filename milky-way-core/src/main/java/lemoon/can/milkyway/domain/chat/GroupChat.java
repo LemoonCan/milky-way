@@ -8,6 +8,11 @@ import java.util.Set;
  * @since 2025/5/16
  */
 public class GroupChat extends Chat {
+    /**
+     * 公告
+     */
+    private String bulletin;
+
     public GroupChat(Set<Long> participants) {
         super(participants);
         if (participants.size() < 3) {

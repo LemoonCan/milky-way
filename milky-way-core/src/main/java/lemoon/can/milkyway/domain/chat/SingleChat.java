@@ -8,7 +8,7 @@ import java.util.Set;
  * @author lemoon
  * @since 2025/5/16
  */
-public class SingleChat extends Chat{
+public class SingleChat extends Chat {
 
     public SingleChat(Set<Long> participants) {
         super(participants);

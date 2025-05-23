@@ -1,6 +1,9 @@
 package lemoon.can.milkyway.domain.chat;
 
 import lemoon.can.milkyway.common.enums.ChatType;
+import lombok.Getter;
+
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -9,32 +12,15 @@ import java.util.Set;
  * @author lemoon
  * @since 2025/5/16
  */
+@Getter
 public abstract class Chat {
-    /**
-     * 参与人
-     * 聊天参与者的用户ID集合
-     */
-    protected Set<Long> participants;
+    protected Long id;
+    protected String name;
+    protected List<ChatMember> members;
 
     /**
      * 获取聊天类型
      * @return 聊天类型
      */
     public abstract ChatType type();
-
-    /**
-     * 构造函数
-     * @param participants 参与者ID集合
-     */
-    public Chat(Set<Long> participants) {
-        this.participants = participants;
-    }
-
-    /**
-     * 获取聊天参与者
-     * @return 参与者ID集合
-     */
-    public Set<Long> getParticipants() {
-        return participants;
-    }
 }

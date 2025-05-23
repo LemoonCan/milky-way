@@ -14,8 +14,7 @@ public interface MessageService {
 
     /**
      * 发送消息
-     * @param param 参数
-     * T 消息内容类型
+     * @param param 消息内容
      * @return 消息
      */
     MessageDTO sendMessage(MessageSendParam param);
