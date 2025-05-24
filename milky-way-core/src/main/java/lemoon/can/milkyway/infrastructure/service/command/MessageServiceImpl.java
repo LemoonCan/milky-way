@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
-import lemoon.can.milkyway.common.enums.MessageType;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
@@ -10,20 +9,13 @@ import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.param.MessageSendParam;
 import lemoon.can.milkyway.facade.service.command.MessageService;
-import lemoon.can.milkyway.infrastructure.inner.chat.ChatProcessor;
 import lemoon.can.milkyway.infrastructure.inner.chat.ChatProcessorManager;
-import lemoon.can.milkyway.infrastructure.mapper.MessageMapper;
+import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lemoon.can.milkyway.infrastructure.repository.ChatRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageRepository;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.Long;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author lemoon
@@ -33,7 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
-    private final MessageMapper messageMapper;
+    private final MessageConverter messageMapper;
     private final SecureId secureId;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;

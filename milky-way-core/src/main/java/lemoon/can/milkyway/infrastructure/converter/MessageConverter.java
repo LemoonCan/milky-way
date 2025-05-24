@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.infrastructure.mapper;
+package lemoon.can.milkyway.infrastructure.converter;
 
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Message;
@@ -6,9 +6,6 @@ import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,7 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class MessageMapper {
+public class MessageConverter {
     private final SecureId secureId;
 
     public MessageDTO toDTO(Message message, User sender) {

@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.infrastructure.mapper;
+package lemoon.can.milkyway.infrastructure.converter;
 
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.UserDTO;
@@ -10,7 +10,7 @@ import org.mapstruct.Mapper;
  * @since 2025/5/13
  */
 @Mapper(componentModel = "spring")
-public interface UserMapper {
+public interface UserConverter {
     UserDTO toDTO(User user);
 
     UserDTO toDTO(UserDO userDO);

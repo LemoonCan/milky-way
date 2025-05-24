@@ -2,12 +2,14 @@ package lemoon.can.milkyway.infrastructure.repository.dos;
 
 import lemoon.can.milkyway.common.enums.ChatType;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author lemoon
  * @since 2025/5/24
  */
 @Data
+@NoArgsConstructor
 public class ChatDO {
     /**
      * 聊天室ID

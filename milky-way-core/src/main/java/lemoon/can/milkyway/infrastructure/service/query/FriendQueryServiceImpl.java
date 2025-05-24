@@ -4,7 +4,7 @@ import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.dto.FriendDTO;
 import lemoon.can.milkyway.facade.service.query.FriendQueryService;
-import lemoon.can.milkyway.infrastructure.mapper.FriendMapper;
+import lemoon.can.milkyway.infrastructure.converter.FriendConverter;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendDO;
@@ -23,7 +23,7 @@ import java.util.List;
 public class FriendQueryServiceImpl implements FriendQueryService {
     private final UserRepository userRepository;
     private final FriendQueryRepository friendQueryRepository;
-    private final FriendMapper friendMapper;
+    private final FriendConverter friendConverter;
     private final SecureId secureId;
 
     @Override
@@ -31,7 +31,7 @@ public class FriendQueryServiceImpl implements FriendQueryService {
         List<FriendApplicationDO> list = friendQueryRepository.findApplications(
                 secureId.decode(toUserId, secureId.getUserSalt()));
         return list.stream()
-                .map(friendMapper::toDTO)
+                .map(friendConverter::toDTO)
                 .toList();
     }
 
@@ -40,7 +40,7 @@ public class FriendQueryServiceImpl implements FriendQueryService {
         List<FriendDO> list = friendQueryRepository.findFriends(
                 secureId.decode(openId, secureId.getUserSalt()));
         return list.stream()
-                .map(friendMapper::toDTO)
+                .map(friendConverter::toDTO)
                 .toList();
     }
 }

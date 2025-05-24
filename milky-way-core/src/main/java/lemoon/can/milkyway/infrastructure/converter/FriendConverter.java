@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.infrastructure.mapper;
+package lemoon.can.milkyway.infrastructure.converter;
 
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author lemoon
  * @since 2025/5/14
  */
-@Mapper(componentModel = "spring", uses = {UserMapper.class})
-public abstract class FriendMapper {
+@Mapper(componentModel = "spring", uses = {UserConverter.class})
+public abstract class FriendConverter {
     @Autowired
     protected SecureId secureId;
 

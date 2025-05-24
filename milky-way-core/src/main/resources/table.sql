@@ -48,8 +48,8 @@ CREATE TABLE friend_application
     apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
     status       VARCHAR(16)  NOT NULL COMMENT '状态',
     permission   VARCHAR(64)  NOT NULL COMMENT '权限',
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+    create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
 
 -- 文件元信息表
@@ -64,3 +64,31 @@ CREATE TABLE file_meta_info
     create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
+
+-- 聊天室表
+CREATE TABLE chat
+(
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '聊天室ID',
+    type        VARCHAR(50)  NOT NULL COMMENT '聊天室类型',
+    title       VARCHAR(255) NOT NULL COMMENT '聊天室标题',
+    bulletin    TEXT COMMENT '聊天室公告',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+);
+
+-- 聊天室成员表
+CREATE TABLE chat_member
+(
+    chat_id        BIGINT NOT NULL COMMENT '聊天室ID',
+    user_id        BIGINT NOT NULL COMMENT '用户ID',
+    chat_remark    VARCHAR(255) COMMENT '聊天室备注',
+    chat_nick_name VARCHAR(255) COMMENT '聊天室昵称',
+    mute           BOOLEAN   DEFAULT FALSE COMMENT '免打扰',
+    top            BOOLEAN   DEFAULT FALSE COMMENT '是否置顶',
+    create_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (chat_id, user_id)
+);
+
+drop table Chat;
+drop table ChatMember;

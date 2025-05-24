@@ -5,7 +5,7 @@ import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.Message;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
-import lemoon.can.milkyway.infrastructure.mapper.MessageMapper;
+import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 public class SingleChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
-    private final MessageMapper messageMapper;
+    private final MessageConverter messageConverter;
     private final SecureId secureId;
 
     @Override
@@ -43,7 +43,7 @@ public class SingleChatProcessor implements ChatProcessor {
         User sender = userRepository.findById(message.getSenderId()).orElseThrow();
 
         // 创建消息DTO
-        MessageDTO messageDTO = messageMapper.toDTO(message, sender);
+        MessageDTO messageDTO = messageConverter.toDTO(message, sender);
 
         // 遍历参与者，向除发送者外的参与者推送消息
         for (Long participantId : chat.getParticipants()) {
