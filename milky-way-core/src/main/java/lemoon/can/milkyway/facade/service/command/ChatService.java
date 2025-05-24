@@ -34,4 +34,10 @@ public interface ChatService {
      * @param userId 用户id
      */
     void addMember(String chatId, String userId);
+
+    /**
+     * 成员更新信息
+     * @param param
+     */
+    void updateMemerInfo(ChatMemberParam param);
 }

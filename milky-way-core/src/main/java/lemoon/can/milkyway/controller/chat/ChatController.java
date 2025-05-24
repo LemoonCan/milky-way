@@ -25,6 +25,7 @@ public class ChatController {
     @PostMapping
     @Operation(summary = "创建聊天室")
     public ResponseEntity<Result<Void>> createChat(@RequestBody @Valid ChatCreateParam param) {
+        chatService.createChat(param);
         return null;
     }
 

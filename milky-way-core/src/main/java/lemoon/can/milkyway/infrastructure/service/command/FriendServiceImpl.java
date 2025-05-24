@@ -1,12 +1,16 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
+import lemoon.can.milkyway.common.enums.ChatType;
+import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lemoon.can.milkyway.domain.friend.Friend;
 import lemoon.can.milkyway.domain.friend.FriendApplication;
 import lemoon.can.milkyway.domain.friend.FriendApplicationExtraInfo;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
+import lemoon.can.milkyway.facade.param.ChatCreateParam;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
+import lemoon.can.milkyway.facade.service.command.ChatService;
 import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.infrastructure.repository.FriendApplicationRepository;
 import lemoon.can.milkyway.infrastructure.repository.FriendRepository;
@@ -15,6 +19,8 @@ import lemoon.can.milkyway.common.utils.security.SecureId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * @author lemoon
@@ -27,6 +33,7 @@ public class FriendServiceImpl implements FriendService {
     private final FriendApplicationRepository friendApplicationRepository;
     private final FriendRepository friendRepository;
     private final SecureId secureId;
+    private final ChatService chatService;
 
     @Override
     @Transactional
@@ -39,6 +46,8 @@ public class FriendServiceImpl implements FriendService {
                 param.getExtraInfo().getPermission()
         ));
         friendApplicationRepository.save(friendApplication);
+
+        //TODO 1.推送给申请的好友通知
     }
 
     @Override
@@ -54,6 +63,9 @@ public class FriendServiceImpl implements FriendService {
         friendApplication.handle(param.getStatus());
         friendApplicationRepository.save(friendApplication);
 
+        if( param.getStatus() == FriendApplyStatus.REJECTED) {
+            return;
+        }
         //建立好友关系
         Friend friend1 = new Friend(friendApplication.getFromUserId(), friendApplication.getToUserId());
         friend1.setExtra(friendApplication.getExtraInfo().getRemark(), friendApplication.getExtraInfo().getPermission());
@@ -62,5 +74,16 @@ public class FriendServiceImpl implements FriendService {
 
         friendRepository.save(friend1);
         friendRepository.save(friend2);
+
+        //1.创建单聊
+        ChatCreateParam chatCreateParam = new ChatCreateParam();
+        chatCreateParam.setChatType(ChatType.GROUP);
+        chatCreateParam.setMembers(List.of(
+                secureId.encode(friendApplication.getFromUserId(),secureId.getUserSalt()),
+                secureId.encode(friendApplication.getToUserId(),secureId.getUserSalt())
+                ));
+        chatService.createChat(chatCreateParam);
+
+        //TODO 推送给申请用户结果
     }
 }

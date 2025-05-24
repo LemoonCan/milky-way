@@ -2,9 +2,9 @@ package lemoon.can.milkyway.domain.chat;
 
 import lemoon.can.milkyway.common.enums.ChatType;
 import lombok.Getter;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * 聊天室
@@ -15,8 +15,19 @@ import java.util.Set;
 @Getter
 public abstract class Chat {
     protected Long id;
-    protected String name;
+    protected String title;
     protected List<ChatMember> members;
+
+    public Chat(Long id, String title, List<ChatMember> members) {
+        this.id = id;
+        this.title = title;
+        this.members = members;
+    }
+
+    public Chat(String title, List<ChatMember> members) {
+        this.title = StringUtils.hasLength(title)? title : "宇宙里的某个星座";
+        this.members = members;
+    }
 
     /**
      * 获取聊天类型

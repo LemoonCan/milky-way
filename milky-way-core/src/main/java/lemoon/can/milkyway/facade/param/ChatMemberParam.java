@@ -21,7 +21,7 @@ public class ChatMemberParam implements Serializable {
     /**
      * 聊天成员名称
      */
-    private String inChatName;
+    private String chatNickName;
     /**
      * 备注
      */

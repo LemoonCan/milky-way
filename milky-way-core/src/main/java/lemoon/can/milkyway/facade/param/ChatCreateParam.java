@@ -19,13 +19,9 @@ public class ChatCreateParam implements Serializable {
     /**
      * 名称
      */
-    private String name;
-    /**
-     * 公告
-     */
-    private String bulletin;
+    private String title;
     /**
      * 聊天室成员
      */
-    private List<ChatMemberParam> members;
+    private List<String> members;
 }

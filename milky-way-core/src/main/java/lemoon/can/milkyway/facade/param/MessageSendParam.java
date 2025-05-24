@@ -17,6 +17,9 @@ public class MessageSendParam {
      * 聊天室id
      */
     private String chatId;
+    /**
+     * 聊天类型
+     */
     private MessageType messageType;
     /**
      * 文字 具体内容
