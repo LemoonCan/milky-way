@@ -14,7 +14,7 @@ public interface ChatService {
      * 创建聊天室
      * @param param 创建参数
      */
-    void createChat(ChatCreateParam param);
+    String createChat(ChatCreateParam param);
 
     /**
      * 删除聊天室

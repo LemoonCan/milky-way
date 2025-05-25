@@ -1,10 +1,7 @@
 package lemoon.can.milkyway.infrastructure.repository.mapper;
 
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatDO;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Options;
-import org.apache.ibatis.annotations.Select;
-import org.mapstruct.Mapper;
+import org.apache.ibatis.annotations.*;
 
 /**
  * @author lemoon
@@ -18,4 +15,10 @@ public interface ChatMapper {
 
     @Select( "SELECT * FROM chat WHERE id = #{id}")
     ChatDO selectById(Long id);
+
+    @Delete( "DELETE FROM chat WHERE id = #{id}")
+    int deleteById(Long id);
+
+    int update(ChatDO param);
+
 }

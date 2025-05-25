@@ -4,13 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.UserDTO;
-import lemoon.can.milkyway.infrastructure.repository.query.UserQueryRepository;
+import lemoon.can.milkyway.facade.service.query.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author lemoon
@@ -19,9 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("users")
-@Tag(name = "users-api", description = "用户相关接口")
-public class UsersController {
-    private final UserQueryRepository userQueryRepository;
+@Tag(name = "user-api", description = "用户相关接口")
+public class UserController {
+    private final UserQueryService userQueryService;
+
+    @GetMapping
+    @Operation(summary = "获取所有用户")
+    public ResponseEntity<Result<List<UserDTO>>> all() {
+        return ResponseEntity.ok(Result.success(userQueryService.getAll()));
+    }
+
     @PostMapping("/matchByOpenId")
     @Operation(summary = "通过openId匹配用户")
     public ResponseEntity<Result<UserDTO>> matchByOpenId(@RequestParam String openId) {

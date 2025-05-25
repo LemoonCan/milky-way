@@ -1,9 +1,7 @@
 package lemoon.can.milkyway.infrastructure.repository.mapper;
 
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatMemberDO;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -13,11 +11,19 @@ import java.util.List;
  */
 @Mapper
 public interface ChatMemberMapper {
-    @Insert( "INSERT INTO chat_member(chat_id, user_id) VALUES(#{chatId}, #{userId})")
-    Long insert(ChatMemberDO chatMemberDO);
+    @Insert("INSERT INTO chat_member(chat_id, user_id) VALUES(#{chatId}, #{userId})")
+    void insert(ChatMemberDO chatMemberDO);
 
     void batchInsert(List<ChatMemberDO> chatMemberDOList);
 
+    @Select("SELECT COUNT(1) FROM chat_member WHERE chat_id = #{chatId} AND user_id = #{userId}")
+    int exists(Long chatId, Long userId);
+
     @Select("SELECT * FROM chat_member WHERE chat_id = #{chatId}")
     List<ChatMemberDO> selectByChatId(Long chatId);
+
+    @Delete("DELETE FROM chat_member WHERE chat_id = #{chatId}")
+    int deleteByChatId(Long chatId);
+
+    void update(ChatMemberDO chatMemberDO);
 }

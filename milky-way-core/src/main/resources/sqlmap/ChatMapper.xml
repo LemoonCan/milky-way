@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.ChatMemberMapper">
-    <insert id="batchInsert">
-        INSERT INTO chat_member (chat_id, user_id)
-        VALUES
-        <foreach collection="list" item="member" separator=",">
-            (#{member.chat_id}, #{member.user_id})
-        </foreach>
-    </insert>
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.ChatMapper">
+    <update id="update" parameterType="lemoon.can.milkyway.infrastructure.repository.dos.ChatDO">
+        UPDATE chat
+        <set>
+            <!-- 如果 title 不为 null，更新 title 字段 -->
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <!-- 如果 bulletin 不为 null，更新 bulletin 字段 -->
+            <if test="bulletin != null">
+                bulletin = #{bulletin},
+            </if>
+        </set>
+        WHERE id = #{id}
+    </update>
 </mapper>

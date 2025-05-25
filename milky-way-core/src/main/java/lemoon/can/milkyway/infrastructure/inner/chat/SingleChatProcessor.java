@@ -2,6 +2,7 @@ package lemoon.can.milkyway.infrastructure.inner.chat;
 
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Chat;
+import lemoon.can.milkyway.domain.chat.ChatMember;
 import lemoon.can.milkyway.domain.chat.Message;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
@@ -46,14 +47,14 @@ public class SingleChatProcessor implements ChatProcessor {
         MessageDTO messageDTO = messageConverter.toDTO(message, sender);
 
         // 遍历参与者，向除发送者外的参与者推送消息
-        for (Long participantId : chat.getParticipants()) {
+        for (ChatMember member : chat.getMembers()) {
             // 跳过发送者自己
-            if (participantId.equals(message.getSenderId())) {
+            if (member.getUserId().equals(message.getSenderId())) {
                 continue;
             }
 
             // 将消息推送到接收者的专属频道
-            String encodedUserId = secureId.encode(participantId, secureId.getUserSalt());
+            String encodedUserId = secureId.encode(member.getUserId(), secureId.getUserSalt());
             //点对点
             messagingTemplate.convertAndSendToUser(encodedUserId, "/queue/messages", messageDTO);
         }

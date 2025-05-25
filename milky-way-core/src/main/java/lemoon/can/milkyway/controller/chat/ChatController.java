@@ -4,13 +4,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.param.ChatCreateParam;
+import lemoon.can.milkyway.facade.param.ChatDeleteParam;
+import lemoon.can.milkyway.facade.param.ChatMemberParam;
+import lemoon.can.milkyway.facade.param.ChatUpdateParam;
 import lemoon.can.milkyway.facade.service.command.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author lemoon
@@ -24,10 +24,39 @@ public class ChatController {
 
     @PostMapping
     @Operation(summary = "创建聊天室")
-    public ResponseEntity<Result<Void>> createChat(@RequestBody @Valid ChatCreateParam param) {
-        chatService.createChat(param);
-        return null;
+    public ResponseEntity<Result<String>> createChat(@RequestBody @Valid ChatCreateParam param) {
+        String chatId = chatService.createChat(param);
+        return ResponseEntity.ok(Result.success(chatId));
     }
 
+    @DeleteMapping("/{chatId}")
+    @Operation(summary = "解散聊天室")
+    public ResponseEntity<Result<Void>> deleteChat(@PathVariable @Valid String chatId) {
+        ChatDeleteParam chatDeleteParam = new ChatDeleteParam();
+        chatDeleteParam.setChatId(chatId);
+        chatService.deleteChat(chatDeleteParam);
+        return ResponseEntity.ok(Result.success());
+    }
 
+    @PostMapping("/update")
+    @Operation(summary = "更新聊天室信息")
+    public ResponseEntity<Result<Void>> updateChatInfo(@RequestBody @Valid ChatUpdateParam param) {
+        chatService.updateChat(param);
+        return ResponseEntity.ok(Result.success());
+    }
+
+    @PostMapping("/members")
+    @Operation(summary = "添加聊天室成员")
+    public ResponseEntity<Result<Void>> addMember(@RequestParam String chatId,
+                                                  @RequestParam String userId) {
+        chatService.addMember(chatId, userId);
+        return ResponseEntity.ok(Result.success());
+    }
+
+    @PostMapping("/members/update")
+    @Operation(summary = "更新聊天室成员信息")
+    public ResponseEntity<Result<Void>> updateMemberInfo(@RequestBody @Valid ChatMemberParam param) {
+        chatService.updateMemerInfo(param);
+        return ResponseEntity.ok(Result.success());
+    }
 }

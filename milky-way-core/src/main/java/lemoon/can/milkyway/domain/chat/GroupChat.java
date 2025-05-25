@@ -13,6 +13,10 @@ import java.util.List;
 @Getter
 public class GroupChat extends Chat {
     /**
+     * 群头像
+     */
+    private String avatar;
+    /**
      * 公告
      */
     @Setter

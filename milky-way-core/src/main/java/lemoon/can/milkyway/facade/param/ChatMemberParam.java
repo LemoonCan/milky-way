@@ -19,17 +19,17 @@ public class ChatMemberParam implements Serializable {
      */
     private String chatId;
     /**
+     * 备注
+     */
+    private String chatRemark;
+    /**
      * 聊天成员名称
      */
     private String chatNickName;
     /**
-     * 备注
-     */
-    private String remark;
-    /**
      * 免打扰
      */
-    private Boolean dontDisturb;
+    private Boolean mute;
     /**
      * 是否置顶
      */

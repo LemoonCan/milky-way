@@ -9,4 +9,5 @@ import lemoon.can.milkyway.domain.chat.Chat;
 public interface ChatRepository {
     Chat findById(Long id);
     <T extends Chat> Long save(T chat);
+    void delete(Long id);
 }

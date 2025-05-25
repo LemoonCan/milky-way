@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootApplication
 @EnableConfigurationProperties
 @EnableJpaRepositories
-@MapperScan("lemoon.can.milkyway.infrastructure.repository.query")
+@MapperScan("lemoon.can.milkyway.infrastructure.repository.query,lemoon.can.milkyway.infrastructure.repository.mapper")
 public class MilkyWayApplication {
 
     public static void main(String[] args) {

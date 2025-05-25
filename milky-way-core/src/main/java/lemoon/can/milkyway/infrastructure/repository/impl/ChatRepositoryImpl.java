@@ -59,18 +59,24 @@ public class ChatRepositoryImpl implements ChatRepository {
         ChatDO chatDO = new ChatDO();
         chatDO.setTitle(chat.getTitle());
         chatDO.setType(chat.type());
-        Long chatId = chatMapper.insert(chatDO);
+        chatMapper.insert(chatDO);
 
         List<ChatMemberDO> chatMemberDOList = chat.getMembers()
                 .stream()
                 .map(item -> {
                     ChatMemberDO chatMemberDO = new ChatMemberDO();
-                    chatMemberDO.setChatId(chatId);
+                    chatMemberDO.setChatId(chatDO.getId());
                     chatMemberDO.setUserId(item.getUserId());
                     return chatMemberDO;
                 })
                 .collect(Collectors.toList());
         chatMemberMapper.batchInsert(chatMemberDOList);
-        return chatId;
+        return chatDO.getId();
+    }
+
+    @Override
+    public void delete(Long id) {
+        chatMapper.deleteById(id);
+        chatMemberMapper.deleteByChatId(id);
     }
 }

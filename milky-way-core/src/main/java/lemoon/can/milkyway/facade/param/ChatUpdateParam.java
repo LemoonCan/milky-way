@@ -17,14 +17,9 @@ public class ChatUpdateParam implements Serializable {
     /**
      * 名称
      */
-    private String name;
+    private String title;
     /**
      * 公告
      */
     private String bulletin;
-
-    /**
-     * 操作人ID
-     */
-    private String operateUserId;
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.ChatMemberMapper">
+    <insert id="batchInsert">
+        INSERT INTO chat_member (chat_id, user_id)
+        VALUES
+        <foreach collection="list" item="member" separator=",">
+            (#{member.chatId}, #{member.userId})
+        </foreach>
+    </insert>
+    <update id="update" parameterType="lemoon.can.milkyway.infrastructure.repository.dos.ChatMemberDO">
+        UPDATE chat_member
+        <set>
+            <if test="chatRemark != null">
+                chat_remark = #{chatRemark},
+            </if>
+            <if test="chatNickName != null">
+                chat_nick_name = #{chatNickName},
+            </if>
+            <if test="mute != null">
+                mute = #{mute},
+            </if>
+            <if test="top != null">
+                top = #{top},
+            </if>
+        </set>
+        WHERE chat_id = #{chatId} AND user_id = #{userId}
+    </update>
+</mapper>
