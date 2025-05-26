@@ -1,10 +1,13 @@
 package lemoon.can.milkyway.config.websocket;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+
+import java.util.List;
 
 /**
  * WebSocket配置类
@@ -16,7 +19,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
+    @Value("${security.websocket.cors.allowed-origins}")
+    private String[] allowedOrigins;
     /**
      * 声明此配置后，无需显示声明具体的订阅路径，就可接收相应前缀的订阅路径
      * 广播地址前缀，通常约定topic用作广播前缀，queue用作点对点前缀
@@ -26,7 +30,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      * 点对点：
      * 1.订阅路径：/user/queue/{主题名}
      * 2.推送路径：/user/{userID}/queue/{主题名}
-
+     * <p>
      * 客户端发送消息前缀，通常约定为/app
      *
      * @param config MessageBrokerRegistry
@@ -44,7 +48,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws") // WebSocket 连接端点，仅在建立连接时使用此前缀
-                .setAllowedOrigins("*") // 允许跨域
-                .withSockJS(); // 启用 SockJS fallback，兼容不支持WebSocket的浏览器
+                .setAllowedOrigins(allowedOrigins); // 允许跨域
     }
 }

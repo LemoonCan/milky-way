@@ -29,6 +29,11 @@ security:
     friend-salt: ${FRIEND_SECUREID_SALT}
     chat-salt: ${CHAT_SECUREID_SALT}
     message-salt: ${MESSAGE_SECUREID_SALT}
+  websocket:
+    cors:
+      allowed-origins: >      
+       http://localhost:8081,
+       chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
 
 file:
   access:
