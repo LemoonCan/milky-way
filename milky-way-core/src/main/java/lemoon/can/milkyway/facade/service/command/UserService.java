@@ -19,4 +19,6 @@ public interface UserService {
      * @param param 登录参数
      */
     String loginByPhone(UserPhoneLoginParam param);
+
+    void logout(String id);
 }

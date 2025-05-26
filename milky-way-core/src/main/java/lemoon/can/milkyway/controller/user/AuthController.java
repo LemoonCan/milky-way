@@ -44,6 +44,7 @@ public class AuthController {
     @Operation(summary = "登出")
     public ResponseEntity<Result<Void>> logout(@RequestParam String id){
         //JWT 无状态方案，只需前端删除本地 token 即可
+        userService.logout(id);
         return ResponseEntity.ok(Result.success());
     }
 }

@@ -41,11 +41,6 @@ public class SingleChatProcessor implements ChatProcessor {
      */
     @Override
     public void pushMessage(Chat chat, Message message) {
-        User sender = userRepository.findById(message.getSenderId()).orElseThrow();
-
-        // 创建消息DTO
-        MessageDTO messageDTO = messageConverter.toDTO(message, sender);
-
         // 遍历参与者，向除发送者外的参与者推送消息
         for (ChatMember member : chat.getMembers()) {
             // 跳过发送者自己
@@ -56,7 +51,7 @@ public class SingleChatProcessor implements ChatProcessor {
             // 将消息推送到接收者的专属频道
             String encodedUserId = secureId.encode(member.getUserId(), secureId.getUserSalt());
             //点对点
-            messagingTemplate.convertAndSendToUser(encodedUserId, "/queue/messages", messageDTO);
+            messagingTemplate.convertAndSendToUser(encodedUserId, "/queue/messages", message.getContent());
         }
     }
 }

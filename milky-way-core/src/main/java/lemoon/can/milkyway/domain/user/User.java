@@ -126,4 +126,19 @@ public class User {
         this.realNameInfo = realNameInfo;
     }
 
+    /**
+     * 登录
+     * @param loginInfo 登录信息
+     */
+    public void login(LoginInfo loginInfo) {
+        //校验 登录信息是否符合要求
+        this.loginInfo = loginInfo;
+    }
+
+    /**
+     * 登出
+     */
+    public void logout() {
+        this.loginInfo.logout();
+    }
 }

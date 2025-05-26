@@ -1,6 +1,10 @@
 package lemoon.can.milkyway.domain.user;
 
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -9,6 +13,10 @@ import java.time.LocalDateTime;
  * @since 2025/4/21
  */
 @Embeddable
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Getter
 public class LoginInfo {
     /**
      * 状态(0离线/1在线)
@@ -25,4 +33,8 @@ public class LoginInfo {
 
     //登录设备
     private String lastLoginDevice;
+
+    public void logout() {
+        this.online = 0;
+    }
 }

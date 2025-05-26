@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
+import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
@@ -7,6 +8,7 @@ import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.ChatMember;
 import lemoon.can.milkyway.domain.chat.GroupChat;
 import lemoon.can.milkyway.domain.chat.SingleChat;
+import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.param.ChatCreateParam;
 import lemoon.can.milkyway.facade.param.ChatDeleteParam;
 import lemoon.can.milkyway.facade.param.ChatMemberParam;
@@ -38,7 +40,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Transactional
     @Override
-    public String createChat(ChatCreateParam param) {
+    public ChatDTO createChat(ChatCreateParam param) {
         //TODO 请求幂等
 
         List<ChatMember> members = param.getMembers()
@@ -53,8 +55,12 @@ public class ChatServiceImpl implements ChatService {
             case SINGLE -> new SingleChat(param.getTitle(), members);
             default -> throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的聊天室类型");
         };
+
         Long chatId = chatRepository.save(chat);
-        return secureId.encode(chatId, secureId.getChatSalt());
+        ChatDTO chatDTO = new ChatDTO();
+        chatDTO.setId(secureId.encode(chatId, secureId.getChatSalt()));
+        chatDTO.setTitle(chat.getTitle());
+        return chatDTO;
     }
 
     @Override
@@ -80,6 +86,12 @@ public class ChatServiceImpl implements ChatService {
     public void addMember(String chatId, String userId) {
         Long realChatId = secureId.decode(chatId, secureId.getChatSalt());
         Long realUserId = secureId.decode(userId, secureId.getUserSalt());
+
+        ChatType chatType = chatMapper.selectTypeById(realChatId);
+        if(!ChatType.GROUP.equals(chatType)) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED, "仅支持添加群聊成员");
+        }
+
         if (chatMemberMapper.exists(realChatId, realUserId) == 1) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "用户已在聊天室");
         }

@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.facade.service.command;
 
+import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.param.ChatCreateParam;
 import lemoon.can.milkyway.facade.param.ChatDeleteParam;
 import lemoon.can.milkyway.facade.param.ChatMemberParam;
@@ -14,7 +15,7 @@ public interface ChatService {
      * 创建聊天室
      * @param param 创建参数
      */
-    String createChat(ChatCreateParam param);
+    ChatDTO createChat(ChatCreateParam param);
 
     /**
      * 删除聊天室

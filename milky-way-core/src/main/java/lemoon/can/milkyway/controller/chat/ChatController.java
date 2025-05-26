@@ -3,6 +3,7 @@ package lemoon.can.milkyway.controller.chat;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
+import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.param.ChatCreateParam;
 import lemoon.can.milkyway.facade.param.ChatDeleteParam;
 import lemoon.can.milkyway.facade.param.ChatMemberParam;
@@ -24,9 +25,9 @@ public class ChatController {
 
     @PostMapping
     @Operation(summary = "创建聊天室")
-    public ResponseEntity<Result<String>> createChat(@RequestBody @Valid ChatCreateParam param) {
-        String chatId = chatService.createChat(param);
-        return ResponseEntity.ok(Result.success(chatId));
+    public ResponseEntity<Result<ChatDTO>> createChat(@RequestBody @Valid ChatCreateParam param) {
+        ChatDTO chatDTO = chatService.createChat(param);
+        return ResponseEntity.ok(Result.success(chatDTO));
     }
 
     @DeleteMapping("/{chatId}")
@@ -38,7 +39,7 @@ public class ChatController {
         return ResponseEntity.ok(Result.success());
     }
 
-    @PostMapping("/update")
+    @PatchMapping
     @Operation(summary = "更新聊天室信息")
     public ResponseEntity<Result<Void>> updateChatInfo(@RequestBody @Valid ChatUpdateParam param) {
         chatService.updateChat(param);
@@ -53,7 +54,7 @@ public class ChatController {
         return ResponseEntity.ok(Result.success());
     }
 
-    @PostMapping("/members/update")
+    @PatchMapping("/members")
     @Operation(summary = "更新聊天室成员信息")
     public ResponseEntity<Result<Void>> updateMemberInfo(@RequestBody @Valid ChatMemberParam param) {
         chatService.updateMemerInfo(param);

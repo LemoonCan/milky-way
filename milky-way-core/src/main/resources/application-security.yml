@@ -23,6 +23,7 @@ security:
   cors:
     allowed-origins:
       - http://localhost:3000
+      - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
   secure-id:
     user-salt: ${USER_SECUREID_SALT}
     friend-salt: ${FRIEND_SECUREID_SALT}

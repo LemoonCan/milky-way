@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.repository.mapper;
 
+import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatDO;
 import org.apache.ibatis.annotations.*;
 
@@ -21,4 +22,6 @@ public interface ChatMapper {
 
     int update(ChatDO param);
 
+    @Select( "SELECT type FROM chat WHERE id = #{id}")
+    ChatType selectTypeById(Long id);
 }

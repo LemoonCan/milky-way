@@ -34,13 +34,11 @@ public class GroupChatProcessor implements ChatProcessor {
     @Override
     public void pushMessage(Chat chat, Message message) {
         User sender = userRepository.findById(message.getSenderId()).orElseThrow();
-        // 创建消息DTO
-        MessageDTO messageDTO = messageConverter.toDTO(message, sender);
 
         // 将消息推送到群聊频道
         String destination = pushDestination(chat);
         //广播
-        messagingTemplate.convertAndSend(destination, messageDTO);
+        messagingTemplate.convertAndSend(destination, message.getContent());
     }
 
     private String pushDestination(Chat chat) {
