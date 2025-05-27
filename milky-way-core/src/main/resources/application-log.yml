@@ -4,7 +4,11 @@ logging:
     org:
       springframework:
         security: TRACE
-        web: DEBUG
+        web: TRACE
+        org.springframework.messaging: TRACE
+        org.springframework.messaging.simp: TRACE
+
+
     lemoon:
       can:
         milkyway: DEBUG

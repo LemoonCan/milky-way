@@ -9,8 +9,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import java.util.Arrays;
-
 /**
  * WebSocket配置类
  * 配置WebSocket和STOMP协议相关的设置
@@ -54,8 +52,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        log.info(Arrays.toString(securityProperties.getWebsocket().getCorsAllowedOrigins()));
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(securityProperties.getWebsocket().getCorsAllowedOrigins());
+                .setAllowedOrigins(securityProperties.getWebsocket().getCorsAllowedOrigins())
+        ;
     }
+
 }
