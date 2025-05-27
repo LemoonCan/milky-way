@@ -11,7 +11,7 @@ jwt:
   token-validity: 2592000000   # 30天
 
 security:
-  permitUrls:
+  permit-urls:
     - /auth/**
     - /v3/api-docs
     - /v3/api-docs/**
@@ -21,7 +21,7 @@ security:
     - /webjars/**
     - /error
   cors:
-    allowed-origins:
+    allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
       - http://localhost:3000
       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
   secure-id:
@@ -30,10 +30,9 @@ security:
     chat-salt: ${CHAT_SECUREID_SALT}
     message-salt: ${MESSAGE_SECUREID_SALT}
   websocket:
-    cors:
-      allowed-origins: >      
-       http://localhost:8081,
-       chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
+    cors-allowed-origins:
+       - http://localhost:8081
+       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
 
 file:
   access:

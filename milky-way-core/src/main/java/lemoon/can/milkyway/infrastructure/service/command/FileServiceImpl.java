@@ -1,6 +1,6 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
-import lemoon.can.milkyway.config.Env;
+import lemoon.can.milkyway.config.properties.Env;
 import lemoon.can.milkyway.domain.file.FileMetaInfo;
 import lemoon.can.milkyway.facade.dto.AccessToken;
 import lemoon.can.milkyway.facade.dto.FileDTO;

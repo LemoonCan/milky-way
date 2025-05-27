@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.config.security;
+package lemoon.can.milkyway.config.http;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

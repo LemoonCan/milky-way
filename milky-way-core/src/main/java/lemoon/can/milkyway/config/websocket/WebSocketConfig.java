@@ -1,13 +1,15 @@
 package lemoon.can.milkyway.config.websocket;
 
-import org.springframework.beans.factory.annotation.Value;
+import lemoon.can.milkyway.config.properties.SecurityProperties;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * WebSocket配置类
@@ -18,9 +20,10 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    @Value("${security.websocket.cors.allowed-origins}")
-    private String[] allowedOrigins;
+    private final SecurityProperties securityProperties;
     /**
      * 声明此配置后，无需显示声明具体的订阅路径，就可接收相应前缀的订阅路径
      * 广播地址前缀，通常约定topic用作广播前缀，queue用作点对点前缀
@@ -45,9 +48,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.setUserDestinationPrefix("/user");
     }
 
+    /**
+     * 连接路径 wss://{domain}/ws
+     * @param registry STOMP端点注册器
+     */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws") // WebSocket 连接端点，仅在建立连接时使用此前缀
-                .setAllowedOrigins(allowedOrigins); // 允许跨域
+        log.info(Arrays.toString(securityProperties.getWebsocket().getCorsAllowedOrigins()));
+        registry.addEndpoint("/ws")
+                .setAllowedOrigins(securityProperties.getWebsocket().getCorsAllowedOrigins());
     }
 }

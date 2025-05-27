@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.config.security;
+package lemoon.can.milkyway.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -17,8 +17,15 @@ public class SecurityProperties {
     private List<String> permitUrls;
     private CorsProperties cors;
 
+    private WebSocketProperties websocket;
+
     @Data
     public static class CorsProperties {
         private List<String> allowedOrigins;
+    }
+
+    @Data
+    public static class WebSocketProperties {
+        private String[] corsAllowedOrigins;
     }
 }

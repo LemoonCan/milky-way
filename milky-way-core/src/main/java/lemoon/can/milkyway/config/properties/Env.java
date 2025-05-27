@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.config;
+package lemoon.can.milkyway.config.properties;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

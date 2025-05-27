@@ -1,6 +1,7 @@
-package lemoon.can.milkyway.config.security;
+package lemoon.can.milkyway.config.http;
 
 import lemoon.can.milkyway.common.utils.security.SecureId;
+import lemoon.can.milkyway.config.properties.SecurityProperties;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
