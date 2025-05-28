@@ -4,6 +4,7 @@ import lemoon.can.milkyway.common.utils.security.JwtTokenProvider;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.user.LoginInfo;
 import lemoon.can.milkyway.domain.user.User;
+import lemoon.can.milkyway.facade.param.UserChangePasswordParam;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 import lemoon.can.milkyway.facade.service.command.UserService;
@@ -36,6 +37,13 @@ public class UserServiceImpl implements UserService {
     public void register(UserRegisterParam param) {
         User user = new User(param.getOpenId(), param.getPhone(), passwordEncoder.encode(param.getPassword()));
         user.changeInfo(param.getNickName(), param.getAvatar(), param.getIndividualSignature());
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changePassword(UserChangePasswordParam param) {
+        User user = userRepository.findByPhone(param.getPhone()).orElseThrow();
+        user.changePassword(passwordEncoder.encode(param.getNewPassword()));
         userRepository.save(user);
     }
 

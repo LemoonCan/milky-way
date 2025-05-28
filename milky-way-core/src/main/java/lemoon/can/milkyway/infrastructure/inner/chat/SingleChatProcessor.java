@@ -48,10 +48,8 @@ public class SingleChatProcessor implements ChatProcessor {
                 continue;
             }
 
-            // 将消息推送到接收者的专属频道
-            String encodedUserId = secureId.encode(member.getUserId(), secureId.getUserSalt());
             //点对点
-            messagingTemplate.convertAndSendToUser(encodedUserId, "/queue/messages", message.getContent());
+            messagingTemplate.convertAndSendToUser(member.getUserId().toString(), "/queue/messages", message.getContent());
         }
     }
 }

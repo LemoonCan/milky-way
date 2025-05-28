@@ -90,5 +90,14 @@ CREATE TABLE chat_member
     PRIMARY KEY (chat_id, user_id)
 );
 
-drop table Chat;
-drop table ChatMember;
+-- 聊天消息
+CREATE TABLE message
+(
+    id        BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '消息ID',
+    chat_id   BIGINT COMMENT '聊天室ID',
+    sender_id BIGINT COMMENT '发送者ID',
+    content   VARCHAR(255) COMMENT '消息内容',
+    type      VARCHAR(255) COMMENT '消息类型',
+    sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+    read_time TIMESTAMP COMMENT '阅读时间'
+);

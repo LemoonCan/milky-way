@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
+import lemoon.can.milkyway.facade.param.UserChangePasswordParam;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 import lemoon.can.milkyway.facade.service.command.UserService;
@@ -27,6 +28,13 @@ public class AuthController {
     @Operation(summary = "注册")
     public ResponseEntity<Result<Void>> register(@RequestBody @Valid UserRegisterParam param){
         userService.register(param);
+        return ResponseEntity.ok(Result.success());
+    }
+
+    @PatchMapping("/changePassword")
+    @Operation(summary = "变更密码")
+    public ResponseEntity<Result<Void>> changePassword(@RequestBody @Valid UserChangePasswordParam param){
+        userService.changePassword(param);
         return ResponseEntity.ok(Result.success());
     }
 

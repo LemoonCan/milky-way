@@ -108,8 +108,8 @@ public class SecurityConfig {
     @Service
     public class UserDetailsServiceImpl implements UserDetailsService {
         @Override
-        public UserDetails loadUserByUsername(String openId) throws UsernameNotFoundException {
-            Optional<lemoon.can.milkyway.domain.user.User> userOptional = userRepository.findByOpenId(openId);
+        public UserDetails loadUserByUsername(String encodedId) throws UsernameNotFoundException {
+            Optional<lemoon.can.milkyway.domain.user.User> userOptional = userRepository.findById(secureId.decode(encodedId, secureId.getUserSalt()));
             lemoon.can.milkyway.domain.user.User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
 
             return new User(secureId.encode(user.getId(), secureId.getUserSalt()), user.getPassword(), List.of());
