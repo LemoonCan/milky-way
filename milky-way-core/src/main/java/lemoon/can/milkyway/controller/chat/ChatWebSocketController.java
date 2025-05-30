@@ -7,6 +7,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
+import java.security.Principal;
+
 /**
  * WebSocket聊天控制器
  * 处理基于WebSocket+STOMP协议的聊天消息
@@ -25,9 +27,10 @@ public class ChatWebSocketController {
      * @param param 消息参数
      */
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload MessageSendParam param) {
+    public void sendMessage(@Payload MessageSendParam param, Principal principal) {
         // 调用消息服务处理消息并推送给接收方
         // MessageService内部会保存消息并通过ChatProcessorManager推送
+        param.setSenderUserId(principal.getName());
         messageService.sendMessage(param);
     }
 }

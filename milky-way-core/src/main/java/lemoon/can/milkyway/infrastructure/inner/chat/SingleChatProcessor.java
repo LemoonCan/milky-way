@@ -5,10 +5,12 @@ import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.ChatMember;
 import lemoon.can.milkyway.domain.chat.Message;
 import lemoon.can.milkyway.domain.user.User;
+import lemoon.can.milkyway.facade.dto.MessageContentDTO;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Component;
  * @author lemoon
  * @since 2025/5/18
  */
+@Slf4j
 @Component("singleChatProcessor")
 @RequiredArgsConstructor
 public class SingleChatProcessor implements ChatProcessor {
@@ -49,7 +52,8 @@ public class SingleChatProcessor implements ChatProcessor {
             }
 
             //点对点
-            messagingTemplate.convertAndSendToUser(member.getUserId().toString(), "/queue/messages", message.getContent());
+            messagingTemplate.convertAndSendToUser(member.getUserId(), "/queue/messages",
+                    new MessageContentDTO(message.getType(), message.getContent()));
         }
     }
 }

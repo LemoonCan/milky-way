@@ -7,7 +7,8 @@ logging:
         web: TRACE
         org.springframework.messaging: TRACE
         org.springframework.messaging.simp: TRACE
-
+        org.springframework.messaging.simp.broker: TRACE
+        org.springframework.messaging.simp.user: TRACE
 
     lemoon:
       can:
