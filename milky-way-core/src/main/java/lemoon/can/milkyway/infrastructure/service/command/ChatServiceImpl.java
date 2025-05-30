@@ -45,9 +45,7 @@ public class ChatServiceImpl implements ChatService {
 
         List<ChatMember> members = param.getMembers()
                 .stream()
-                .map(item -> new ChatMember(
-                        secureId.decode(item, secureId.getUserSalt()))
-                )
+                .map(ChatMember::new)
                 .collect(Collectors.toList());
 
         Chat chat = switch (param.getChatType()) {
@@ -85,19 +83,18 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void addMember(String chatId, String userId) {
         Long realChatId = secureId.decode(chatId, secureId.getChatSalt());
-        Long realUserId = secureId.decode(userId, secureId.getUserSalt());
 
         ChatType chatType = chatMapper.selectTypeById(realChatId);
         if(!ChatType.GROUP.equals(chatType)) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "仅支持添加群聊成员");
         }
 
-        if (chatMemberMapper.exists(realChatId, realUserId) == 1) {
+        if (chatMemberMapper.exists(realChatId, userId) == 1) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "用户已在聊天室");
         }
         ChatMemberDO member = new ChatMemberDO();
         member.setChatId(realChatId);
-        member.setUserId(realUserId);
+        member.setUserId(userId);
         chatMemberMapper.insert(member);
     }
 
@@ -105,7 +102,7 @@ public class ChatServiceImpl implements ChatService {
     public void updateMemerInfo(ChatMemberParam param) {
         ChatMemberDO updateParam = new ChatMemberDO();
         updateParam.setChatId(secureId.decode(param.getChatId(), secureId.getChatSalt()));
-        updateParam.setUserId(secureId.decode(param.getUserId(), secureId.getUserSalt()));
+        updateParam.setUserId(param.getUserId());
         updateParam.setChatRemark(param.getChatRemark());
         updateParam.setChatNickName(param.getChatNickName());
         updateParam.setMute(param.getMute());

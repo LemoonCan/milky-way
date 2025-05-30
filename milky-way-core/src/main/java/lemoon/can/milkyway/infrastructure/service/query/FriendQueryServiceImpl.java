@@ -28,17 +28,15 @@ public class FriendQueryServiceImpl implements FriendQueryService {
 
     @Override
     public List<FriendApplicationDTO> getApplications(String toUserId) {
-        List<FriendApplicationDO> list = friendQueryRepository.findApplications(
-                secureId.decode(toUserId, secureId.getUserSalt()));
+        List<FriendApplicationDO> list = friendQueryRepository.findApplications(toUserId);
         return list.stream()
                 .map(friendConverter::toDTO)
                 .toList();
     }
 
     @Override
-    public List<FriendDTO> getFriends(String openId) {
-        List<FriendDO> list = friendQueryRepository.findFriends(
-                secureId.decode(openId, secureId.getUserSalt()));
+    public List<FriendDTO> getFriends(String userId) {
+        List<FriendDO> list = friendQueryRepository.findFriends(userId);
         return list.stream()
                 .map(friendConverter::toDTO)
                 .toList();

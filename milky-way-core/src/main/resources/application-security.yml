@@ -25,8 +25,7 @@ security:
       - http://localhost:3000
       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
   secure-id:
-    user-salt: ${USER_SECUREID_SALT}
-    friend-salt: ${FRIEND_SECUREID_SALT}
+    friend-application-salt: ${FRIEND_APPLICATION_SECUREID_SALT}
     chat-salt: ${CHAT_SECUREID_SALT}
     message-salt: ${MESSAGE_SECUREID_SALT}
   websocket:

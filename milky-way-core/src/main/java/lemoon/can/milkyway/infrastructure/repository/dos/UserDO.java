@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
  */
 @Data
 public class UserDO {
-    private Long id;
+    private String id;
     private String openId;
     private String phone;
     private String nickName;

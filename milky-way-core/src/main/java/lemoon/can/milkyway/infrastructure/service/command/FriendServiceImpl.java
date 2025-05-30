@@ -38,9 +38,9 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void addFriend(FriendApplyParam param) {
-        Long fromUserId = secureId.decode(param.getFromUserId(), secureId.getUserSalt());
-        Long toUserId = secureId.decode(param.getToUserId(), secureId.getUserSalt());
-        FriendApplication friendApplication = new FriendApplication(fromUserId, toUserId, param.getApplyMessage());
+        FriendApplication friendApplication = new FriendApplication(param.getFromUserId(),
+                param.getToUserId(),
+                param.getApplyMessage());
         friendApplication.setExtraInfo(new FriendApplicationExtraInfo(
                 param.getExtraInfo().getRemark(),
                 param.getExtraInfo().getPermission()
@@ -53,8 +53,8 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void handleApplication(FriendApplyHandleParam param) {
-        Long userId = secureId.decode(param.getUserId(), secureId.getUserSalt());
-        Long id = secureId.decode(param.getFriendApplicationId(), secureId.getFriendSalt());
+        String userId = param.getUserId();
+        Long id = secureId.decode(param.getFriendApplicationId(), secureId.getFriendApplicationSalt());
         //申请处理
         FriendApplication friendApplication = friendApplicationRepository.findById(id).orElseThrow();
         if (!friendApplication.getToUserId().equals(userId)) {
@@ -77,11 +77,10 @@ public class FriendServiceImpl implements FriendService {
 
         //1.创建单聊
         ChatCreateParam chatCreateParam = new ChatCreateParam();
-        chatCreateParam.setChatType(ChatType.GROUP);
+        chatCreateParam.setChatType(ChatType.SINGLE);
         chatCreateParam.setMembers(List.of(
-                secureId.encode(friendApplication.getFromUserId(),secureId.getUserSalt()),
-                secureId.encode(friendApplication.getToUserId(),secureId.getUserSalt())
-                ));
+                friendApplication.getFromUserId(),
+                friendApplication.getToUserId()));
         chatService.createChat(chatCreateParam);
 
         //TODO 推送给申请用户结果

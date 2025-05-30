@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Mapper
 public interface FriendQueryRepository {
-    List<FriendApplicationDO> findApplications(@Param("toUserId") Long toUserId);
+    List<FriendApplicationDO> findApplications(@Param("toUserId") String toUserId);
 
-    List<FriendDO> findFriends(@Param("userId") Long userId);
+    List<FriendDO> findFriends(@Param("userId") String userId);
 }

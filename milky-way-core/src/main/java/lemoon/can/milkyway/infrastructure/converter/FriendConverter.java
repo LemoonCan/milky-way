@@ -19,13 +19,13 @@ public abstract class FriendConverter {
     @Autowired
     protected SecureId secureId;
 
-    @Mapping(target = "id", source = "id", qualifiedByName = "encodeFriendId")
+    @Mapping(target = "id", source = "id", qualifiedByName = "encodeFriendApplicationId")
     public abstract FriendApplicationDTO toDTO(FriendApplicationDO friendApplicationDO);
 
     public abstract FriendDTO toDTO(FriendDO friendDO);
 
-    @Named("encodeFriendId")
-    protected String encodeFriendId(Long id) {
-        return secureId.encode(id, secureId.getFriendSalt());
+    @Named("encodeFriendApplicationId")
+    protected String encodeFriendApplicationId(Long id) {
+        return secureId.encode(id, secureId.getFriendApplicationSalt());
     }
 }

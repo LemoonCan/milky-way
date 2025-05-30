@@ -34,7 +34,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public MessageDTO sendMessage(MessageSendParam param) {
         Message message = new Message(secureId.decode(param.getChatId(), secureId.getChatSalt()),
-                secureId.decode(param.getSenderUserId(), secureId.getUserSalt()),
+                param.getSenderUserId(),
                 param.getMessageType(), param.getContent());
         message = messageRepository.save(message);
         User sender = userRepository.findById(message.getSenderId()).orElseThrow(

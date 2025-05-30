@@ -37,7 +37,7 @@ public class Friend {
     @Enumerated(EnumType.STRING)
     private FriendPermissionEnum permission;
 
-    public Friend(Long userId, Long friendId) {
+    public Friend(String userId, String friendId) {
         this.id = new FriendId(userId, friendId);
         this.status = FriendStatus.ESTABLISHED;
     }

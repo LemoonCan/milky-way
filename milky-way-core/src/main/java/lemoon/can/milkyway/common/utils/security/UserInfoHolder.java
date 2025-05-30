@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.User;
  * @since 2025/5/8
  */
 public class UserInfoHolder {
-    public static String openId(){
+    public static String id(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication instanceof UsernamePasswordAuthenticationToken token){
             return ((User)token.getPrincipal()).getUsername();

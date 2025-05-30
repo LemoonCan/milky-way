@@ -16,7 +16,7 @@ public class ChatMember {
     /**
      * 聊天成员ID
      */
-    private Long userId;
+    private String userId;
     /**
      * 聊天室备注
      */
@@ -38,12 +38,12 @@ public class ChatMember {
     @Setter
     private Boolean top;
 
-    public ChatMember(Long chatId, Long userId) {
+    public ChatMember(Long chatId, String userId) {
         this.chatId = chatId;
         this.userId = userId;
     }
 
-    public ChatMember(Long userId) {
+    public ChatMember(String userId) {
         this.userId = userId;
     }
 }

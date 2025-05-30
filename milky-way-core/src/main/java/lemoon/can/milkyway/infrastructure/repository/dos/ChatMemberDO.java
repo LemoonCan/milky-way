@@ -15,7 +15,7 @@ public class ChatMemberDO {
     /**
      * 用户ID
      */
-    private Long userId;
+    private String userId;
     /**
      * 聊天室备注
      */

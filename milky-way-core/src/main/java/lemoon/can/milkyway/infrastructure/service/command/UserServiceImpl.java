@@ -51,9 +51,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public String loginByPhone(UserPhoneLoginParam param) {
         User user = userRepository.findByPhone(param.getPhone()).orElseThrow();
-        String userId = secureId.encode(user.getId(), secureId.getUserSalt());
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(userId, param.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getId(), param.getPassword()));
 
         LoginInfo loginInfo = LoginInfo.builder()
                 .online(1)
@@ -67,7 +66,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void logout(String id) {
-        User user = userRepository.findById(secureId.decode(id, secureId.getUserSalt()))
+        User user = userRepository.findById(id)
                 .orElseThrow();
         user.logout();
         userRepository.save(user);

@@ -1,14 +1,15 @@
 package lemoon.can.milkyway.domain.user;
 
-import jakarta.persistence.*;
-import lemoon.can.milkyway.domain.friend.Friend;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import lemoon.can.milkyway.domain.user.id.SnowflakeId;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -24,8 +25,8 @@ public class User {
      * 使用自增主键
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @SnowflakeId
+    private String id;
 
     /**
      * 开放Id

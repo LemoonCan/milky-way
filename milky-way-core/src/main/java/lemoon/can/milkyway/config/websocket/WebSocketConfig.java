@@ -22,7 +22,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final SecurityProperties securityProperties;
-    private final CustomerHandShakeHandler customerHandShakeHandler;
     /**
      * 声明此配置后，无需显示声明具体的订阅路径，就可接收相应前缀的订阅路径
      * 广播地址前缀，通常约定topic用作广播前缀，queue用作点对点前缀

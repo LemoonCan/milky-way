@@ -1,7 +1,7 @@
 -- 用户表
 CREATE TABLE users
 (
-    id                   BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    id                   VARCHAR(20) PRIMARY KEY COMMENT '主键ID',
     open_id              VARCHAR(255) UNIQUE NOT NULL COMMENT '用户唯一标识',
     phone                VARCHAR(20) UNIQUE  NOT NULL COMMENT '手机号',
     password             VARCHAR(255)        NOT NULL COMMENT '密码',
@@ -30,8 +30,8 @@ CREATE INDEX idx_users_phone ON users (phone);
 -- 朋友关系表
 CREATE TABLE friend
 (
-    user_id     BIGINT      NOT NULL COMMENT '用户ID',
-    friend_id   BIGINT      NOT NULL COMMENT '朋友ID',
+    user_id     VARCHAR(20) NOT NULL COMMENT '用户ID',
+    friend_id   VARCHAR(20) NOT NULL COMMENT '朋友ID',
     status      VARCHAR(16) NOT NULL COMMENT '状态',
     remark      VARCHAR(100) COMMENT '备注',
     permission  VARCHAR(64) COMMENT '权限',
@@ -40,13 +40,15 @@ CREATE TABLE friend
     PRIMARY KEY (user_id, friend_id)
 );
 
+-- 好友申请表
 CREATE TABLE friend_application
 (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
-    from_user_id BIGINT       NOT NULL COMMENT '申请人唯一标识',
-    to_user_id   BIGINT       NOT NULL COMMENT '接收人唯一标识',
+    from_user_id VARCHAR(20)  NOT NULL COMMENT '申请人唯一标识',
+    to_user_id   VARCHAR(20)  NOT NULL COMMENT '接收人唯一标识',
     apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
     status       VARCHAR(16)  NOT NULL COMMENT '状态',
+    remark       VARCHAR(100) COMMENT '备注',
     permission   VARCHAR(64)  NOT NULL COMMENT '权限',
     create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
@@ -79,8 +81,8 @@ CREATE TABLE chat
 -- 聊天室成员表
 CREATE TABLE chat_member
 (
-    chat_id        BIGINT NOT NULL COMMENT '聊天室ID',
-    user_id        BIGINT NOT NULL COMMENT '用户ID',
+    chat_id        BIGINT      NOT NULL COMMENT '聊天室ID',
+    user_id        VARCHAR(20) NOT NULL COMMENT '用户ID',
     chat_remark    VARCHAR(255) COMMENT '聊天室备注',
     chat_nick_name VARCHAR(255) COMMENT '聊天室昵称',
     mute           BOOLEAN   DEFAULT FALSE COMMENT '免打扰',
@@ -95,7 +97,7 @@ CREATE TABLE message
 (
     id        BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '消息ID',
     chat_id   BIGINT COMMENT '聊天室ID',
-    sender_id BIGINT COMMENT '发送者ID',
+    sender_id VARCHAR(20) COMMENT '发送者ID',
     content   VARCHAR(255) COMMENT '消息内容',
     type      VARCHAR(255) COMMENT '消息类型',
     sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',

@@ -23,11 +23,11 @@ public class FriendApplication {
     /**
      * 申请用户ID
      */
-    private Long fromUserId;
+    private String fromUserId;
     /**
      * 被申请用户ID
      */
-    private Long toUserId;
+    private String toUserId;
     /**
      * 申请信息
      */
@@ -42,7 +42,7 @@ public class FriendApplication {
     @Embedded
     private FriendApplicationExtraInfo extraInfo;
 
-    public FriendApplication(Long fromUserId, Long toUserId, String applyMsg) {
+    public FriendApplication(String fromUserId, String toUserId, String applyMsg) {
         this.fromUserId = fromUserId;
         this.toUserId = toUserId;
         this.applyMsg = applyMsg;

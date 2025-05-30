@@ -20,11 +20,11 @@ public class FriendId implements Serializable {
     /**
      * 用户id
      */
-    private Long userId;
+    private String userId;
     /**
      * 好友id
      */
-    private Long friendId;
+    private String friendId;
 
     @Override
     public boolean equals(Object o) {

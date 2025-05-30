@@ -14,13 +14,9 @@ import java.util.Base64;
  */
 @Component
 public class SecureId {
-    @Value("${security.secure-id.user-salt}")
+    @Value("${security.secure-id.friend-application-salt}")
     @Getter
-    private String userSalt;
-
-    @Value("${security.secure-id.friend-salt}")
-    @Getter
-    private String friendSalt;
+    private String friendApplicationSalt;
 
     @Value("${security.secure-id.chat-salt}")
     @Getter

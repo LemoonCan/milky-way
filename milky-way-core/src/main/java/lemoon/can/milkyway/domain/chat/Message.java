@@ -33,7 +33,7 @@ public class Message {
     /**
      * 发送者ID
      */
-    private Long senderId;
+    private String senderId;
 
     /**
      * 内容(文字为字符串、其他为地址)
@@ -57,7 +57,7 @@ public class Message {
      */
     private LocalDateTime readTime;
 
-    public Message(Long chatId, Long senderId, MessageType type, String content) {
+    public Message(Long chatId, String senderId, MessageType type, String content) {
         this.chatId = chatId;
         this.senderId = senderId;
         this.content = content;

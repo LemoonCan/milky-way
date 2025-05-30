@@ -10,7 +10,7 @@ import java.util.Optional;
  * @author lemoon
  * @since 2025/4/28
  */
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u.id FROM users u WHERE u.openId = :openId")
     Long findIdByOpenId(String openId);
     Optional<User> findByOpenId(String openId);

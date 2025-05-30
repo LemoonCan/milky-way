@@ -17,7 +17,7 @@ public interface ChatMemberMapper {
     void batchInsert(List<ChatMemberDO> chatMemberDOList);
 
     @Select("SELECT COUNT(1) FROM chat_member WHERE chat_id = #{chatId} AND user_id = #{userId}")
-    int exists(Long chatId, Long userId);
+    int exists(Long chatId, String userId);
 
     @Select("SELECT * FROM chat_member WHERE chat_id = #{chatId}")
     List<ChatMemberDO> selectByChatId(Long chatId);

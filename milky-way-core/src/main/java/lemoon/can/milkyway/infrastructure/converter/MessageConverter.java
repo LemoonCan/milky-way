@@ -1,11 +1,9 @@
 package lemoon.can.milkyway.infrastructure.converter;
 
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Message;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,10 +11,7 @@ import org.springframework.stereotype.Component;
  * @since 2025/5/15
  */
 @Component
-@RequiredArgsConstructor
 public class MessageConverter {
-    private final SecureId secureId;
-
     public MessageDTO toDTO(Message message, User sender) {
         if (message == null) {
             return null;
@@ -30,7 +25,7 @@ public class MessageConverter {
         messageDTO.setReadTime(message.getReadTime());
         messageDTO.setRead(message.getReadTime() != null);
         UserDTO senderDTO = new UserDTO();
-        senderDTO.setId(secureId.encode(sender.getId(), secureId.getUserSalt()));
+        senderDTO.setId(sender.getId());
         senderDTO.setNickName(sender.getNickName());
         senderDTO.setAvatar(sender.getAvatar());
         messageDTO.setSender(senderDTO);
