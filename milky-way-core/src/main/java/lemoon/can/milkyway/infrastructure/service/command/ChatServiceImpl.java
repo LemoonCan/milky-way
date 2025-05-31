@@ -85,7 +85,7 @@ public class ChatServiceImpl implements ChatService {
         Long realChatId = secureId.decode(chatId, secureId.getChatSalt());
 
         ChatType chatType = chatMapper.selectTypeById(realChatId);
-        if(!ChatType.GROUP.equals(chatType)) {
+        if (!ChatType.GROUP.equals(chatType)) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "仅支持添加群聊成员");
         }
 
@@ -96,6 +96,12 @@ public class ChatServiceImpl implements ChatService {
         member.setChatId(realChatId);
         member.setUserId(userId);
         chatMemberMapper.insert(member);
+    }
+
+    @Override
+    public void deleteMember(String chatId, String userId) {
+        Long realChatId = secureId.decode(chatId, secureId.getChatSalt());
+        chatMemberMapper.deleteByChatIdAndUserId(realChatId, userId);
     }
 
     @Override

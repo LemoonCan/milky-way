@@ -25,5 +25,8 @@ public interface ChatMemberMapper {
     @Delete("DELETE FROM chat_member WHERE chat_id = #{chatId}")
     int deleteByChatId(Long chatId);
 
+    @Delete("DELETE FROM chat_member WHERE chat_id = #{chatId} AND user_id = #{userId}")
+    int deleteByChatIdAndUserId(@Param("chatId") Long chatId, @Param("userId") String userId);
+
     void update(ChatMemberDO chatMemberDO);
 }

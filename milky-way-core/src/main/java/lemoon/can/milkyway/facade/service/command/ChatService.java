@@ -37,6 +37,13 @@ public interface ChatService {
     void addMember(String chatId, String userId);
 
     /**
+     * 删除成员
+     * @param chatId 聊天室id
+     * @param userId 用户id
+     */
+    void deleteMember(String chatId, String userId);
+
+    /**
      * 成员更新信息
      * @param param
      */
