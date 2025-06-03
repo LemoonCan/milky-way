@@ -1,7 +1,7 @@
 -- 用户表
 CREATE TABLE users
 (
-    id                   VARCHAR(20) PRIMARY KEY COMMENT '主键ID',
+    id                   VARCHAR(24) PRIMARY KEY COMMENT '主键ID',
     open_id              VARCHAR(255) UNIQUE NOT NULL COMMENT '用户唯一标识',
     phone                VARCHAR(20) UNIQUE  NOT NULL COMMENT '手机号',
     password             VARCHAR(255)        NOT NULL COMMENT '密码',
@@ -30,8 +30,8 @@ CREATE INDEX idx_users_phone ON users (phone);
 -- 朋友关系表
 CREATE TABLE friend
 (
-    user_id     VARCHAR(20) NOT NULL COMMENT '用户ID',
-    friend_id   VARCHAR(20) NOT NULL COMMENT '朋友ID',
+    user_id     VARCHAR(24) NOT NULL COMMENT '用户ID',
+    friend_id   VARCHAR(24) NOT NULL COMMENT '朋友ID',
     status      VARCHAR(16) NOT NULL COMMENT '状态',
     remark      VARCHAR(100) COMMENT '备注',
     permission  VARCHAR(64) COMMENT '权限',
@@ -44,8 +44,8 @@ CREATE TABLE friend
 CREATE TABLE friend_application
 (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
-    from_user_id VARCHAR(20)  NOT NULL COMMENT '申请人唯一标识',
-    to_user_id   VARCHAR(20)  NOT NULL COMMENT '接收人唯一标识',
+    from_user_id VARCHAR(24)  NOT NULL COMMENT '申请人唯一标识',
+    to_user_id   VARCHAR(24)  NOT NULL COMMENT '接收人唯一标识',
     apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
     status       VARCHAR(16)  NOT NULL COMMENT '状态',
     remark       VARCHAR(100) COMMENT '备注',
@@ -82,7 +82,7 @@ CREATE TABLE chat
 CREATE TABLE chat_member
 (
     chat_id        BIGINT      NOT NULL COMMENT '聊天室ID',
-    user_id        VARCHAR(20) NOT NULL COMMENT '用户ID',
+    user_id        VARCHAR(24) NOT NULL COMMENT '用户ID',
     chat_remark    VARCHAR(255) COMMENT '聊天室备注',
     chat_nick_name VARCHAR(255) COMMENT '聊天室昵称',
     mute           BOOLEAN   DEFAULT FALSE COMMENT '免打扰',
@@ -97,9 +97,43 @@ CREATE TABLE message
 (
     id        BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '消息ID',
     chat_id   BIGINT COMMENT '聊天室ID',
-    sender_id VARCHAR(20) COMMENT '发送者ID',
+    sender_id VARCHAR(24) NOT NULL COMMENT '发送者ID',
     content   VARCHAR(255) COMMENT '消息内容',
     type      VARCHAR(255) COMMENT '消息类型',
     sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
     read_time TIMESTAMP COMMENT '阅读时间'
+);
+
+-- 帖子
+CREATE TABLE post
+(
+    id             BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '帖子ID',
+    content_type   VARCHAR(32)                       NOT NULL COMMENT '内容类型',
+    text           VARCHAR(2000) COMMENT '文字内容',
+    medias         JSON COMMENT '媒体内容',
+    location       VARCHAR(255) COMMENT '位置信息',
+    like_counts    INT       DEFAULT 0 COMMENT '点赞数',
+    comment_counts INT       DEFAULT 0 COMMENT '评论数',
+    create_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+);
+
+-- 评论
+CREATE TABLE comment
+(
+    id                BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '评论ID',
+    post_id           BIGINT                            NOT NULL COMMENT '帖子ID',
+    comment_user_id   VARCHAR(24)                       NOT NULL COMMENT '评论用户ID',
+    parent_comment_id BIGINT COMMENT '父评论ID',
+    content           VARCHAR(2000)                     NOT NULL COMMENT '评论内容',
+    create_time       TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+);
+
+-- 点赞表
+CREATE TABLE `like`
+(
+    post_id      BIGINT      NOT NULL COMMENT '帖子ID',
+    like_user_id VARCHAR(24) NOT NULL COMMENT '点赞用户ID',
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (post_id, like_user_id)
 );

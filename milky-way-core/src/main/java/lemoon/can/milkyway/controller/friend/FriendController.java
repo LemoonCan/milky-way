@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.controller.friend;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("friends")
 @RequiredArgsConstructor
+@Tag(name = "friend-api", description = "好友相关接口")
 public class FriendController {
     private final FriendService friendService;
     private final FriendQueryService friendQueryService;
