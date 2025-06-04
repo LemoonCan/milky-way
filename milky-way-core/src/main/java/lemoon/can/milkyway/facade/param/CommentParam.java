@@ -9,7 +9,7 @@ import java.io.Serializable;
  * @since 2025/6/3
  */
 public class CommentParam implements Serializable {
-    private String shareId;
+    private String postId;
     private String parentCommentId;
     private String comment;
 }
