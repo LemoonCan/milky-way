@@ -26,6 +26,14 @@ public class SecureId {
     @Getter
     private String messageSalt;
 
+    @Value("${security.secure-id.post-salt}")
+    @Getter
+    private String postSalt;
+
+    @Value("${security.secure-id.comment-salt}")
+    @Getter
+    private String commentSalt;
+
 
     private String generateRandomSalt() {
         byte[] salt = new byte[8];

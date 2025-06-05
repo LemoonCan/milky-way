@@ -1,6 +1,8 @@
 package lemoon.can.milkyway.domain.share;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
@@ -9,9 +11,11 @@ import java.util.Objects;
  * @since 2025/6/3
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class LikeId {
     private Long postId;
-    private Long likeUserId;
+    private String likeUserId;
 
     @Override
     public boolean equals(Object o) {

@@ -130,7 +130,7 @@ CREATE TABLE comment
 );
 
 -- 点赞表
-CREATE TABLE `like`
+CREATE TABLE `likes`
 (
     post_id      BIGINT      NOT NULL COMMENT '帖子ID',
     like_user_id VARCHAR(24) NOT NULL COMMENT '点赞用户ID',

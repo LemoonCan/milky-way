@@ -28,6 +28,8 @@ security:
     friend-application-salt: ${FRIEND_APPLICATION_SECUREID_SALT}
     chat-salt: ${CHAT_SECUREID_SALT}
     message-salt: ${MESSAGE_SECUREID_SALT}
+    post-salt: ${POST_SECUREID_SALT}
+    comment-salt: ${COMMENT_SECUREID_SALT}
   websocket:
     cors-allowed-origins:
        - http://localhost:8081

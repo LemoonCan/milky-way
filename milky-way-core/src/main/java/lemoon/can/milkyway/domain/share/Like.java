@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
  * @author lemoon
  * @since 2025/6/3
  */
-@Entity
+@Entity(name = "likes")
 @IdClass(LikeId.class)
 @NoArgsConstructor
 @Getter
@@ -19,4 +19,9 @@ public class Like {
     private Long postId;
     @Id
     private String likeUserId;
+
+    public Like(Long postId, String likeUserId) {
+        this.postId = postId;
+        this.likeUserId = likeUserId;
+    }
 }

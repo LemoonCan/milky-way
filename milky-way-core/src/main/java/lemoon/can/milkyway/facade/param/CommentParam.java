@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.facade.param;
 
-import org.springframework.web.bind.annotation.RequestParam;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -8,8 +9,12 @@ import java.io.Serializable;
  * @author lemoon
  * @since 2025/6/3
  */
+@Data
 public class CommentParam implements Serializable {
+    @NotBlank(message = "帖子ID不能为空")
     private String postId;
+    private String commentUserId;
     private String parentCommentId;
-    private String comment;
+    @NotBlank(message = "评论内容不能为空")
+    private String content;
 }
