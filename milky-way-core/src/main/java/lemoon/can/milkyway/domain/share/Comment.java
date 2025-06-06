@@ -25,7 +25,7 @@ public class Comment {
     /**
      * 帖子ID
      */
-    private Long postId;
+    private Long momentId;
     /**
      * 评论用户ID
      */
@@ -40,8 +40,8 @@ public class Comment {
      */
     private String content;
 
-    public Comment(Long postId, String commentUserId, String content) {
-        this.postId = postId;
+    public Comment(Long momentId, String commentUserId, String content) {
+        this.momentId = momentId;
         this.commentUserId = commentUserId;
         this.content = content;
     }

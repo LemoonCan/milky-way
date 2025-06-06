@@ -6,13 +6,13 @@ import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.share.Comment;
 import lemoon.can.milkyway.domain.share.Like;
 import lemoon.can.milkyway.domain.share.LikeId;
-import lemoon.can.milkyway.domain.share.Post;
+import lemoon.can.milkyway.domain.share.Moment;
 import lemoon.can.milkyway.facade.param.CommentParam;
 import lemoon.can.milkyway.facade.param.PublishParam;
-import lemoon.can.milkyway.facade.service.command.PostService;
+import lemoon.can.milkyway.facade.service.command.MomentService;
 import lemoon.can.milkyway.infrastructure.repository.CommentRepository;
 import lemoon.can.milkyway.infrastructure.repository.LikeRepository;
-import lemoon.can.milkyway.infrastructure.repository.PostRepository;
+import lemoon.can.milkyway.infrastructure.repository.MomentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +24,8 @@ import org.springframework.util.StringUtils;
  */
 @Service
 @RequiredArgsConstructor
-public class PostServiceImpl implements PostService {
-    private final PostRepository postRepository;
+public class MomentServiceImpl implements MomentService {
+    private final MomentRepository momentRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private final SecureId secureId;
@@ -33,57 +33,57 @@ public class PostServiceImpl implements PostService {
     @Transactional
     @Override
     public String publish(PublishParam param) {
-        Post post = new Post(param.getContentType(), param.getText(), param.getMedias());
-        post.setLocation(param.getLocation());
-        postRepository.save(post);
-        return secureId.encode(post.getId(), secureId.getPostSalt());
+        Moment moment = new Moment(param.getContentType(), param.getText(), param.getMedias(), param.getPublishUserId());
+        moment.setLocation(param.getLocation());
+        momentRepository.save(moment);
+        return secureId.encode(moment.getId(), secureId.getMomentSalt());
     }
 
     @Transactional
     @Override
-    public void delete(String postId) {
-        Long realPostId = secureId.decode(postId, secureId.getPostSalt());
-        postRepository.deleteById(realPostId);
-        commentRepository.deleteByPostId(realPostId);
-        likeRepository.deleteByPostId(realPostId);
+    public void delete(String momentId) {
+        Long realMomentId = secureId.decode(momentId, secureId.getMomentSalt());
+        momentRepository.deleteById(realMomentId);
+        commentRepository.deleteByMomentId(realMomentId);
+        likeRepository.deleteByMomentId(realMomentId);
     }
 
     @Transactional
     @Override
-    public void like(String postId, String userId) {
-        Long realPostId = secureId.decode(postId, secureId.getPostSalt());
-        Post post = postRepository.findById(realPostId)
+    public void like(String momentId, String userId) {
+        Long realMomentId = secureId.decode(momentId, secureId.getMomentSalt());
+        Moment moment = momentRepository.findById(realMomentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "内容不存在"));
-        if (likeRepository.findById(new LikeId(realPostId, userId)).isPresent()) {
+        if (likeRepository.findById(new LikeId(realMomentId, userId)).isPresent()) {
             return;
         }
 
-        post.addLike();
-        postRepository.save(post);
+        moment.addLike();
+        momentRepository.save(moment);
 
-        Like like = new Like(realPostId, userId);
+        Like like = new Like(realMomentId, userId);
         likeRepository.save(like);
     }
 
     @Transactional
     @Override
-    public void unlike(String postId, String userId) {
-        Long realPostId = secureId.decode(postId, secureId.getPostSalt());
-        Post post = postRepository.findById(realPostId)
+    public void unlike(String momentId, String userId) {
+        Long realMomentId = secureId.decode(momentId, secureId.getMomentSalt());
+        Moment moment = momentRepository.findById(realMomentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "内容不存在"));
-        if (likeRepository.findById(new LikeId(realPostId, userId)).isEmpty()) {
+        if (likeRepository.findById(new LikeId(realMomentId, userId)).isEmpty()) {
             return;
         }
-        post.removeLike();
-        postRepository.save(post);
-        likeRepository.deleteById(new LikeId(realPostId, userId));
+        moment.removeLike();
+        momentRepository.save(moment);
+        likeRepository.deleteById(new LikeId(realMomentId, userId));
     }
 
     @Transactional
     @Override
     public String comment(CommentParam param) {
-        Long realPostId = secureId.decode(param.getPostId(), secureId.getPostSalt());
-        Comment comment = new Comment(realPostId, param.getCommentUserId(), param.getContent());
+        Long realMomentId = secureId.decode(param.getMomentId(), secureId.getMomentSalt());
+        Comment comment = new Comment(realMomentId, param.getCommentUserId(), param.getContent());
         if (StringUtils.hasLength(param.getParentCommentId())) {
             comment.setParentCommentId(secureId.decode(param.getParentCommentId(), secureId.getCommentSalt()));
         }

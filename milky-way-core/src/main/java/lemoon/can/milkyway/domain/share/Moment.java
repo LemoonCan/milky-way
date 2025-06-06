@@ -1,7 +1,7 @@
 package lemoon.can.milkyway.domain.share;
 
 import jakarta.persistence.*;
-import lemoon.can.milkyway.common.enums.PostContentType;
+import lemoon.can.milkyway.common.enums.MomentContentType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,7 +17,7 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @Getter
-public class Post {
+public class Moment {
     /**
      * 主键
      */
@@ -25,10 +25,14 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     /**
+     * 发布者ID
+     */
+    private String publishUserId;
+    /**
      * 内容类型
      */
     @Enumerated(EnumType.STRING)
-    private PostContentType contentType;
+    private MomentContentType contentType;
     /**
      * 文字内容
      */
@@ -52,10 +56,11 @@ public class Post {
      */
     private Integer commentCounts = 0;
 
-    public Post(PostContentType contentType, String text, List<String> medias) {
+    public Moment(MomentContentType contentType, String text, List<String> medias, String publishUserId) {
         this.contentType = contentType;
         this.text = text;
         this.medias = medias;
+        this.publishUserId = publishUserId;
     }
 
     public void addLike() {

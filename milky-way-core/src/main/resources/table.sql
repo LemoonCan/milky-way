@@ -97,7 +97,7 @@ CREATE TABLE message
 (
     id        BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '消息ID',
     chat_id   BIGINT COMMENT '聊天室ID',
-    sender_id VARCHAR(24) NOT NULL COMMENT '发送者ID',
+    sender_id VARCHAR(24)                       NOT NULL COMMENT '发送者ID',
     content   VARCHAR(255) COMMENT '消息内容',
     type      VARCHAR(255) COMMENT '消息类型',
     sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
@@ -105,24 +105,25 @@ CREATE TABLE message
 );
 
 -- 帖子
-CREATE TABLE post
+CREATE TABLE moment
 (
-    id             BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '帖子ID',
-    content_type   VARCHAR(32)                       NOT NULL COMMENT '内容类型',
-    text           VARCHAR(2000) COMMENT '文字内容',
-    medias         JSON COMMENT '媒体内容',
-    location       VARCHAR(255) COMMENT '位置信息',
-    like_counts    INT       DEFAULT 0 COMMENT '点赞数',
-    comment_counts INT       DEFAULT 0 COMMENT '评论数',
-    create_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+    id              BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '帖子ID',
+    content_type    VARCHAR(32)                       NOT NULL COMMENT '内容类型',
+    publish_user_id VARCHAR(24)                       NOT NULL COMMENT '发布用户ID',
+    text            VARCHAR(2000) COMMENT '文字内容',
+    medias          JSON COMMENT '媒体内容',
+    location        VARCHAR(255) COMMENT '位置信息',
+    like_counts     INT       DEFAULT 0 COMMENT '点赞数',
+    comment_counts  INT       DEFAULT 0 COMMENT '评论数',
+    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
 
 -- 评论
 CREATE TABLE comment
 (
     id                BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT '评论ID',
-    post_id           BIGINT                            NOT NULL COMMENT '帖子ID',
+    moment_id         BIGINT                            NOT NULL COMMENT '动态ID',
     comment_user_id   VARCHAR(24)                       NOT NULL COMMENT '评论用户ID',
     parent_comment_id BIGINT COMMENT '父评论ID',
     content           VARCHAR(2000)                     NOT NULL COMMENT '评论内容',
@@ -130,10 +131,10 @@ CREATE TABLE comment
 );
 
 -- 点赞表
-CREATE TABLE `likes`
+CREATE TABLE likes
 (
-    post_id      BIGINT      NOT NULL COMMENT '帖子ID',
+    moment_id    BIGINT      NOT NULL COMMENT '动态ID',
     like_user_id VARCHAR(24) NOT NULL COMMENT '点赞用户ID',
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    PRIMARY KEY (post_id, like_user_id)
+    PRIMARY KEY (moment_id, like_user_id)
 );

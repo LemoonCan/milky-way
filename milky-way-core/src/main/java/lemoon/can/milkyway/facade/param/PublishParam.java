@@ -2,7 +2,7 @@ package lemoon.can.milkyway.facade.param;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
-import lemoon.can.milkyway.common.enums.PostContentType;
+import lemoon.can.milkyway.common.enums.MomentContentType;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -16,8 +16,9 @@ import java.util.List;
  */
 @Data
 public class PublishParam implements Serializable {
+    String publishUserId;
     @NotNull(message = "内容类型不能为空")
-    PostContentType contentType;
+    MomentContentType contentType;
     String text;
     List<String> medias;
     String location;

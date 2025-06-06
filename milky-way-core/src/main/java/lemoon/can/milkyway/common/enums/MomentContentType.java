@@ -1,11 +1,11 @@
 package lemoon.can.milkyway.common.enums;
 
 /**
- * 帖子内容类型
+ * 动态内容类型
  * @author lemoon
  * @since 2025/6/3
  */
-public enum PostContentType {
+public enum MomentContentType {
     /**
      * 文字
      */

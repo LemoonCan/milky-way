@@ -9,5 +9,5 @@ import org.springframework.data.repository.CrudRepository;
  * @since 2025/6/3
  */
 public interface LikeRepository extends CrudRepository<Like, LikeId> {
-    void deleteByPostId(Long postId);
+    void deleteByMomentId(Long momentId);
 }

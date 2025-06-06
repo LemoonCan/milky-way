@@ -14,7 +14,7 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LikeId {
-    private Long postId;
+    private Long momentId;
     private String likeUserId;
 
     @Override
@@ -22,11 +22,11 @@ public class LikeId {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LikeId oo = (LikeId) o;
-        return Objects.equals(postId, oo.postId) && Objects.equals(likeUserId, oo.likeUserId);
+        return Objects.equals(momentId, oo.momentId) && Objects.equals(likeUserId, oo.likeUserId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(postId, likeUserId);
+        return Objects.hash(momentId, likeUserId);
     }
 }

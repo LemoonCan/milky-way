@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper">
+    <!-- 结果映射：列 → VO 属性 -->
+    <resultMap id="MomentMap" type="lemoon.can.milkyway.infrastructure.repository.dos.MomentDO">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userNickName" column="user_nick_name"/>
+        <result property="userAvatar" column="user_avatar"/>
+        <result property="contentType" column="content_type"/>
+        <result property="text" column="text"/>
+        <result property="medias" column="medias"/>
+        <result property="location" column="location"/>
+        <result property="likeCounts" column="like_counts"/>
+        <result property="commentCounts" column="comment_counts"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <!-- 主查询 -->
+    <!-- <![CDATA[ ... ]]> XML特殊标记，表示：这段内容是原样文本，不要解析里面的任何字符 -->
+    <select id="listFriendMoments" resultMap="MomentMap">
+        <![CDATA[
+        SELECT m.id,
+               u.id        AS user_id,
+               u.nick_name AS user_nick_name,
+               u.avatar    AS user_avatar,
+               m.content_type,
+               m.text,
+               m.medias,
+               m.location,
+               m.like_counts,
+               m.comment_counts,
+               m.create_time
+        FROM friend f
+                 JOIN moment m ON f.friend_id = m.publish_user_id AND m.id < #{lastId}
+                 JOIN users u ON u.id = m.publish_user_id
+        WHERE f.user_id = #{userId}
+        ORDER BY m.id DESC
+        LIMIT #{pageSize}
+        ]]>
+    </select>
+
+</mapper>

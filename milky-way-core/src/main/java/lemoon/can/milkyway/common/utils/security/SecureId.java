@@ -26,9 +26,9 @@ public class SecureId {
     @Getter
     private String messageSalt;
 
-    @Value("${security.secure-id.post-salt}")
+    @Value("${security.secure-id.moment-salt}")
     @Getter
-    private String postSalt;
+    private String momentSalt;
 
     @Value("${security.secure-id.comment-salt}")
     @Getter

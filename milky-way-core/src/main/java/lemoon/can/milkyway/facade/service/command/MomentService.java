@@ -7,32 +7,32 @@ import lemoon.can.milkyway.facade.param.PublishParam;
  * @author lemoon
  * @since 2025/6/5
  */
-public interface PostService {
+public interface MomentService {
     /**
-     * 发布帖子
+     * 发布动态
      * @param param 发布参数
      */
     String publish(PublishParam param);
 
     /**
-     * 删除帖子
-     * @param postId 帖子ID
+     * 删除动态
+     * @param momentId 动态ID
      */
-    void delete(String postId);
+    void delete(String momentId);
 
     /**
      * 点赞
-     * @param postId 帖子ID
+     * @param momentId 动态ID
      * @param userId 用户ID
      */
-    void like(String postId, String userId);
+    void like(String momentId, String userId);
 
     /**
      * 取消点赞
-     * @param postId 帖子ID
+     * @param momentId 动态ID
      * @param userId 用户ID
      */
-    void unlike(String postId, String userId);
+    void unlike(String momentId, String userId);
 
     /**
      * 评论

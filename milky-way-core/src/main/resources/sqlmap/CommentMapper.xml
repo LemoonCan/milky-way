@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper">
+    <!-- 查询动态的评论信息 -->
+    <select id="selectComments" resultMap="CommentMap">
+        WITH RECURSIVE comment_tree AS (
+            -- 获取顶级评论
+            SELECT 
+                c.id,
+                c.moment_id,
+                c.comment_user_id,
+                c.parent_comment_id,
+                c.content,
+                c.create_time,
+                0 as level
+            FROM comment c
+            WHERE c.moment_id = #{momentId} AND c.parent_comment_id IS NULL
+            
+            UNION ALL
+            
+            -- 递归获取回复
+            SELECT 
+                c.id,
+                c.moment_id,
+                c.comment_user_id,
+                c.parent_comment_id,
+                c.content,
+                c.create_time,
+                ct.level + 1
+            FROM comment c
+            JOIN comment_tree ct ON c.parent_comment_id = ct.id
+        )
+        SELECT 
+            ct.id,
+            ct.content,
+            ct.create_time,
+            u.id as user_id,
+            u.nick_name as user_nick_name,
+            u.avatar as user_avatar,
+            ct.parent_comment_id,
+            ct.level
+        FROM comment_tree ct
+        JOIN users u ON ct.comment_user_id = u.id
+        ORDER BY ct.level ASC, ct.create_time DESC
+    </select>
+
+    <resultMap id="CommentMap" type="lemoon.can.milkyway.infrastructure.repository.dos.CommentDO">
+        <id property="id" column="id"/>
+        <result property="parentCommentId" column="parent_comment_id"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="level" column="level"/>
+        <association property="user" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
+            <result property="id" column="user_id"/>
+            <result property="nickName" column="user_nick_name"/>
+            <result property="avatar" column="user_avatar"/>
+        </association>
+    </resultMap>
+</mapper> 

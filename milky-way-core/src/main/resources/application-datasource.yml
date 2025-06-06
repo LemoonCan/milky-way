@@ -8,6 +8,7 @@ spring:
 mybatis:
   mapper-locations: classpath:sqlmap/*.xml
   type-aliases-package: lemoon.can.milkyway.infrastructure.repository.dos
+  type-handlers-package: lemoon.can.milkyway.infrastructure.repository.mapper.type
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

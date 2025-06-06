@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 public class CommentParam implements Serializable {
     @NotBlank(message = "帖子ID不能为空")
-    private String postId;
+    private String momentId;
     private String commentUserId;
     private String parentCommentId;
     @NotBlank(message = "评论内容不能为空")

@@ -16,12 +16,12 @@ import lombok.NoArgsConstructor;
 @Getter
 public class Like {
     @Id
-    private Long postId;
+    private Long momentId;
     @Id
     private String likeUserId;
 
-    public Like(Long postId, String likeUserId) {
-        this.postId = postId;
+    public Like(Long momentId, String likeUserId) {
+        this.momentId = momentId;
         this.likeUserId = likeUserId;
     }
 }
