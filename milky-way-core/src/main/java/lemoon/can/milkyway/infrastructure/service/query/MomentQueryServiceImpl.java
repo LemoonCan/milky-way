@@ -2,8 +2,8 @@ package lemoon.can.milkyway.infrastructure.service.query;
 
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.MomentDTO;
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
-import lemoon.can.milkyway.facade.dto.UserDTO;
 import lemoon.can.milkyway.facade.service.query.MomentQueryService;
 import lemoon.can.milkyway.infrastructure.converter.CommentConverter;
 import lemoon.can.milkyway.infrastructure.repository.dos.CommentDO;
@@ -11,7 +11,6 @@ import lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.LikeMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,7 +36,7 @@ public class MomentQueryServiceImpl implements MomentQueryService {
                 .map(item -> {
                     MomentDTO dto = new MomentDTO();
                     dto.setId(secureId.encode(item.getId(), secureId.getMomentSalt()));
-                    UserDTO userDTO = new UserDTO();
+                    SimpleUserDTO userDTO = new SimpleUserDTO();
                     userDTO.setId(item.getUserId());
                     userDTO.setNickName(item.getUserNickName());
                     userDTO.setAvatar(item.getUserAvatar());
@@ -61,7 +60,9 @@ public class MomentQueryServiceImpl implements MomentQueryService {
                 .toList();
 
         boolean hasNext = moments.size() > pageSize;
-        moments.remove(moments.size() - 1);
+        if (hasNext) {
+            moments.remove(moments.size() - 1);
+        }
         return new Slices<>(moments, hasNext);
     }
 }

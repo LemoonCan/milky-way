@@ -13,7 +13,7 @@ public class FriendDTO {
     /**
      * 好友信息
      */
-    private UserDTO friend;
+    private SimpleUserDTO friend;
     /**
      * 备注
      */

@@ -61,10 +61,10 @@ public class MomentController {
 
     @PatchMapping("/comment")
     @Operation(summary = "评论")
-    public ResponseEntity<Result<String>> comment(@RequestBody @Valid CommentParam param) {
+    public ResponseEntity<Result<Void>> comment(@RequestBody @Valid CommentParam param) {
         param.setCommentUserId(UserInfoHolder.id());
-        String id = momentService.comment(param);
-        return ResponseEntity.ok(Result.success(id));
+        momentService.comment(param);
+        return ResponseEntity.ok(Result.success());
     }
 
     @GetMapping

@@ -4,8 +4,6 @@ import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.CommentDTO;
 import lemoon.can.milkyway.infrastructure.repository.dos.CommentDO;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public abstract class CommentConverter {
         for (CommentDO comment : flatList) {
             Long parentId = comment.getParentCommentId();
             if (parentId == null) {
-                roots.add(toDto(comment));
+                roots.add(map.get(comment.getId()));
             } else {
                 CommentDTO parent = map.get(parentId);
                 CommentDTO child = map.get(comment.getId());

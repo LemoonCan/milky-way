@@ -38,5 +38,5 @@ public interface MomentService {
      * 评论
      * @param param 评论参数
      */
-    String comment(CommentParam param);
+    void comment(CommentParam param);
 }

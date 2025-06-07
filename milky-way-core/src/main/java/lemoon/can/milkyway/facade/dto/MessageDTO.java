@@ -30,7 +30,7 @@ public class MessageDTO {
     /**
      * 发送者信息
      */
-    private UserDTO sender;
+    private SimpleUserDTO sender;
 
     /**
      * 类型

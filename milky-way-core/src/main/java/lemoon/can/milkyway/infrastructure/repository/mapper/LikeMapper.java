@@ -1,6 +1,6 @@
 package lemoon.can.milkyway.infrastructure.repository.mapper;
 
-import lemoon.can.milkyway.facade.dto.UserDTO;
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,5 +19,5 @@ public interface LikeMapper {
      * @param momentId 动态ID
      * @return 点赞用户信息列表
      */
-    List<UserDTO> selectLikeUsers(@Param("momentId") Long momentId);
+    List<SimpleUserDTO> selectLikeUsers(@Param("momentId") Long momentId);
 } 

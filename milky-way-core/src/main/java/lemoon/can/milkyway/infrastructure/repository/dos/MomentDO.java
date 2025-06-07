@@ -15,7 +15,7 @@ public class MomentDO {
     private String userId;
     private String userNickName;
     private String userAvatar;
-    private Integer contentType;
+    private String contentType;
     private String text;
     private List<String> medias;
     private String location;

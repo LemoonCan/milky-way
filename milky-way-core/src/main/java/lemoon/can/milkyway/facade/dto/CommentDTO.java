@@ -26,7 +26,7 @@ public class CommentDTO {
     /**
      * 评论用户信息
      */
-    private UserDTO user;
+    private SimpleUserDTO user;
     
     /**
      * 评论内容

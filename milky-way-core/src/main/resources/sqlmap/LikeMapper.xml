@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.LikeMapper">
     <!-- 查询动态的点赞用户信息 -->
-    <select id="selectLikeUsers" resultType="lemoon.can.milkyway.facade.dto.UserDTO">
+    <select id="selectLikeUsers" resultType="lemoon.can.milkyway.facade.dto.SimpleUserDTO">
         SELECT 
             u.id,
             u.nick_name,

@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 public class MomentDTO {
     private String id;
-    private UserDTO user;
+    private SimpleUserDTO user;
     private Integer contentType;
     private String text;
     private List<String> medias;
@@ -25,7 +25,7 @@ public class MomentDTO {
     /**
      * 点赞用户列表
      */
-    private List<UserDTO> likeUsers;
+    private List<SimpleUserDTO> likeUsers;
     
     /**
      * 评论列表

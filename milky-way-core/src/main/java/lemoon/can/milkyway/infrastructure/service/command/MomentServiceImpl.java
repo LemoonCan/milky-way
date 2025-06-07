@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
+
 /**
  * @author lemoon
  * @since 2025/6/5
@@ -81,13 +83,11 @@ public class MomentServiceImpl implements MomentService {
 
     @Transactional
     @Override
-    public String comment(CommentParam param) {
+    public void comment(CommentParam param) {
         Long realMomentId = secureId.decode(param.getMomentId(), secureId.getMomentSalt());
         Comment comment = new Comment(realMomentId, param.getCommentUserId(), param.getContent());
-        if (StringUtils.hasLength(param.getParentCommentId())) {
-            comment.setParentCommentId(secureId.decode(param.getParentCommentId(), secureId.getCommentSalt()));
-        }
+        comment.setParentCommentId(param.getParentCommentId());
+
         commentRepository.save(comment);
-        return secureId.encode(comment.getId(), secureId.getCommentSalt());
     }
 }

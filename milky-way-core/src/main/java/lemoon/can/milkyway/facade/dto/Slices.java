@@ -1,12 +1,16 @@
 package lemoon.can.milkyway.facade.dto;
 
+import lombok.Data;
+
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author lemoon
  * @since 2025/6/6
  */
-public class Slices<T> {
+@Data
+public class Slices<T> implements Serializable {
     Boolean hasNext;
     Integer size;
     List<T> data;

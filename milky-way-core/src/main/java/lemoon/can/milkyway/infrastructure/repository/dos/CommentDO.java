@@ -1,10 +1,8 @@
 package lemoon.can.milkyway.infrastructure.repository.dos;
 
-import lemoon.can.milkyway.facade.dto.UserDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 评论DTO

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class FriendApplicationDTO {
     private String id;
-    private UserDTO fromUser;
-    private UserDTO toUser;
+    private SimpleUserDTO fromUser;
+    private SimpleUserDTO toUser;
     private String applyMsg;
 }

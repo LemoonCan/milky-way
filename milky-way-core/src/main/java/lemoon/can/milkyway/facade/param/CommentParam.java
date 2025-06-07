@@ -14,7 +14,7 @@ public class CommentParam implements Serializable {
     @NotBlank(message = "帖子ID不能为空")
     private String momentId;
     private String commentUserId;
-    private String parentCommentId;
+    private Long parentCommentId;
     @NotBlank(message = "评论内容不能为空")
     private String content;
 }
