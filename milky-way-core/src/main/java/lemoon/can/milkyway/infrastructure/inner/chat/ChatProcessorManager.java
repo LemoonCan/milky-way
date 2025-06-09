@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.infrastructure.inner.chat;
 
-import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.domain.chat.Chat;

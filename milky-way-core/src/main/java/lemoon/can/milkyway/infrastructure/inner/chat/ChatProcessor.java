@@ -8,6 +8,5 @@ import lemoon.can.milkyway.domain.chat.Message;
  * @since 2025/5/18
  */
 public interface ChatProcessor {
-    void pushCreateMessage(Chat chat);
     void pushMessage(Chat chat, Message message);
 }

@@ -1,12 +1,7 @@
 package lemoon.can.milkyway.infrastructure.inner.chat;
 
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.Message;
-import lemoon.can.milkyway.domain.user.User;
-import lemoon.can.milkyway.facade.dto.MessageDTO;
-import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
-import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -22,19 +17,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GroupChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
-    private final UserRepository userRepository;
-    private final MessageConverter messageConverter;
-    private final SecureId secureId;
-
-    @Override
-    public void pushCreateMessage(Chat chat) {
-
-    }
 
     @Override
     public void pushMessage(Chat chat, Message message) {
-        User sender = userRepository.findById(message.getSenderId()).orElseThrow();
-
         // 将消息推送到群聊频道
         String destination = pushDestination(chat);
         //广播
@@ -42,7 +27,6 @@ public class GroupChatProcessor implements ChatProcessor {
     }
 
     private String pushDestination(Chat chat) {
-        String chatIdEncoded = secureId.encode(chat.getId(), secureId.getChatSalt());
-        return "/topic/chat/" + chatIdEncoded;
+        return "/topic/chat/" + chat.getId();
     }
 }

@@ -1,14 +1,9 @@
 package lemoon.can.milkyway.infrastructure.inner.chat;
 
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.ChatMember;
 import lemoon.can.milkyway.domain.chat.Message;
-import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.dto.MessageContentDTO;
-import lemoon.can.milkyway.facade.dto.MessageDTO;
-import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
-import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,14 +21,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SingleChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
-    private final UserRepository userRepository;
-    private final MessageConverter messageConverter;
-    private final SecureId secureId;
-
-    @Override
-    public void pushCreateMessage(Chat chat) {
-
-    }
 
     /**
      * 推送单聊消息
