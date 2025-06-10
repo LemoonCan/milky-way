@@ -56,7 +56,7 @@ public class ChatServiceImpl implements ChatService {
 
         Long chatId = chatRepository.save(chat);
         ChatDTO chatDTO = new ChatDTO();
-        chatDTO.setId(secureId.encode(chatId, secureId.getChatSalt()));
+        chatDTO.setId(secureId.simpleEncode(chatId, secureId.getChatSalt()));
         chatDTO.setTitle(chat.getTitle());
         return chatDTO;
     }
@@ -64,14 +64,14 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void deleteChat(ChatDeleteParam param) {
         //权限校验
-        Long chatId = secureId.decode(param.getChatId(), secureId.getChatSalt());
+        Long chatId = secureId.simpleDecode(param.getChatId(), secureId.getChatSalt());
         chatRepository.delete(chatId);
     }
 
     @Override
     public void updateChat(ChatUpdateParam param) {
         //TODO 权限校验
-        Long chatId = secureId.decode(param.getChatId(), secureId.getChatSalt());
+        Long chatId = secureId.simpleDecode(param.getChatId(), secureId.getChatSalt());
 
         ChatDO updateParam = new ChatDO();
         updateParam.setId(chatId);
@@ -82,7 +82,7 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void addMember(String chatId, String userId) {
-        Long realChatId = secureId.decode(chatId, secureId.getChatSalt());
+        Long realChatId = secureId.simpleDecode(chatId, secureId.getChatSalt());
 
         ChatType chatType = chatMapper.selectTypeById(realChatId);
         if (!ChatType.GROUP.equals(chatType)) {
@@ -100,14 +100,14 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void deleteMember(String chatId, String userId) {
-        Long realChatId = secureId.decode(chatId, secureId.getChatSalt());
+        Long realChatId = secureId.simpleDecode(chatId, secureId.getChatSalt());
         chatMemberMapper.deleteByChatIdAndUserId(realChatId, userId);
     }
 
     @Override
     public void updateMemerInfo(ChatMemberParam param) {
         ChatMemberDO updateParam = new ChatMemberDO();
-        updateParam.setChatId(secureId.decode(param.getChatId(), secureId.getChatSalt()));
+        updateParam.setChatId(secureId.simpleDecode(param.getChatId(), secureId.getChatSalt()));
         updateParam.setUserId(param.getUserId());
         updateParam.setChatRemark(param.getChatRemark());
         updateParam.setChatNickName(param.getChatNickName());

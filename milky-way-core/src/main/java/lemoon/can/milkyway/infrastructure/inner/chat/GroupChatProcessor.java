@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.inner.chat;
 
+import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.Message;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class GroupChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
+    private final SecureId secureId;
 
     @Override
     public void pushMessage(Chat chat, Message message) {
@@ -27,6 +29,6 @@ public class GroupChatProcessor implements ChatProcessor {
     }
 
     private String pushDestination(Chat chat) {
-        return "/topic/chat/" + chat.getId();
+        return "/topic/chat/" + secureId.simpleEncode(chat.getId(), secureId.getChatSalt());
     }
 }

@@ -2,6 +2,7 @@ package lemoon.can.milkyway.controller.chat;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.param.ChatCreateParam;
@@ -9,9 +10,12 @@ import lemoon.can.milkyway.facade.param.ChatDeleteParam;
 import lemoon.can.milkyway.facade.param.ChatMemberParam;
 import lemoon.can.milkyway.facade.param.ChatUpdateParam;
 import lemoon.can.milkyway.facade.service.command.ChatService;
+import lemoon.can.milkyway.facade.service.query.ChatQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author lemoon
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
+    private final ChatQueryService chatQueryService;
 
     @PostMapping
     @Operation(summary = "创建聊天室")
@@ -67,5 +72,12 @@ public class ChatController {
     public ResponseEntity<Result<Void>> updateMemberInfo(@RequestBody @Valid ChatMemberParam param) {
         chatService.updateMemerInfo(param);
         return ResponseEntity.ok(Result.success());
+    }
+
+    @GetMapping("/groupChats")
+    @Operation(summary = "获取群聊列表")
+    public ResponseEntity<Result<List<String>>> groupChats() {
+        List<String> groupChats = chatQueryService.getGroupChats(UserInfoHolder.id());
+        return ResponseEntity.ok(Result.success(groupChats));
     }
 }

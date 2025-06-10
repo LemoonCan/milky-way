@@ -4,6 +4,8 @@ import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatDO;
 import org.apache.ibatis.annotations.*;
 
+import java.util.List;
+
 /**
  * @author lemoon
  * @since 2025/5/24
@@ -24,4 +26,6 @@ public interface ChatMapper {
 
     @Select( "SELECT type FROM chat WHERE id = #{id}")
     ChatType selectTypeById(Long id);
+
+    List<Long> findGroupChats(String userId);
 }

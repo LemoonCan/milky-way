@@ -43,4 +43,21 @@ public class HelperController {
         return ResponseEntity.ok(Result.success(encodedId));
     }
 
+    @PostMapping("/simpleEncodeId")
+    @Operation(summary = "编码简化版ID")
+    public ResponseEntity<Result<String>> simpleEncodeId(@RequestParam Long id,
+                                                   @RequestParam String type) {
+        String salt;
+        Class<SecureId> clazz = SecureId.class;
+        String methodName = "get" + StringUtils.capitalize(type) + "Salt";
+        try {
+            Method saltMethod = clazz.getDeclaredMethod(methodName);
+            salt = (String) saltMethod.invoke(secureId);
+        } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException e) {
+            return ResponseEntity.ok(Result.fail(ErrorCode.UNSUPPORTED, "不支持的类型" + type));
+        }
+        String encodedId = secureId.simpleEncode(id, salt);
+        return ResponseEntity.ok(Result.success(encodedId));
+    }
+
 }

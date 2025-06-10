@@ -16,4 +16,11 @@
         </set>
         WHERE id = #{id}
     </update>
+
+    <select id="findGroupChats" resultType="java.lang.Long">
+        select c.id
+        from chat_member cm
+        join chat c on cm.chat_id = c.id
+        where cm.user_id = #{user_id} and c.type='GROUP';
+    </select>
 </mapper>
