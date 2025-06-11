@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * @author lemoon
  * @since 2025/6/3
@@ -39,6 +41,11 @@ public class Comment {
      * 评论内容
      */
     private String content;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
 
     public Comment(Long momentId, String commentUserId, String content) {
         this.momentId = momentId;

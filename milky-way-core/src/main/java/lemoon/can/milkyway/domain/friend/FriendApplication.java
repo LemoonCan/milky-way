@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 /**
  * @author lemoon
  * @since 2025/5/12
@@ -41,6 +43,11 @@ public class FriendApplication {
     @Setter
     @Embedded
     private FriendApplicationExtraInfo extraInfo;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
 
     public FriendApplication(String fromUserId, String toUserId, String applyMsg) {
         this.fromUserId = fromUserId;

@@ -85,8 +85,6 @@ public class FriendServiceImpl implements FriendService {
                 friendApplication.getFromUserId(),
                 friendApplication.getToUserId()));
         chatService.createChat(chatCreateParam);
-
-        //TODO 推送给申请用户结果
     }
 
     @Override

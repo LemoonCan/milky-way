@@ -32,7 +32,7 @@ public class FriendQueryServiceImpl implements FriendQueryService {
 
     @Override
     public List<FriendDTO> getFriends(String userId) {
-        //按照好友昵称排序(中文按拼音排序，英文按字母排序)
+        //TODO 按照好友昵称排序(中文按拼音排序，英文按字母排序)
         List<FriendDO> list = friendMapper.findFriends(userId);
         return list.stream()
                 .map(friendConverter::toDTO)

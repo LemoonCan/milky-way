@@ -135,6 +135,6 @@ CREATE TABLE likes
 (
     moment_id    BIGINT      NOT NULL COMMENT '动态ID',
     like_user_id VARCHAR(24) NOT NULL COMMENT '点赞用户ID',
-    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (moment_id, like_user_id)
 );

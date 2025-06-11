@@ -3,6 +3,7 @@ package lemoon.can.milkyway.infrastructure.inner.chat;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.Message;
+import lemoon.can.milkyway.facade.dto.MessageContentDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -25,10 +26,11 @@ public class GroupChatProcessor implements ChatProcessor {
         // 将消息推送到群聊频道
         String destination = pushDestination(chat);
         //广播
-        messagingTemplate.convertAndSend(destination, message.getContent());
+        messagingTemplate.convertAndSend(destination,
+                new MessageContentDTO(message.getType(), message.getContent()));
     }
 
     private String pushDestination(Chat chat) {
-        return "/topic/chat/" + secureId.simpleEncode(chat.getId(), secureId.getChatSalt());
+        return "/topic/groupChat/" + secureId.simpleEncode(chat.getId(), secureId.getChatSalt());
     }
 }

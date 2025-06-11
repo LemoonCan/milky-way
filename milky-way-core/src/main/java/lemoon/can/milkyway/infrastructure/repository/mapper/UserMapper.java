@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.repository.mapper;
 
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.infrastructure.repository.dos.UserDO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -14,4 +15,7 @@ import java.util.List;
 public interface UserMapper {
     @Select( "SELECT * FROM users")
     List<UserDO> selectAll();
+
+    @Select("select id, nick_name, avatar from users")
+    SimpleUserDTO selectSimpleById(String userId);
 }

@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.service.query;
 
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
 import lemoon.can.milkyway.facade.service.query.UserQueryService;
 import lemoon.can.milkyway.infrastructure.converter.UserConverter;

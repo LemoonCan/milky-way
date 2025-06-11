@@ -6,6 +6,8 @@ import jakarta.persistence.IdClass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * @author lemoon
  * @since 2025/6/3
@@ -19,6 +21,11 @@ public class Like {
     private Long momentId;
     @Id
     private String likeUserId;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createTime;
 
     public Like(Long momentId, String likeUserId) {
         this.momentId = momentId;

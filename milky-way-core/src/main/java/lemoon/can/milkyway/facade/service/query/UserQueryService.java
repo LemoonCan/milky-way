@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.facade.service.query;
 
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
 
 import java.util.List;
