@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.facade.dto;
 
+import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lombok.Data;
 
 /**
@@ -12,4 +13,5 @@ public class FriendApplicationDTO {
     private SimpleUserDTO fromUser;
     private SimpleUserDTO toUser;
     private String applyMsg;
+    private FriendApplyStatus status;
 }

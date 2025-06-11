@@ -2,20 +2,21 @@ package lemoon.can.milkyway.infrastructure.service.command;
 
 import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.common.enums.FriendApplyStatus;
+import lemoon.can.milkyway.common.exception.BusinessException;
+import lemoon.can.milkyway.common.exception.ErrorCode;
+import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.friend.Friend;
 import lemoon.can.milkyway.domain.friend.FriendApplication;
 import lemoon.can.milkyway.domain.friend.FriendApplicationExtraInfo;
-import lemoon.can.milkyway.common.exception.BusinessException;
-import lemoon.can.milkyway.common.exception.ErrorCode;
+import lemoon.can.milkyway.domain.friend.FriendId;
 import lemoon.can.milkyway.facade.param.ChatCreateParam;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
+import lemoon.can.milkyway.facade.param.FriendOperateParam;
 import lemoon.can.milkyway.facade.service.command.ChatService;
 import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.infrastructure.repository.FriendApplicationRepository;
 import lemoon.can.milkyway.infrastructure.repository.FriendRepository;
-import lemoon.can.milkyway.infrastructure.repository.UserRepository;
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class FriendServiceImpl implements FriendService {
-    private final UserRepository userRepository;
     private final FriendApplicationRepository friendApplicationRepository;
     private final FriendRepository friendRepository;
     private final SecureId secureId;
@@ -60,10 +60,13 @@ public class FriendServiceImpl implements FriendService {
         if (!friendApplication.getToUserId().equals(userId)) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "申请不匹配");
         }
+        if(friendApplication.getStatus()!= FriendApplyStatus.APPLYING) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED, "申请已处理");
+        }
         friendApplication.handle(param.getStatus());
         friendApplicationRepository.save(friendApplication);
 
-        if( param.getStatus() == FriendApplyStatus.REJECTED) {
+        if (param.getStatus() == FriendApplyStatus.REJECTED) {
             return;
         }
         //建立好友关系
@@ -84,5 +87,37 @@ public class FriendServiceImpl implements FriendService {
         chatService.createChat(chatCreateParam);
 
         //TODO 推送给申请用户结果
+    }
+
+    @Override
+    public void deleteFriend(FriendOperateParam param) {
+        friendRepository.deleteById(new FriendId(param.getFromUserId(), param.getToUserId()));
+        friendRepository.deleteById(new FriendId(param.getToUserId(), param.getFromUserId()));
+    }
+
+    @Override
+    public void blockFriend(FriendOperateParam param) {
+        Friend fromFriend = friendRepository.findById(new FriendId(param.getFromUserId(), param.getToUserId()))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "好友不存在"));
+        fromFriend.block();
+
+        Friend toFriend = friendRepository.findById(new FriendId(param.getToUserId(), param.getFromUserId()))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "好友不存在"));
+        toFriend.blockBy();
+        friendRepository.save(fromFriend);
+        friendRepository.save(toFriend);
+    }
+
+    @Override
+    public void unblockFriend(FriendOperateParam param) {
+        Friend fromFriend = friendRepository.findById(new FriendId(param.getFromUserId(), param.getToUserId()))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "好友不存在"));
+        fromFriend.unblock();
+
+        Friend toFriend = friendRepository.findById(new FriendId(param.getToUserId(), param.getFromUserId()))
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "好友不存在"));
+        toFriend.unblock();
+        friendRepository.save(fromFriend);
+        friendRepository.save(toFriend);
     }
 }

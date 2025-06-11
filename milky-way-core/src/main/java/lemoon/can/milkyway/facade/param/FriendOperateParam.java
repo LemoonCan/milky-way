@@ -1,16 +1,18 @@
 package lemoon.can.milkyway.facade.param;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
  * @author lemoon
- * @since 2025/5/12
+ * @since 2025/6/11
  */
-@Data
 @NoArgsConstructor
-public class FriendApplyParam {
+@AllArgsConstructor
+@Data
+public class FriendOperateParam {
     /**
      * 申请人ID
      */
@@ -20,15 +22,4 @@ public class FriendApplyParam {
      */
     @NotBlank(message = "好友信息不能为空")
     private String toUserId;
-    /**
-     * 申请消息
-     */
-    @NotBlank(message = "申请消息不能为空")
-    private String applyMessage;
-
-    /**
-     * 附加信息
-     */
-    private ApplyExtraInfo extraInfo;
-
 }

@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.repository.dos;
 
+import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lombok.Data;
 
 /**
@@ -10,6 +11,7 @@ import lombok.Data;
 public class FriendApplicationDO {
     private Long id;
     private String applyMsg;
+    private FriendApplyStatus status;
     private UserDO fromUser;
     private UserDO toUser;
 }

@@ -1,4 +1,4 @@
-package lemoon.can.milkyway.infrastructure.repository.query;
+package lemoon.can.milkyway.infrastructure.repository.mapper;
 
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendDO;
@@ -12,7 +12,7 @@ import java.util.List;
  * @since 2025/5/13
  */
 @Mapper
-public interface FriendQueryRepository {
+public interface FriendMapper {
     List<FriendApplicationDO> findApplications(@Param("toUserId") String toUserId);
 
     List<FriendDO> findFriends(@Param("userId") String userId);

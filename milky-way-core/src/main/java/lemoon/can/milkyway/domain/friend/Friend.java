@@ -47,4 +47,24 @@ public class Friend {
         this.permission = permission;
     }
 
+    /**
+     * 拉黑
+     */
+    public void block() {
+        this.status = FriendStatus.BLACKLISTED;
+    }
+
+    /**
+     * 被拉黑
+     */
+    public void blockBy() {
+        this.status = FriendStatus.BLACKLISTED_BY;
+    }
+
+    /**
+     * 拉黑移除
+     */
+    public void unblock() {
+        this.status = FriendStatus.ESTABLISHED;
+    }
 }

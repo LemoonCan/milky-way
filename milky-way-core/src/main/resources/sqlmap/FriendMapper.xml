@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="lemoon.can.milkyway.infrastructure.repository.query.FriendQueryRepository">
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.FriendMapper">
     <select id="findApplications" resultMap="FriendApplicationDOMap">
         select fa.id        as id,
                fa.apply_msg as apply_msg,
+               fa.status    as status,
                u1.id        as from_id,
                u1.nick_name as from_nick_name,
                u1.avatar    as from_avatar,
@@ -19,6 +20,7 @@
     <resultMap id="FriendApplicationDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO">
         <id property="id" column="id"/> <!-- 主键 -->
         <result property="applyMsg" column="apply_msg"/> <!-- 普通字段 -->
+        <result property="status" column="status"/>
 
         <association property="fromUser" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
             <result property="id" column="from_id"/>

@@ -3,11 +3,13 @@ package lemoon.can.milkyway.controller.friend;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.dto.FriendDTO;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
+import lemoon.can.milkyway.facade.param.FriendOperateParam;
 import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.facade.service.query.FriendQueryService;
 import lombok.RequiredArgsConstructor;
@@ -28,16 +30,17 @@ public class FriendController {
     private final FriendService friendService;
     private final FriendQueryService friendQueryService;
 
-    @GetMapping("/applications/{userId}")
+    @GetMapping("/applications")
     @Operation(summary = "获取好友申请列表")
-    public ResponseEntity<Result<List<FriendApplicationDTO>>> applications(@PathVariable String userId) {
-        List<FriendApplicationDTO> list = friendQueryService.getApplications(userId);
+    public ResponseEntity<Result<List<FriendApplicationDTO>>> applications() {
+        List<FriendApplicationDTO> list = friendQueryService.getApplications(UserInfoHolder.id());
         return ResponseEntity.ok(Result.success(list));
     }
 
     @PostMapping("/applications/add")
     @Operation(summary = "添加好友")
     public ResponseEntity<Result<Void>> addFriend(@RequestBody @Valid FriendApplyParam param) {
+        param.setFromUserId(UserInfoHolder.id());
         friendService.addFriend(param);
         return ResponseEntity.ok(Result.success());
     }
@@ -45,14 +48,39 @@ public class FriendController {
     @PostMapping("/applications/handle")
     @Operation(summary = "处理好友请求")
     public ResponseEntity<Result<Void>> handleApplication(@RequestBody @Valid FriendApplyHandleParam param) {
+        param.setUserId(UserInfoHolder.id());
         friendService.handleApplication(param);
         return ResponseEntity.ok(Result.success());
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping
     @Operation(summary = "获取好友列表")
-    public ResponseEntity<Result<List<FriendDTO>>> friends(@PathVariable String userId) {
-        List<FriendDTO> list = friendQueryService.getFriends(userId);
+    public ResponseEntity<Result<List<FriendDTO>>> friends() {
+        List<FriendDTO> list = friendQueryService.getFriends(UserInfoHolder.id());
         return ResponseEntity.ok(Result.success(list));
+    }
+
+    @DeleteMapping
+    @Operation(summary = "删除好友")
+    public ResponseEntity<Result<Void>> deleteFriend(@RequestParam @Valid String friendUserId) {
+        FriendOperateParam param = new FriendOperateParam(UserInfoHolder.id(), friendUserId);
+        friendService.deleteFriend(param);
+        return ResponseEntity.ok(Result.success());
+    }
+
+    @PatchMapping("/block")
+    @Operation(summary = "拉黑好友")
+    public ResponseEntity<Result<Void>> blockFriend(@RequestParam @Valid String friendUserId) {
+        FriendOperateParam param = new FriendOperateParam(UserInfoHolder.id(), friendUserId);
+        friendService.blockFriend(param);
+        return ResponseEntity.ok(Result.success());
+    }
+
+    @PatchMapping("/unblock")
+    @Operation(summary = "解除好友拉黑")
+    public ResponseEntity<Result<Void>> unblockFriend(@RequestParam @Valid String friendUserId) {
+        FriendOperateParam param = new FriendOperateParam(UserInfoHolder.id(), friendUserId);
+        friendService.unblockFriend(param);
+        return ResponseEntity.ok(Result.success());
     }
 }
