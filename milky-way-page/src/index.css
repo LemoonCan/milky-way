@@ -185,4 +185,129 @@
     border: 1px solid var(--wechat-border);
     border-bottom-left-radius: 6px;
   }
+  
+  /* 聊天列表项样式 */
+  .wechat-chat-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    min-height: 72px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .wechat-chat-item:hover {
+    background-color: var(--wechat-border-light);
+    transform: translateX(1px);
+  }
+  
+  .wechat-chat-item.active {
+    background-color: var(--wechat-border-light);
+  }
+  
+  .wechat-chat-item-content {
+    margin-left: 12px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .wechat-chat-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  
+  .wechat-chat-item-name {
+    font-size: 15px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--wechat-text);
+    letter-spacing: -0.2px;
+    margin: 0;
+    line-height: 20px;
+  }
+  
+  .wechat-chat-item-time {
+    font-size: 11px;
+    margin-left: 8px;
+    flex-shrink: 0;
+    color: var(--wechat-text-secondary);
+    font-weight: 400;
+    line-height: 16px;
+  }
+  
+  .wechat-chat-item-message {
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 18px;
+    color: var(--wechat-text-light);
+    margin: 0;
+    font-weight: 400;
+  }
+  
+  /* 聊天窗口头部样式 */
+  .wechat-chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background-color: var(--wechat-chat-list-bg);
+    border-bottom: 1px solid var(--wechat-border);
+    box-shadow: var(--wechat-shadow-card);
+  }
+  
+  .wechat-chat-header-user {
+    display: flex;
+    align-items: center;
+  }
+  
+  .wechat-chat-header-info {
+    margin-left: 12px;
+  }
+  
+  .wechat-chat-header-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--wechat-text);
+    letter-spacing: -0.2px;
+    margin: 0;
+    line-height: 20px;
+  }
+  
+  .wechat-chat-header-status {
+    font-size: 12px;
+    color: var(--wechat-text-light);
+    margin: 0;
+    line-height: 14px;
+  }
+  
+  .wechat-chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .wechat-chat-header-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .wechat-chat-header-btn:hover {
+    background-color: var(--wechat-chat-bg);
+  }
 }

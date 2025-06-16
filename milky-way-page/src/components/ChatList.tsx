@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ChatListItem } from './ChatListItem'
 import { Search } from 'lucide-react'
-import { useChatStore } from '@/store/chat'
+import { useChatStore, type ChatUser } from '@/store/chat'
 
 interface ChatListProps {
   onSelectChat: (userId: string) => void
@@ -12,7 +12,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
   const [searchQuery, setSearchQuery] = useState('')
   const { chatUsers } = useChatStore()
 
-  const filteredUsers = chatUsers.filter(user =>
+  const filteredUsers = chatUsers.filter((user: ChatUser) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -21,7 +21,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
     <div className="wechat-chat-list">
               {/* 头部区域 */}
         <div style={{ 
-          padding: '20px 20px 16px', 
+          padding: '10px 20px 16px', 
           backgroundColor: 'var(--wechat-chat-list-bg)'
         }}>
         <h1 style={{ 
@@ -93,7 +93,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
           </div>
         ) : (
           <div>
-            {filteredUsers.map((user) => (
+            {filteredUsers.map((user: ChatUser) => (
               <ChatListItem
                 key={user.id}
                 user={user}

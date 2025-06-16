@@ -103,7 +103,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '16px 24px',
+        padding: '12px 24px',
         backgroundColor: 'var(--wechat-chat-list-bg)',
         borderBottom: '1px solid var(--wechat-border)',
         boxShadow: 'var(--wechat-shadow-card)'
@@ -116,20 +116,22 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
               boxShadow: 'var(--wechat-shadow)'
             }}
           />
-          <div style={{ marginLeft: '16px' }}>
+          <div style={{ marginLeft: '12px' }}>
             <h2 style={{ 
-              fontSize: '18px',
+              fontSize: '16px',
               fontWeight: '600',
               color: 'var(--wechat-text)',
               letterSpacing: '-0.3px',
-              marginBottom: '2px'
+              margin: 0,
+              lineHeight: '20px'
             }}>
               {currentUser.name}
             </h2>
             <p style={{
               fontSize: '12px',
               color: 'var(--wechat-text-light)',
-              margin: 0
+              margin: 0,
+              lineHeight: '14px'
             }}>
               {currentUser.online ? '在线' : '离线'}
             </p>

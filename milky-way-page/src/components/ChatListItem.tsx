@@ -28,27 +28,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
 
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '3px 20px',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-        backgroundColor: isActive ? 'var(--wechat-border-light)' : undefined,
-        position: 'relative'
-      }}
-      onMouseEnter={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = 'var(--wechat-border-light)'
-          e.currentTarget.style.transform = 'translateX(1px)'
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) {
-          e.currentTarget.style.backgroundColor = 'transparent'
-          e.currentTarget.style.transform = 'translateX(0)'
-        }
-      }}
+      className={`wechat-chat-item ${isActive ? 'active' : ''}`}
       onClick={onClick}
     >
       <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -63,10 +43,10 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           <div 
             style={{ 
               position: 'absolute',
-              bottom: '-4px',
-              right: '-4px',
-              width: '16px',
-              height: '16px',
+              bottom: '-2px',
+              right: '-2px',
+              width: '14px',
+              height: '14px',
               border: '2px solid white',
               borderRadius: '50%',
               backgroundColor: 'var(--wechat-primary)'
@@ -77,15 +57,15 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           <div 
             style={{ 
               position: 'absolute',
-              top: '-6px',
-              right: '-6px',
+              top: '-4px',
+              right: '-4px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: '20px',
-              height: '20px',
-              padding: '0 4px',
-              fontSize: '12px',
+              minWidth: '18px',
+              height: '18px',
+              padding: '0 3px',
+              fontSize: '11px',
               fontWeight: '600',
               color: 'white',
               borderRadius: '50%',
@@ -100,53 +80,16 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
         )}
       </div>
       
-      <div style={{ 
-        marginLeft: '16px', 
-        flex: '1', 
-        minWidth: '0' 
-      }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'baseline', 
-          marginBottom: '0px' 
-        }}>
-          <h3 
-            style={{ 
-              fontSize: '16px',
-              fontWeight: '600',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              color: 'var(--wechat-text)',
-              letterSpacing: '-0.3px'
-            }}
-          >
+      <div className="wechat-chat-item-content">
+        <div className="wechat-chat-item-header">
+          <h3 className="wechat-chat-item-name">
             {user.name}
           </h3>
-          <span 
-            style={{ 
-              fontSize: '12px',
-              marginLeft: '8px',
-              flexShrink: 0,
-              color: 'var(--wechat-text-secondary)',
-              fontWeight: '500'
-            }}
-          >
+          <span className="wechat-chat-item-time">
             {formatTime(user.lastMessageTime)}
           </span>
         </div>
-        <p 
-          style={{ 
-            fontSize: '14px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            lineHeight: '1.4',
-            color: 'var(--wechat-text-light)',
-            marginTop: '0px'
-          }}
-        >
+        <p className="wechat-chat-item-message">
           {user.lastMessage}
         </p>
       </div>
