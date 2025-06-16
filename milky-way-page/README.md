@@ -1,54 +1,105 @@
-# React + TypeScript + Vite
+# 🌌 Milky-Way Chat 仿微信桌面版聊天界面
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是一个使用现代前端技术栈构建的仿微信桌面版聊天界面项目。
 
-Currently, two official plugins are available:
+## ✨ 技术栈
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 18** - 现代React框架
+- **Vite** - 快速构建工具
+- **TypeScript** - 类型安全的JavaScript
+- **Tailwind CSS** - 实用优先的CSS框架
+- **shadcn/ui** - 现代化组件库
+- **Zustand** - 轻量级状态管理
+- **Lucide React** - 美观的图标库
 
-## Expanding the ESLint configuration
+## 🎯 功能特性
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 三栏式布局
+- **左侧导航栏**: 消息、好友、朋友圈、设置
+- **中间消息列表**: 搜索功能、聊天用户列表
+- **右侧聊天窗口**: 实时消息展示、输入工具栏
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 聊天功能
+- 消息气泡显示（左右区分发送方）
+- 实时消息发送
+- 时间戳显示
+- 用户在线状态
+- 未读消息提醒
+
+### 现代化设计
+- 扁平化设计风格
+- 响应式布局
+- 深色模式支持
+- 流畅的动画效果
+
+## 🚀 快速开始
+
+### 安装依赖
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+### 启动开发服务器
+```bash
+npm run dev
 ```
+
+### 构建生产版本
+```bash
+npm run build
+```
+
+### 预览生产版本
+```bash
+npm run preview
+```
+
+## 📁 项目结构
+
+```
+src/
+├── components/          # React组件
+│   ├── ui/             # shadcn/ui基础组件
+│   │   ├── button.tsx
+│   │   ├── input.tsx
+│   │   └── avatar.tsx
+│   ├── SidebarNav.tsx  # 左侧导航栏
+│   ├── ChatList.tsx    # 消息列表
+│   ├── ChatListItem.tsx # 聊天列表项
+│   ├── ChatWindow.tsx  # 聊天窗口
+│   └── MessageBubble.tsx # 消息气泡
+├── store/              # 状态管理
+│   └── chat.ts         # 聊天状态Store
+├── lib/                # 工具函数
+│   └── utils.ts        # shadcn/ui工具函数
+├── App.tsx             # 主应用组件
+├── main.tsx            # 应用入口
+└── index.css           # 全局样式
+```
+
+## 🎨 设计亮点
+
+- **微信风格**: 仿照微信桌面版的界面设计
+- **现代化**: 使用Tailwind CSS实现扁平化设计
+- **响应式**: 支持不同屏幕尺寸
+- **组件化**: 高度模块化的组件架构
+- **类型安全**: 完整的TypeScript类型定义
+
+## 📝 待开发功能
+
+- [ ] 表情包支持
+- [ ] 文件传输
+- [ ] 语音消息
+- [ ] 视频通话
+- [ ] 群聊功能
+- [ ] 好友管理
+- [ ] 朋友圈功能
+- [ ] 设置页面
+
+## 🤝 贡献
+
+欢迎提交Issue和Pull Request来改进这个项目！
+
+---
+
+Built with ❤️ using React + TypeScript + Tailwind CSS

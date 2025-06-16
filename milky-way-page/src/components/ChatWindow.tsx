@@ -1,153 +1,358 @@
-import React, { useState } from 'react';
-import { UserIcon, SendIcon, BackIcon, MoreIcon } from './icons';
+import React, { useState, useRef, useEffect } from 'react'
+import { MessageBubble } from './MessageBubble'
+import { Avatar } from './Avatar'
+import { Smile, Paperclip, Send } from 'lucide-react'
+import { useChatStore } from '@/store/chat'
+import type { ChatUser } from '@/store/chat'
 
-interface Message {
-  id: number;
-  sender: string;
-  message: string;
-  time: string;
-  isMe: boolean;
+interface ChatWindowProps {
+  currentUser: ChatUser | null
 }
 
-export const ChatWindow: React.FC = () => {
-  const [newMessage, setNewMessage] = useState('');
+export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
+  const [inputValue, setInputValue] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const { getChatMessages, addMessage } = useChatStore()
 
-  const messages: Message[] = [
-    { id: 1, sender: '张三', message: '你好！', time: '10:30', isMe: false },
-    { id: 2, sender: '我', message: '嗨，你好！', time: '10:31', isMe: true },
-    {
-      id: 3,
-      sender: '张三',
-      message: '今天天气真不错呢，很适合出去散步',
-      time: '10:32',
-      isMe: false,
-    },
-    {
-      id: 4,
-      sender: '我',
-      message: '是啊，要不要一起去公园走走？',
-      time: '10:33',
-      isMe: true,
-    },
-    {
-      id: 5,
-      sender: '张三',
-      message: '好主意！下午2点怎么样？',
-      time: '10:34',
-      isMe: false,
-    },
-    {
-      id: 6,
-      sender: '我',
-      message: '完美！那我们2点在公园门口见面吧',
-      time: '10:35',
-      isMe: true,
-    },
-  ];
+  const messages = currentUser ? getChatMessages(currentUser.id) : []
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      // Here you would typically dispatch to Redux store
-      console.log('Sending message:', newMessage);
-      setNewMessage('');
-    }
-  };
+    if (!inputValue.trim() || !currentUser) return
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+    addMessage(currentUser.id, {
+      content: inputValue.trim(),
+      sender: 'me',
+      timestamp: new Date(),
+      type: 'text',
+    })
+
+    setInputValue('')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+      e.preventDefault()
+      handleSendMessage()
     }
-  };
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputValue(e.target.value)
+    // 自动调整高度
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
+    }
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="wechat-chat-window">
+        {/* <div style={{ 
+          flex: '1', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center' 
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              margin: '0 auto 12px',
+              backgroundColor: '#e5e7eb',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '24px' }}>💬</span>
+            </div>
+            <h3 style={{ 
+              fontSize: '16px',
+              fontWeight: '500',
+              marginBottom: '8px',
+              color: 'var(--wechat-text)' 
+            }}>
+              选择一个聊天
+            </h3>
+            <p style={{ 
+              color: 'var(--wechat-text-light)',
+              fontSize: '14px'
+            }}>
+              从左侧选择一个联系人开始聊天
+            </p>
+          </div>
+        </div> */}
+      </div>
+    )
+  }
 
   return (
-    <div className="h-full flex flex-col animate-fade-in bg-gray-50">
-      {/* WeChat Style Header */}
-      <div className="p-4 glass-effect border-b border-white/20 relative">
-        <div className="flex items-center justify-between">
-          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors lg:hidden">
-            <BackIcon size={20} color="white" />
-          </button>
-          
-          <div className="flex items-center space-x-3 flex-1 justify-center lg:justify-start">
-            <div
-              className="wechat-avatar"
-              style={
-                {
-                  '--bg-color': '#73c8a9',
-                  '--bg-color-dark': '#5fb896',
-                } as React.CSSProperties
-              }
-            >
-              <UserIcon size={18} color="white" />
-            </div>
-            <div className="text-center lg:text-left">
-              <h2 className="font-bold text-white text-lg chalk-texture">张三</h2>
-              <p className="text-sm text-white/80">在线</p>
-            </div>
+    <div className="wechat-chat-window">
+      {/* 聊天头部 */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '16px 24px',
+        backgroundColor: 'var(--wechat-chat-list-bg)',
+        borderBottom: '1px solid var(--wechat-border)',
+        boxShadow: 'var(--wechat-shadow-card)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Avatar 
+            size={40}
+            userId={currentUser.id}
+            style={{
+              boxShadow: 'var(--wechat-shadow)'
+            }}
+          />
+          <div style={{ marginLeft: '16px' }}>
+            <h2 style={{ 
+              fontSize: '18px',
+              fontWeight: '600',
+              color: 'var(--wechat-text)',
+              letterSpacing: '-0.3px',
+              marginBottom: '2px'
+            }}>
+              {currentUser.name}
+            </h2>
+            <p style={{
+              fontSize: '12px',
+              color: 'var(--wechat-text-light)',
+              margin: 0
+            }}>
+              {currentUser.online ? '在线' : '离线'}
+            </p>
           </div>
-
-          <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-            <MoreIcon size={20} color="white" />
-          </button>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--wechat-chat-bg)'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--wechat-text-light)" strokeWidth="2">
+              <circle cx="12" cy="12" r="1"/>
+              <circle cx="19" cy="12" r="1"/>
+              <circle cx="5" cy="12" r="1"/>
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-blue-50/20 to-blue-100/20">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex items-end space-x-2 ${
-              msg.isMe ? 'justify-end flex-row-reverse space-x-reverse' : 'justify-start'
-            }`}
-          >
-            {/* Avatar for received messages */}
-            {!msg.isMe && (
-              <div className="wechat-avatar-small mb-1">
-                <UserIcon size={14} color="white" />
-              </div>
-            )}
-            
-            <div className="flex flex-col max-w-xs lg:max-w-md">
-              <div className={`wechat-message ${msg.isMe ? 'sent' : 'received'}`}>
-                <p className="text-sm leading-relaxed">{msg.message}</p>
-              </div>
-              <p className={`text-xs mt-1 opacity-60 ${
-                msg.isMe ? 'text-right' : 'text-left'
-              }`}>
-                {msg.time}
-              </p>
-            </div>
-          </div>
+      {/* 聊天消息区域 */}
+      <div style={{
+        flex: '1',
+        overflowY: 'auto',
+        padding: '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+      }}>
+        {messages.map((message) => (
+          <MessageBubble
+            key={message.id}
+            message={message}
+            userId={currentUser.id}
+            userName={currentUser.name}
+          />
         ))}
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* WeChat Style Input */}
-      <div className="p-4 glass-effect border-t border-white/20 bg-white/5">
-        <div className="flex items-end space-x-3">
-          <div className="flex-1 bg-white/90 rounded-lg border border-gray-200/50 focus-within:border-primary/50 transition-colors">
-            <textarea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="输入消息..."
-              className="w-full p-3 bg-transparent border-none outline-none resize-none text-gray-800 placeholder-gray-500 text-sm leading-relaxed min-h-[44px] max-h-24"
-              rows={1}
-              style={{ fontFamily: 'inherit' }}
-            />
+      {/* 输入工具栏 */}
+      <div style={{
+        padding: '16px 24px 20px',
+        backgroundColor: 'var(--wechat-chat-list-bg)',
+        borderTop: '1px solid var(--wechat-border)',
+        boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.03)'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '12px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--wechat-chat-bg)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <Smile style={{ width: '20px', height: '20px', color: 'var(--wechat-text-light)' }} />
+            </div>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--wechat-chat-bg)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <Paperclip style={{ width: '20px', height: '20px', color: 'var(--wechat-text-light)' }} />
+            </div>
           </div>
+          
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--wechat-chat-bg)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--wechat-text-light)" strokeWidth="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <div style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--wechat-chat-bg)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--wechat-text-light)" strokeWidth="2">
+                <polygon points="23 7 16 12 23 17 23 7"/>
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: '16px'
+        }}>
+          <textarea
+            ref={textareaRef}
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="输入消息..."
+            style={{ 
+              flex: '1',
+              resize: 'none',
+              border: '2px solid var(--wechat-border)',
+              borderRadius: '20px',
+              padding: '12px 16px',
+              fontSize: '14px',
+              outline: 'none',
+              minHeight: '44px',
+              maxHeight: '120px',
+              transition: 'all 0.2s ease',
+              backgroundColor: 'white',
+              color: 'var(--wechat-text)',
+              lineHeight: '1.4',
+              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.03)'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = 'var(--wechat-primary)'
+              e.target.style.boxShadow = '0 0 0 3px rgba(252, 214, 108, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.03)'
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = 'var(--wechat-border)'
+              e.target.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.03)'
+            }}
+            rows={1}
+          />
           <button
             onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
-            className={`wechat-send-button ${
-              newMessage.trim() ? 'active' : 'disabled'
-            }`}
+            disabled={!inputValue.trim()}
+            style={{ 
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              opacity: !inputValue.trim() ? 0.4 : 1,
+              backgroundColor: inputValue.trim() ? 'var(--wechat-primary)' : 'var(--wechat-text-light)',
+              color: inputValue.trim() ? '#333' : 'white',
+              border: 'none',
+              cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+              boxShadow: inputValue.trim() ? '0 2px 8px rgba(252, 214, 108, 0.4)' : 'none',
+              transform: inputValue.trim() ? 'scale(1)' : 'scale(0.95)'
+            }}
+                         onMouseEnter={(e) => {
+               if (inputValue.trim()) {
+                 e.currentTarget.style.transform = 'scale(1.05)'
+                 e.currentTarget.style.boxShadow = '0 4px 12px rgba(252, 214, 108, 0.5)'
+               }
+             }}
+             onMouseLeave={(e) => {
+               if (inputValue.trim()) {
+                 e.currentTarget.style.transform = 'scale(1)'
+                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(252, 214, 108, 0.4)'
+               }
+             }}
           >
-            <SendIcon size={18} color="white" />
+            <Send style={{ width: '20px', height: '20px' }} />
           </button>
+        </div>
+        
+        <div style={{ 
+          marginTop: '8px',
+          fontSize: '12px',
+          color: 'var(--wechat-text-light)' 
+        }}>
+          按 Enter 发送，Shift + Enter 换行
         </div>
       </div>
     </div>
-  );
-};
+  )
+} 
