@@ -1,6 +1,7 @@
 import React from 'react'
 import { MessageCircle, Users, Camera, Settings } from 'lucide-react'
 import { Avatar } from './Avatar'
+import styles from '../css/SidebarNav.module.css'
 
 interface SidebarNavProps {
   activeTab: string
@@ -15,44 +16,35 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
   ]
 
   return (
-    <div className="wechat-sidebar">
-            {/* 用户头像 */}
+    <div className={styles.sidebar}>
+      {/* 用户头像 */}
       <Avatar 
         size={48}
         userId="current-user"
-        style={{
-          marginBottom: '24px',
-          border: '2px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-        }}
+        className={styles.userAvatar}
       />
 
       {/* 上部导航按钮 */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0',
-        marginBottom: 'auto'
-      }}>
+      <div className={styles.navSection}>
         {navItems.map((item) => (
           <div
             key={item.id}
-            className={`wechat-sidebar-btn ${activeTab === item.id ? 'active' : ''}`}
+            className={`${styles.sidebarBtn} ${activeTab === item.id ? styles.active : ''}`}
             onClick={() => onTabChange(item.id)}
             title={item.label}
           >
-            <item.icon style={{ width: '24px', height: '24px', color: '#666' }} />
+            <item.icon className={styles.navIcon} />
           </div>
         ))}
       </div>
 
       {/* 底部设置按钮 */}
       <div
-        className={`wechat-sidebar-btn ${activeTab === 'settings' ? 'active' : ''}`}
+        className={`${styles.sidebarBtn} ${activeTab === 'settings' ? styles.active : ''}`}
         onClick={() => onTabChange('settings')}
         title="设置"
       >
-        <Settings style={{ width: '24px', height: '24px', color: '#666' }} />
+        <Settings className={styles.navIcon} />
       </div>
     </div>
   )

@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --wechat-primary: #FCD66C;
+  --wechat-bg: #f7f8fc;
+  --wechat-sidebar: #FAFAFA;
+  --wechat-sidebar-hover: rgba(0, 0, 0, 0.04);
+  --wechat-chat-bg: #f0f1f5;
+  --wechat-chat-list-bg: #ffffff;
+  --wechat-message-bg: #ffffff;
+  --wechat-border: #e8eaed;
+  --wechat-border-light: #f1f3f4;
+  --wechat-text: #1a1a1a;
+  --wechat-text-light: #9aa0a6;
+  --wechat-text-secondary: #5f6368;
+  --wechat-unread: #ff4757;
+  --wechat-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  --wechat-shadow-hover: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --wechat-shadow-card: 0 1px 6px rgba(0, 0, 0, 0.04);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 
+      'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--wechat-bg);
+    color: var(--wechat-text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  #root {
+    min-height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* 自定义滚动条 */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer components {
+  .wechat-container {
+    height: 100vh;
+    display: flex;
+    font-size: 14px;
+    width: 100vw;
+    overflow: hidden;
+    background-color: var(--wechat-bg);
+  }
+  
+
+  
+
+
+}

@@ -1,0 +1,45 @@
+/* App 组件样式模块 */
+
+.mainContent {
+  display: flex;
+  flex: 1;
+}
+
+.emptyState {
+  flex: 1;
+}
+
+.emptyStateInner {
+  flex: 1;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+}
+
+.emptyStateContent {
+  text-align: center;
+}
+
+.emptyStateIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  background-color: #e5e7eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyStateTitle {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+  color: var(--wechat-text);
+}
+
+.emptyStateDesc {
+  color: var(--wechat-text-light);
+  font-size: 14px;
+  margin: 0;
+} 

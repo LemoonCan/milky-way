@@ -1,0 +1,84 @@
+/* MessageBubble 组件样式模块 */
+
+.messageBubble {
+  max-width: 360px;
+  padding: 10px 16px;
+  border-radius: 18px;
+  word-break: break-words;
+  line-height: 1.4;
+  font-size: 14px;
+  box-shadow: var(--wechat-shadow-card);
+  transition: all 0.2s ease;
+}
+
+.messageBubble:hover {
+  box-shadow: var(--wechat-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.messageBubbleSent {
+  background-color: var(--wechat-primary);
+  color: #333;
+  margin-left: auto;
+  border-bottom-right-radius: 6px;
+}
+
+.messageBubbleReceived {
+  background-color: var(--wechat-message-bg);
+  color: var(--wechat-text);
+  border: 1px solid var(--wechat-border);
+  border-bottom-left-radius: 6px;
+}
+
+.messageContainer {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.messageContainerFromMe {
+  justify-content: flex-end;
+}
+
+.messageContainerFromOther {
+  justify-content: flex-start;
+}
+
+.avatarContainer {
+  flex-shrink: 0;
+}
+
+.avatarContainerLeft {
+  margin-right: 12px;
+}
+
+.avatarContainerRight {
+  margin-left: 12px;
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  max-width: 360px;
+}
+
+.messageContentAlignEnd {
+  align-items: flex-end;
+}
+
+.messageContentAlignStart {
+  align-items: flex-start;
+}
+
+.messageText {
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.messageTime {
+  font-size: 12px;
+  margin-top: 4px;
+  color: var(--wechat-text-light);
+} 

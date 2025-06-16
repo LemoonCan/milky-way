@@ -205,7 +205,7 @@ const mockMessages: Record<string, Message[]> = {
   ],
 }
 
-export const useChatStore = create<ChatStore>((set, get) => ({
+export const useChatStore = create<ChatStore>()((set, get) => ({
   currentChatId: null,
   chatUsers: mockUsers,
   messages: mockMessages,

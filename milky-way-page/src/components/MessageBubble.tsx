@@ -1,17 +1,16 @@
 import React from 'react'
 import { Avatar } from './Avatar'
 import type { Message } from '@/store/chat'
+import styles from '../css/MessageBubble.module.css'
 
 interface MessageBubbleProps {
   message: Message
   userId?: string
-  userName?: string
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   userId,
-  userName,
 }) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', {
@@ -23,13 +22,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const isFromMe = message.sender === 'me'
 
   return (
-    <div style={{
-      display: 'flex',
-      marginBottom: '16px',
-      justifyContent: isFromMe ? 'flex-end' : 'flex-start'
-    }}>
+    <div className={`${styles.messageContainer} ${isFromMe ? styles.messageContainerFromMe : styles.messageContainerFromOther}`}>
       {!isFromMe && (
-        <div style={{ flexShrink: 0, marginRight: '12px' }}>
+        <div className={`${styles.avatarContainer} ${styles.avatarContainerLeft}`}>
           <Avatar 
             size={32}
             userId={userId || 'other-user'}
@@ -37,36 +32,21 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
       )}
       
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        maxWidth: '360px',
-        alignItems: isFromMe ? 'flex-end' : 'flex-start'
-      }}>
+      <div className={`${styles.messageContent} ${isFromMe ? styles.messageContentAlignEnd : styles.messageContentAlignStart}`}>
         <div
-          className={`wechat-message-bubble ${isFromMe ? 'sent' : 'received'}`}
+          className={`${styles.messageBubble} ${isFromMe ? styles.messageBubbleSent : styles.messageBubbleReceived}`}
         >
-          <p style={{
-            fontSize: '14px',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            lineHeight: '1.4',
-            margin: 0
-          }}>
+          <p className={styles.messageText}>
             {message.content}
           </p>
         </div>
-        <span style={{
-          fontSize: '12px',
-          marginTop: '4px',
-          color: 'var(--wechat-text-light)'
-        }}>
+        <span className={styles.messageTime}>
           {formatTime(message.timestamp)}
         </span>
       </div>
       
       {isFromMe && (
-        <div style={{ flexShrink: 0, marginLeft: '12px' }}>
+        <div className={`${styles.avatarContainer} ${styles.avatarContainerRight}`}>
           <Avatar 
             size={32}
             userId="current-user"

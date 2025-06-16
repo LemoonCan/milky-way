@@ -1,0 +1,68 @@
+/* SidebarNav 组件样式模块 */
+
+.sidebar {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  background: linear-gradient(180deg, var(--wechat-sidebar) 0%, #F5F5F5 100%);
+  min-width: 80px;
+  max-width: 80px;
+  flex-shrink: 0;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.sidebarBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.sidebarBtn:hover {
+  background-color: var(--wechat-sidebar-hover);
+  transform: scale(1.05);
+}
+
+.sidebarBtn.active {
+  background-color: var(--wechat-primary);
+  box-shadow: 0 4px 16px rgba(252, 214, 108, 0.25);
+}
+
+.sidebarBtn.active::after {
+  content: '';
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background-color: var(--wechat-primary);
+  border-radius: 2px;
+}
+
+.userAvatar {
+  margin-bottom: 24px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: auto;
+}
+
+.navIcon {
+  width: 24px;
+  height: 24px; 
+  color: #666;
+} 

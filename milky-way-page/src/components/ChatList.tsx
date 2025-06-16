@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { ChatListItem } from './ChatListItem'
 import { Search } from 'lucide-react'
 import { useChatStore, type ChatUser } from '@/store/chat'
+import styles from '../css/ChatList.module.css'
 
 interface ChatListProps {
   onSelectChat: (userId: string) => void
@@ -18,77 +19,30 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
   )
 
   return (
-    <div className="wechat-chat-list">
-              {/* 头部区域 */}
-        <div style={{ 
-          padding: '10px 20px 16px', 
-          backgroundColor: 'var(--wechat-chat-list-bg)'
-        }}>
-        <h1 style={{ 
-          fontSize: '22px', 
-          fontWeight: '600', 
-          marginBottom: '16px', 
-          color: 'var(--wechat-text)',
-          letterSpacing: '-0.5px'
-        }}>
+    <div className={styles.chatList}>
+      {/* 头部区域 */}
+      <div className={styles.header}>
+        <h1 className={styles.title}>
           消息
         </h1>
         
         {/* 搜索框 */}
-        <div style={{ position: 'relative' }}>
-          <Search style={{ 
-            position: 'absolute', 
-            left: '14px', 
-            top: '50%', 
-            transform: 'translateY(-50%)', 
-            width: '18px', 
-            height: '18px', 
-            color: 'var(--wechat-text-light)' 
-          }} />
+        <div className={styles.searchContainer}>
+          <Search className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="搜索聊天记录"
+            placeholder="搜索"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ 
-              width: '100%',
-              paddingLeft: '44px',
-              paddingRight: '16px',
-              paddingTop: '12px',
-              paddingBottom: '12px',
-              borderRadius: '20px',
-              outline: 'none',
-              fontSize: '14px',
-              transition: 'all 0.2s',
-              backgroundColor: 'var(--wechat-chat-bg)',
-              color: 'var(--wechat-text)',
-              boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.03)',
-              border: '1px solid transparent'
-            }}
-            onFocus={(e) => {
-              e.target.style.backgroundColor = '#ffffff'
-              e.target.style.boxShadow = '0 0 0 2px rgba(252, 214, 108, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.03)'
-              e.target.style.borderColor = 'var(--wechat-primary)'
-            }}
-            onBlur={(e) => {
-              e.target.style.backgroundColor = 'var(--wechat-chat-bg)'
-              e.target.style.boxShadow = 'inset 0 1px 3px rgba(0, 0, 0, 0.03)'
-              e.target.style.borderColor = 'transparent'
-            }}
+            className={styles.searchInput}
           />
         </div>
       </div>
 
       {/* 聊天列表 */}
-      <div className="wechat-chat-list-content" style={{ flex: '1', overflowY: 'auto' }}>
+      <div className={`${styles.chatListContent} ${styles.listContainer}`}>
         {filteredUsers.length === 0 ? (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '128px', 
-            color: 'var(--wechat-text-light)' 
-          }}>
+          <div className={styles.emptyState}>
             {searchQuery ? '未找到匹配的聊天' : '暂无聊天记录'}
           </div>
         ) : (

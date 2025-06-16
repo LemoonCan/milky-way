@@ -1,6 +1,7 @@
 import React from 'react'
 import { Avatar } from './Avatar'
 import type { ChatUser } from '@/store/chat'
+import styles from '../css/ChatListItem.module.css'
 
 interface ChatListItemProps {
   user: ChatUser
@@ -28,68 +29,35 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
 
   return (
     <div
-      className={`wechat-chat-item ${isActive ? 'active' : ''}`}
+      className={`${styles.chatItem} ${isActive ? styles.active : ''}`}
       onClick={onClick}
     >
-      <div style={{ position: 'relative', flexShrink: 0 }}>
+      <div className={styles.avatarContainer}>
         <Avatar 
           size={48}
           userId={user.id}
-          style={{
-            boxShadow: 'var(--wechat-shadow)'
-          }}
+          className={styles.avatar}
         />
         {user.online && (
-          <div 
-            style={{ 
-              position: 'absolute',
-              bottom: '-2px',
-              right: '-2px',
-              width: '14px',
-              height: '14px',
-              border: '2px solid white',
-              borderRadius: '50%',
-              backgroundColor: 'var(--wechat-primary)'
-            }}
-          ></div>
+          <div className={styles.onlineIndicator}></div>
         )}
         {user.unreadCount > 0 && (
-          <div 
-            style={{ 
-              position: 'absolute',
-              top: '-4px',
-              right: '-4px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minWidth: '18px',
-              height: '18px',
-              padding: '0 3px',
-              fontSize: '11px',
-              fontWeight: '600',
-              color: 'white',
-              borderRadius: '50%',
-              backgroundColor: '#FF4757',
-              border: '2px solid white',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
-              zIndex: 10
-            }}
-          >
+          <div className={styles.unreadBadge}>
             {user.unreadCount > 99 ? '99+' : user.unreadCount}
           </div>
         )}
       </div>
       
-      <div className="wechat-chat-item-content">
-        <div className="wechat-chat-item-header">
-          <h3 className="wechat-chat-item-name">
+      <div className={styles.chatItemContent}>
+        <div className={styles.chatItemHeader}>
+          <h3 className={styles.chatItemName}>
             {user.name}
           </h3>
-          <span className="wechat-chat-item-time">
+          <span className={styles.chatItemTime}>
             {formatTime(user.lastMessageTime)}
           </span>
         </div>
-        <p className="wechat-chat-item-message">
+        <p className={styles.chatItemMessage}>
           {user.lastMessage}
         </p>
       </div>
