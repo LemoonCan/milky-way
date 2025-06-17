@@ -154,6 +154,14 @@
   line-height: 1.4;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
   font-family: inherit;
+  /* 隐藏滚动条但保持滚动功能 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* 隐藏 Webkit 浏览器的滚动条 */
+.messageTextarea::-webkit-scrollbar {
+  display: none;
 }
 
 .messageTextarea:focus {
@@ -185,7 +193,7 @@
 .sendButton.active {
   opacity: 1;
   background-color: var(--wechat-primary);
-  color: #333;
+  color: #ffffff;
   box-shadow: 0 2px 8px rgba(252, 214, 108, 0.4);
   transform: scale(1);
   cursor: pointer;

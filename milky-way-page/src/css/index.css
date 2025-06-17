@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  /* 微信主题色彩 */
   --wechat-primary: #FCD66C;
   --wechat-bg: #f7f8fc;
   --wechat-sidebar: #FAFAFA;
@@ -19,6 +20,28 @@
   --wechat-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   --wechat-shadow-hover: 0 2px 12px rgba(0, 0, 0, 0.06);
   --wechat-shadow-card: 0 1px 6px rgba(0, 0, 0, 0.04);
+
+  /* shadcn/ui CSS 变量 */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 47.9 95.8% 53.1%; /* 微信主题色 */
+  --primary-foreground: 26 83.3% 14.1%;
+  --secondary: 210 40% 98%;
+  --secondary-foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 98%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 98%;
+  --accent-foreground: 222.2 84% 4.9%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 47.9 95.8% 53.1%; /* 微信主题色作为焦点环 */
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -74,9 +97,18 @@
     overflow: hidden;
     background-color: var(--wechat-bg);
   }
+}
+
+@layer utilities {
+  /* 禁用所有输入框的 Tailwind ring 效果 */
+  input:focus {
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+  }
   
-
-  
-
-
+  /* 确保我们的自定义样式优先级更高 */
+  .input {
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+  }
 }

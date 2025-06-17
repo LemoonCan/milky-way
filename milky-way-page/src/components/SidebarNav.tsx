@@ -1,5 +1,5 @@
 import React from 'react'
-import { MessageCircle, Users, Camera, Settings } from 'lucide-react'
+import { MessageCircle, Users, Cherry, Settings } from 'lucide-react'
 import { Avatar } from './Avatar'
 import styles from '../css/SidebarNav.module.css'
 
@@ -12,7 +12,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
   const navItems = [
     { id: 'messages', icon: MessageCircle, label: '消息' },
     { id: 'friends', icon: Users, label: '好友' },
-    { id: 'moments', icon: Camera, label: '朋友圈' },
+    { id: 'moments', icon: Cherry, label: '朋友圈' },
   ]
 
   return (
