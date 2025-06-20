@@ -7,26 +7,26 @@
   word-break: break-words;
   line-height: 1.4;
   font-size: 14px;
-  box-shadow: var(--wechat-shadow-card);
+  box-shadow: var(--milky-shadow-card);
   transition: all 0.2s ease;
 }
 
 .messageBubble:hover {
-  box-shadow: var(--wechat-shadow-hover);
+  box-shadow: var(--milky-shadow-hover);
   transform: translateY(-1px);
 }
 
 .messageBubbleSent {
-  background-color: var(--wechat-primary);
+  background-color: var(--milky-primary);
   color: #333;
   margin-left: auto;
   border-bottom-right-radius: 6px;
 }
 
 .messageBubbleReceived {
-  background-color: var(--wechat-message-bg);
-  color: var(--wechat-text);
-  border: 1px solid var(--wechat-border);
+  background-color: var(--milky-message-bg);
+  color: var(--milky-text);
+  border: 1px solid var(--milky-border);
   border-bottom-left-radius: 6px;
 }
 
@@ -80,5 +80,5 @@
 .messageTime {
   font-size: 12px;
   margin-top: 4px;
-  color: var(--wechat-text-light);
+  color: var(--milky-text-light);
 } 

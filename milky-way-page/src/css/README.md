@@ -18,8 +18,8 @@ src/css/
 
 ### 1. 全局样式 (index.css)
 - 保持原有的全局样式和CSS变量
-- 包含WeChat主题颜色定义
-- 通用组件样式（如.wechat-container, .wechat-sidebar等）
+- 包含milky主题颜色定义
+- 通用组件样式（如.milky-container, .milky-sidebar等）
 
 ### 2. 组件样式模块化
 所有组件的内联样式已被提取为CSS Module文件：
@@ -83,7 +83,7 @@ import styles from '../css/ComponentName.module.css'
 ## 注意事项
 
 1. Avatar组件保留了部分内联样式，因为涉及动态计算的样式值
-2. 保持了原有的全局CSS类名（如.wechat-container）以确保兼容性
+2. 保持了原有的全局CSS类名（如.milky-container）以确保兼容性
 3. 所有组件功能和视觉效果保持不变
 4. 支持响应式设计，在小屏幕设备上会适当调整布局
 

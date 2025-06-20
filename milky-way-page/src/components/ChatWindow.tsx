@@ -71,7 +71,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
             size={40}
             userId={currentUser.id}
             style={{
-              boxShadow: 'var(--wechat-shadow)'
+              boxShadow: 'var(--milky-shadow)'
             }}
           />
           <div className={styles.chatHeaderInfo}>
@@ -86,7 +86,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         
         <div className={styles.chatHeaderActions}>
           <div className={styles.chatHeaderBtn}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--wechat-text-light)" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--milky-text-light)" strokeWidth="2">
               <circle cx="12" cy="12" r="1"/>
               <circle cx="19" cy="12" r="1"/>
               <circle cx="5" cy="12" r="1"/>
@@ -112,21 +112,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         <div className={styles.toolbarTop}>
           <div className={styles.toolbarLeft}>
             <div className={styles.toolBtn}>
-              <Smile style={{ width: '20px', height: '20px', color: 'var(--wechat-text-light)' }} />
+              <Smile style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
             </div>
             <div className={styles.toolBtn}>
-              <Paperclip style={{ width: '20px', height: '20px', color: 'var(--wechat-text-light)' }} />
+              <Paperclip style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
             </div>
           </div>
           
           <div className={styles.toolbarRight}>
             <div className={styles.toolBtn}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--wechat-text-light)" strokeWidth="2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--milky-text-light)" strokeWidth="2">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
             </div>
             <div className={styles.toolBtn}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--wechat-text-light)" strokeWidth="2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--milky-text-light)" strokeWidth="2">
                 <polygon points="23 7 16 12 23 17 23 7"/>
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
               </svg>

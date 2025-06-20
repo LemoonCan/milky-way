@@ -35,11 +35,11 @@
   font-size: 16px;
   font-weight: 500;
   margin: 0 0 8px 0;
-  color: var(--wechat-text);
+  color: var(--milky-text);
 }
 
 .emptyStateDesc {
-  color: var(--wechat-text-light);
+  color: var(--milky-text-light);
   font-size: 14px;
   margin: 0;
 } 

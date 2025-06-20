@@ -107,7 +107,7 @@ function ChatApp() {
                   <div style={{ 
                     marginTop: '16px', 
                     fontSize: '12px', 
-                    color: 'var(--wechat-text-light)' 
+                    color: 'var(--milky-text-light)' 
                   }}>
                     当前用户：{currentUser.nickname} (@{currentUser.username})
                   </div>
@@ -122,7 +122,7 @@ function ChatApp() {
   }
 
   return (
-    <div className="wechat-container">
+    <div className="milky-container">
       {/* 左侧导航栏 */}
       <SidebarNav 
         activeTab={activeTab}
