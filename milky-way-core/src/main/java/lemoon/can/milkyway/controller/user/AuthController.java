@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.param.UserChangePasswordParam;
+import lemoon.can.milkyway.facade.param.UserOpenIdLoginParam;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 import lemoon.can.milkyway.facade.service.command.UserService;
@@ -37,6 +38,16 @@ public class AuthController {
     public ResponseEntity<Result<Void>> changePassword(@RequestBody @Valid UserChangePasswordParam param){
         userService.changePassword(param);
         return ResponseEntity.ok(Result.success());
+    }
+
+    @PatchMapping("/loginByOpenId")
+    @Operation(summary = "账号登录")
+    public ResponseEntity<Result<Void>> loginByOpenId(@RequestBody @Valid UserOpenIdLoginParam param){
+        String token = userService.loginByOpenId(param);
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaderToken.key(), HttpHeaderToken.wrapToken(token))
+                .body(Result.success());
     }
 
     @PatchMapping("/loginByPhone")

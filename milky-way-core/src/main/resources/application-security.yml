@@ -22,7 +22,7 @@ security:
     - /error
   cors:
     allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
-      - http://localhost:3000
+      - https://localhost:5173
       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
   secure-id:
     friend-application-salt: ${FRIEND_APPLICATION_SECUREID_SALT}

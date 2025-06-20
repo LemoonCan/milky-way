@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, AlertCircle } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useAuthStore } from '../store/auth'
 import styles from '../css/LoginPage.module.css'
 
 interface LoginPageProps {
@@ -11,6 +12,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegister }) => {
+  const { login, loading, error, clearError } = useAuthStore()
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -32,6 +34,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
         ...prev,
         [field]: ''
       }))
+    }
+    
+    // 清除API错误
+    if (error) {
+      clearError()
     }
   }
 
@@ -55,11 +62,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
     return !newErrors.username && !newErrors.password
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (validateForm()) {
-      onLogin(formData.username, formData.password)
+      const success = await login(formData.username, formData.password)
+      if (success) {
+        onLogin(formData.username, formData.password)
+      }
     }
   }
 
@@ -77,6 +87,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
 
         {/* 登录表单 */}
         <form onSubmit={handleSubmit} className={styles.form}>
+          {/* API错误显示 */}
+          {error && (
+            <div className={cn(styles.inputGroup, styles.errorAlert)}>
+              <div className={styles.errorMessage}>
+                <AlertCircle className={styles.errorIcon} />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+          
           <div className={styles.inputGroup}>
             <label className={styles.label}>账号</label>
             <Input
@@ -84,6 +104,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
               placeholder="请输入账号"
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
+              disabled={loading}
               className={cn(
                 styles.input,
                 errors.username && styles.inputError
@@ -101,6 +122,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
               placeholder="请输入密码"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
+              disabled={loading}
               className={cn(
                 styles.input,
                 errors.password && styles.inputError
@@ -115,8 +137,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
             type="submit" 
             className={styles.loginButton}
             size="lg"
+            disabled={loading}
           >
-            登录
+            {loading ? '登录中...' : '登录'}
           </Button>
 
           <div className={styles.footer}>

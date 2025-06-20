@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
-import { Sparkles, Camera } from 'lucide-react'
+import { Sparkles, Camera, AlertCircle } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useAuthStore } from '../store/auth'
+import { fileService } from '../services/file'
 import styles from '../css/RegisterPage.module.css'
 
 interface RegisterPageProps {
@@ -20,6 +22,7 @@ export interface RegisterFormData {
 }
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNavigateToLogin }) => {
+  const { loading, error, clearError } = useAuthStore()
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
     password: '',
@@ -34,6 +37,8 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
     confirmPassword: '',
     nickname: ''
   })
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -50,20 +55,43 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
         [field]: ''
       }))
     }
+    
+    // 清除API错误
+    if (error) {
+      clearError()
+    }
+    
+    // 只有当修改头像相关字段时才清除上传错误
+    // 头像上传错误应该只在重新上传头像时清除
+    // if (uploadError) {
+    //   setUploadError('')
+    // }
   }
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        const result = event.target?.result as string
+      setUploading(true)
+      setUploadError('') // 清除之前的上传错误
+      
+      try {
+        // 先上传到后端获取URL
+        const fileInfo = await fileService.uploadAvatar(file)
+        
+        // 使用文件访问URL作为头像
         setFormData(prev => ({
           ...prev,
-          avatar: result
+          avatar: fileInfo.fileAccessUrl
         }))
+        // 上传成功后确保清除错误信息
+        setUploadError('')
+      } catch (error) {
+        console.error('头像上传失败:', error)
+        const errorMessage = error instanceof Error ? error.message : '头像上传失败'
+        setUploadError(errorMessage)
+      } finally {
+        setUploading(false)
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -109,10 +137,11 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
     return Object.values(newErrors).every(error => !error)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (validateForm()) {
+      // 直接调用父组件的注册处理函数，避免重复调用
       onRegister(formData)
     }
   }
@@ -131,10 +160,29 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
 
         {/* 注册表单 */}
         <form onSubmit={handleSubmit} className={styles.form}>
+          {/* API错误显示 */}
+          {error && (
+            <div className={cn(styles.inputGroup, styles.errorAlert)}>
+              <div className={styles.errorMessage}>
+                <AlertCircle className={styles.errorIcon} />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+          
           {/* 头像上传 */}
           <div className={styles.avatarSection}>
             <label className={styles.avatarLabel}>选择头像（可选）</label>
-            <div className={styles.avatarUpload} onClick={() => fileInputRef.current?.click()}>
+            <div 
+              className={styles.avatarUpload} 
+              onClick={() => {
+                if (!loading && !uploading) {
+                  setUploadError('') // 点击头像上传区域时清除上传错误
+                  fileInputRef.current?.click()
+                }
+              }}
+              style={{ cursor: (loading || uploading) ? 'not-allowed' : 'pointer' }}
+            >
               <Avatar className={styles.avatar}>
                 {formData.avatar ? (
                   <AvatarImage src={formData.avatar} alt="头像预览" />
@@ -145,7 +193,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
                 )}
               </Avatar>
               <div className={styles.avatarHint}>
-                <span className={styles.uploadText}>点击上传头像</span>
+                <span className={styles.uploadText}>
+                  {uploading ? '上传中...' : '点击上传头像'}
+                </span>
                 <span className={styles.uploadSubtext}>支持 JPG、PNG 格式</span>
               </div>
             </div>
@@ -154,8 +204,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               type="file"
               accept="image/*"
               onChange={handleAvatarUpload}
+              disabled={loading || uploading}
               className={styles.hiddenInput}
             />
+            {/* 头像上传错误提示 */}
+            {uploadError && (
+              <div className={styles.errorText} style={{ marginTop: '8px' }}>
+                {uploadError}
+              </div>
+            )}
           </div>
 
           {/* 昵称 */}
@@ -166,6 +223,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               placeholder="请输入昵称"
               value={formData.nickname}
               onChange={(e) => handleInputChange('nickname', e.target.value)}
+              disabled={loading}
               className={cn(
                 styles.input,
                 errors.nickname && styles.inputError
@@ -184,6 +242,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               placeholder="请输入账号（字母、数字、下划线）"
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
+              disabled={loading}
               className={cn(
                 styles.input,
                 errors.username && styles.inputError
@@ -202,6 +261,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               placeholder="请输入密码（至少6位）"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
+              disabled={loading}
               className={cn(
                 styles.input,
                 errors.password && styles.inputError
@@ -220,6 +280,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               placeholder="请再次输入密码"
               value={formData.confirmPassword}
               onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+              disabled={loading}
               className={cn(
                 styles.input,
                 errors.confirmPassword && styles.inputError
@@ -234,8 +295,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
             type="submit" 
             className={styles.registerButton}
             size="lg"
+            disabled={loading}
           >
-            注册
+            {loading ? '注册中...' : '注册'}
           </Button>
 
           <div className={styles.footer}>

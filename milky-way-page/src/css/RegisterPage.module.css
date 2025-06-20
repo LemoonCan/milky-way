@@ -202,6 +202,30 @@
   margin-top: 4px;
 }
 
+/* API错误提示样式 */
+.errorAlert {
+  margin-bottom: 8px;
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 71, 87, 0.05);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 12px;
+  color: var(--milky-unread);
+  font-size: 14px;
+}
+
+.errorIcon {
+  width: 16px;
+  height: 16px;
+  color: var(--milky-unread);
+  flex-shrink: 0;
+}
+
 .registerButton {
   margin-top: 12px;
   background: var(--milky-primary);

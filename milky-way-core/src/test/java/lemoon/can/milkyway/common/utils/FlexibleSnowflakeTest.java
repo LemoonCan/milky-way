@@ -16,7 +16,7 @@ public class FlexibleSnowflakeTest {
 
         System.out.println("=== 测试配置: " + config.name() + " ===");
 
-        FlexibleSnowflake snowflake = new FlexibleSnowflake(config, machineId);
+        FlexibleSnowflake snowflake = new FlexibleSnowflake("A", FlexibleSnowflake.MachineConfig.SMALL,machineId);
         System.out.println(snowflake.getConfigInfo());
 
         // 生成测试ID
@@ -55,7 +55,7 @@ public class FlexibleSnowflakeTest {
 
         System.out.println("=== 测试配置: " + config.name() + " ===");
 
-        FlexibleSnowflake snowflake = new FlexibleSnowflake(config, machineId);
+        FlexibleSnowflake snowflake = new FlexibleSnowflake("A",config, machineId);
         System.out.println(snowflake.getConfigInfo());
 
         // 生成测试ID
@@ -94,7 +94,7 @@ public class FlexibleSnowflakeTest {
 
         System.out.println("=== 测试配置: " + config.name() + " ===");
 
-        FlexibleSnowflake snowflake = new FlexibleSnowflake(config, machineId);
+        FlexibleSnowflake snowflake = new FlexibleSnowflake("A",config, machineId);
         System.out.println(snowflake.getConfigInfo());
 
         // 生成测试ID
@@ -133,7 +133,7 @@ public class FlexibleSnowflakeTest {
 
         System.out.println("=== 测试机器数量: " + machineCount + " ===");
 
-        FlexibleSnowflake snowflake = new FlexibleSnowflake(machineCount, machineId);
+        FlexibleSnowflake snowflake = new FlexibleSnowflake("A", FlexibleSnowflake.MachineConfig.MEDIUM, machineId);
         System.out.println(snowflake.getConfigInfo());
 
         String[] ids = snowflake.nextIds(20);
@@ -146,7 +146,7 @@ public class FlexibleSnowflakeTest {
     @Test
     public void testStrictIncreasing() {
         System.out.println("=== 严格递增性压力测试 ===");
-        FlexibleSnowflake snowflake = new FlexibleSnowflake(FlexibleSnowflake.MachineConfig.MEDIUM, 1);
+        FlexibleSnowflake snowflake = new FlexibleSnowflake("A",FlexibleSnowflake.MachineConfig.MEDIUM, 1);
 
         // 快速生成大量ID测试
         String[] rapidIds = snowflake.nextIds(1000);

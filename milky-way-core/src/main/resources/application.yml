@@ -4,11 +4,17 @@ spring:
   profiles:
     include: datasource,security,openapi,log
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
 server:
   port: 8081
 
 env:
   domain: https://localhost:8081/
   fileAccessUrl: files
+
 
 

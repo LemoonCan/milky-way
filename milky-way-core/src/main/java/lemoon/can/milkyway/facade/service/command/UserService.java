@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.facade.service.command;
 
 import lemoon.can.milkyway.facade.param.UserChangePasswordParam;
+import lemoon.can.milkyway.facade.param.UserOpenIdLoginParam;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 
@@ -20,6 +21,13 @@ public interface UserService {
      * @param param 变更密码参数
      */
     void changePassword(UserChangePasswordParam param);
+
+    /**
+     * 用户账号登录
+     * @param param
+     * @return
+     */
+    String loginByOpenId(UserOpenIdLoginParam param);
 
     /**
      * 用户手机登录

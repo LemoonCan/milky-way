@@ -1,94 +1,171 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { authService } from '../services/auth'
+import { tokenManager } from '../lib/http'
+import { getErrorMessage } from '../lib/error-handler'
 import type { RegisterFormData } from '../components/RegisterPage'
-
-export interface User {
-  id: string
-  username: string
-  nickname: string
-  avatar?: string
-}
+import type { User } from '../types/api'
 
 export interface AuthStore {
+  // 状态
   isAuthenticated: boolean
   currentUser: User | null
-  users: User[] // 模拟用户数据库
-  login: (username: string, password: string) => Promise<boolean>
+  loading: boolean
+  error: string | null
+  
+  // 方法
+  login: (openId: string, password: string) => Promise<boolean>
   register: (formData: RegisterFormData) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
+  clearError: () => void
+  checkAuthStatus: () => void
   getCurrentUser: () => User | null
 }
 
-// 模拟用户数据
-const mockUsers: User[] = [
-  {
-    id: 'user-demo',
-    username: 'demo',
-    nickname: '演示用户',
-    avatar: ''
-  }
-]
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set, get) => ({
+      // 初始状态
+      isAuthenticated: tokenManager.isAuthenticated(),
+      currentUser: null,
+      loading: false,
+      error: null,
 
-export const useAuthStore = create<AuthStore>((set, get) => ({
-  isAuthenticated: false,
-  currentUser: null,
-  users: mockUsers,
+      // 登录方法
+      login: async (openId: string, password: string) => {
+        set({ loading: true, error: null })
+        
+        try {
+          const result = await authService.loginByOpenId({ openId, password })
+          
+          if (result.success !== false) {
+            set({
+              isAuthenticated: true,
+              loading: false
+            })
+            
+            // TODO: 可以在这里获取用户信息
+            // 如果后端在登录响应中返回用户信息，可以直接设置
+            // 或者调用getUserInfo接口获取用户信息
+            
+            console.log('登录成功')
+            return true
+          } else {
+            set({
+              isAuthenticated: false,
+              loading: false,
+              error: result.msg || '登录失败'
+            })
+            return false
+          }
+        } catch (error) {
+          const errorMessage = getErrorMessage(error)
+          set({
+            isAuthenticated: false,
+            loading: false,
+            error: errorMessage
+          })
+          console.error('登录失败:', errorMessage)
+          return false
+        }
+      },
 
-  login: async (username: string, password: string) => {
-    // 模拟登录验证
-    // await new Promise(resolve => setTimeout(resolve, 500)) // 模拟网络延迟
+      // 注册方法
+      register: async (formData: RegisterFormData) => {
+        set({ loading: true, error: null })
+        
+        try {
+          const registerData = {
+            openId: formData.username, // 使用username作为openId
+            password: formData.password,
+            nickname: formData.nickname,
+            avatar: formData.avatar
+          }
+          
+          const result = await authService.register(registerData)
+          
+          if (result.success !== false) {
+            set({
+              loading: false
+            })
+            console.log('注册成功')
+            return true
+          } else {
+            set({
+              loading: false,
+              error: result.msg || '注册失败'
+            })
+            return false
+          }
+        } catch (error) {
+          const errorMessage = getErrorMessage(error)
+          set({
+            loading: false,
+            error: errorMessage
+          })
+          console.error('注册失败:', errorMessage)
+          return false
+        }
+      },
 
-    // 简单的模拟验证逻辑
-    const user = get().users.find(u => u.username === username)
-    
-    if (user && (password === '123456' || password === 'password')) {
-      set({
-        isAuthenticated: true,
-        currentUser: user
+      // 登出方法
+      logout: async () => {
+        set({ loading: true })
+        
+        try {
+          await authService.logout()
+        } catch (error) {
+          console.error('登出请求失败:', getErrorMessage(error))
+        } finally {
+          // 无论服务端登出是否成功，都清除本地状态
+          tokenManager.removeToken()
+          set({
+            isAuthenticated: false,
+            currentUser: null,
+            loading: false,
+            error: null
+          })
+          console.log('用户已退出登录')
+        }
+      },
+
+      // 清除错误
+      clearError: () => {
+        set({ error: null })
+      },
+
+      // 检查认证状态
+      checkAuthStatus: () => {
+        const isAuth = tokenManager.isAuthenticated()
+        const currentState = get()
+        
+        // 如果token存在但状态不一致，需要更新状态
+        if (isAuth !== currentState.isAuthenticated) {
+          set({ isAuthenticated: isAuth })
+        }
+        
+        // 如果没有token，清除用户信息
+        if (!isAuth) {
+          set({ 
+            isAuthenticated: false,
+            currentUser: null,
+            error: null
+          })
+        }
+      },
+
+      // 获取当前用户
+      getCurrentUser: () => {
+        return get().currentUser
+      }
+    }),
+    {
+      name: 'milky-way-auth', // 持久化存储的key
+      partialize: (state) => ({
+        // 只持久化必要的状态，不持久化loading和error
+        isAuthenticated: state.isAuthenticated,
+        currentUser: state.currentUser
       })
-      console.log('登录成功:', user)
-      return true
     }
-
-    console.log('登录失败: 用户名或密码错误')
-    return false
-  },
-
-  register: async (formData: RegisterFormData) => {
-    // 模拟注册过程
-    // await new Promise(resolve => setTimeout(resolve, 800)) // 模拟网络延迟
-
-    const existingUser = get().users.find(u => u.username === formData.username)
-    
-    if (existingUser) {
-      console.log('注册失败: 用户名已存在')
-      return false
-    }
-
-    // 创建新用户
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      username: formData.username,
-      nickname: formData.nickname,
-      avatar: formData.avatar || ''
-    }
-
-    set(state => ({
-      users: [...state.users, newUser]
-    }))
-
-    console.log('注册成功:', newUser)
-    return true
-  },
-
-  logout: () => {
-    set({
-      isAuthenticated: false,
-      currentUser: null
-    })
-    console.log('用户已退出登录')
-  },
-
-  getCurrentUser: () => {
-    return get().currentUser
-  }
-})) 
+  )
+) 

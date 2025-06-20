@@ -3,7 +3,7 @@ CREATE TABLE users
 (
     id                   VARCHAR(24) PRIMARY KEY COMMENT '主键ID',
     open_id              VARCHAR(255) UNIQUE NOT NULL COMMENT '用户唯一标识',
-    phone                VARCHAR(20) UNIQUE  NOT NULL COMMENT '手机号',
+    phone                VARCHAR(20) UNIQUE COMMENT '手机号',
     password             VARCHAR(255)        NOT NULL COMMENT '密码',
     nick_name            VARCHAR(100) COMMENT '昵称',
     avatar               VARCHAR(255) COMMENT '头像',
@@ -135,6 +135,6 @@ CREATE TABLE likes
 (
     moment_id    BIGINT      NOT NULL COMMENT '动态ID',
     like_user_id VARCHAR(24) NOT NULL COMMENT '点赞用户ID',
-    created_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (moment_id, like_user_id)
 );

@@ -109,7 +109,7 @@ function ChatApp() {
                     fontSize: '12px', 
                     color: 'var(--milky-text-light)' 
                   }}>
-                    当前用户：{currentUser.nickname} (@{currentUser.username})
+                    当前用户：{currentUser.nickname} (@{currentUser.openId})
                   </div>
                 )}
               </div>

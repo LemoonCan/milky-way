@@ -1,131 +1,190 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from './store/auth'
 import { LoginPage } from './components/LoginPage'
 import { RegisterPage } from './components/RegisterPage'
+import { RegisterSuccessDialog } from './components/RegisterSuccessDialog'
 import type { RegisterFormData } from './components/RegisterPage'
 import ChatApp from './ChatApp'
+import { RouteTestPage } from './components/RouteTestPage'
 
-type PageState = 'login' | 'register' | 'chat'
-
-export const AppRouter: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<PageState>('login')
-  const [message, setMessage] = useState('')
-  const [registerSuccessMessage, setRegisterSuccessMessage] = useState('')
+// 受保护的路由组件
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuthStore()
   
-  const { isAuthenticated, login, register } = useAuthStore()
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  
+  return <>{children}</>
+}
+
+// 公共路由组件（已登录用户重定向到主页）
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuthStore()
+  
+  if (isAuthenticated) {
+    return <Navigate to="/main" replace />
+  }
+  
+  return <>{children}</>
+}
+
+// 登录页面组件包装器
+const LoginPageWrapper: React.FC = () => {
+  const navigate = useNavigate()
+  const { login, clearError } = useAuthStore()
 
   // 处理登录
   const handleLogin = async (username: string, password: string) => {
-    setMessage('')
-    
     try {
       const success = await login(username, password)
       
       if (success) {
-        setMessage('登录成功！')
-        setCurrentPage('chat')
-      } else {
-        setMessage('登录失败：用户名或密码错误')
-      }
+        navigate('/main')
+      } 
     } catch (error) {
-      setMessage('登录过程中出现错误')
       console.error('Login error:', error)
-    }
-  }
-
-  // 处理注册
-  const handleRegister = async (formData: RegisterFormData) => {
-    setRegisterSuccessMessage('')
-    
-    try {
-      const success = await register(formData)
-      
-      if (success) {
-        setRegisterSuccessMessage('注册成功！请登录')
-        // 延时跳转到登录页面，让用户看到成功消息
-        setTimeout(() => {
-          setCurrentPage('login')
-          setRegisterSuccessMessage('')
-        }, 2000)
-      } else {
-        setRegisterSuccessMessage('注册失败：用户名已存在')
-      }
-    } catch (error) {
-      setRegisterSuccessMessage('注册过程中出现错误')
-      console.error('Register error:', error)
     }
   }
 
   // 导航到注册页
   const handleNavigateToRegister = () => {
-    setCurrentPage('register')
-    setMessage('')
+    clearError()
+    navigate('/register')
+  }
+
+  return (
+    <LoginPage
+      onLogin={handleLogin}
+      onNavigateToRegister={handleNavigateToRegister}
+    />
+  )
+}
+
+// 注册页面组件包装器
+const RegisterPageWrapper: React.FC = () => {
+  const navigate = useNavigate()
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const { register, clearError } = useAuthStore()
+
+  // 处理注册
+  const handleRegister = async (formData: RegisterFormData) => {
+    try {
+      const success = await register(formData)
+      
+      if (success) {
+        setShowSuccessDialog(true)
+      }
+    } catch (error) {
+      console.error('Register error:', error)
+    }
+  }
+
+  // 处理注册成功弹窗完成
+  const handleSuccessDialogComplete = () => {
+    setShowSuccessDialog(false)
+    navigate('/login')
   }
 
   // 导航到登录页
   const handleNavigateToLogin = () => {
-    setCurrentPage('login')
-    setMessage('')
+    clearError()
+    navigate('/login')
   }
 
-  // 如果已登录，直接显示聊天应用
-  if (isAuthenticated && currentPage === 'chat') {
-    return <ChatApp />
-  }
-
-  // 根据当前页面状态渲染对应组件
   return (
     <div>
-      {/* 登录页消息提示 */}
-      {message && currentPage === 'login' && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: '#FCD66C',
-          color: 'white',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          zIndex: 10000,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-        }}>
-          {message}
-        </div>
-      )}
-
-      {/* 注册页消息提示 */}
-      {registerSuccessMessage && currentPage === 'register' && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          // backgroundColor: '#FCD66C',
-          color: 'white',
-          padding: '12px 24px',
-          borderRadius: '8px',
-          zIndex: 10000,
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-        }}>
-          {registerSuccessMessage}
-        </div>
-      )}
-
-      {/* 页面内容 */}
-      {currentPage === 'login' && (
-        <LoginPage
-          onLogin={handleLogin}
-          onNavigateToRegister={handleNavigateToRegister}
-        />
-      )}
-
-      {currentPage === 'register' && (
-        <RegisterPage
-          onRegister={handleRegister}
-          onNavigateToLogin={handleNavigateToLogin}
-        />
-      )}
+      <RegisterPage
+        onRegister={handleRegister}
+        onNavigateToLogin={handleNavigateToLogin}
+      />
+      
+      {/* 注册成功弹窗 */}
+      <RegisterSuccessDialog
+        open={showSuccessDialog}
+        onOpenChange={setShowSuccessDialog}
+        onComplete={handleSuccessDialogComplete}
+      />
     </div>
+  )
+}
+
+export const AppRouter: React.FC = () => {
+  const [isInitialized, setIsInitialized] = useState(false)
+  const { isAuthenticated, checkAuthStatus } = useAuthStore()
+
+  // 组件初始化时检查登录状态
+  useEffect(() => {
+    checkAuthStatus()
+    setIsInitialized(true)
+  }, [checkAuthStatus])
+
+  // 如果还未初始化完成，显示加载状态
+  if (!isInitialized) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">加载中...</div>
+      </div>
+    )
+  }
+
+  return (
+    <Routes>
+      {/* 默认路由重定向 */}
+      <Route 
+        path="/" 
+        element={
+          isAuthenticated ? 
+            <Navigate to="/main" replace /> : 
+            <Navigate to="/login" replace />
+        } 
+      />
+      
+      {/* 认证相关路由 */}
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <LoginPageWrapper />
+          </PublicRoute>
+        } 
+      />
+      
+      <Route 
+        path="/register" 
+        element={
+          <PublicRoute>
+            <RegisterPageWrapper />
+          </PublicRoute>
+        } 
+      />
+      
+      {/* 主应用路由 */}
+      <Route 
+        path="/main" 
+        element={
+          <ProtectedRoute>
+            <ChatApp />
+          </ProtectedRoute>
+        } 
+      />
+      
+      {/* 测试路由（仅用于演示） */}
+      <Route 
+        path="/test" 
+        element={<RouteTestPage />} 
+      />
+      
+      {/* 404 重定向 */}
+      <Route 
+        path="*" 
+        element={
+          isAuthenticated ? 
+            <Navigate to="/main" replace /> : 
+            <Navigate to="/login" replace />
+        } 
+      />
+    </Routes>
   )
 } 

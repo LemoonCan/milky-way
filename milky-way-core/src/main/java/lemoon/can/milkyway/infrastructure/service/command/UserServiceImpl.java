@@ -1,10 +1,12 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
+import lemoon.can.milkyway.common.exception.BusinessException;
+import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.JwtTokenProvider;
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.user.LoginInfo;
 import lemoon.can.milkyway.domain.user.User;
 import lemoon.can.milkyway.facade.param.UserChangePasswordParam;
+import lemoon.can.milkyway.facade.param.UserOpenIdLoginParam;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
 import lemoon.can.milkyway.facade.param.UserRegisterParam;
 import lemoon.can.milkyway.facade.service.command.UserService;
@@ -16,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 
@@ -30,16 +33,21 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
-    private final SecureId secureId;
 
     @Transactional
     @Override
     public void register(UserRegisterParam param) {
+        if(StringUtils.hasLength(param.getOpenId())){
+            if (userRepository.existsByOpenId(param.getOpenId())) {
+                throw new BusinessException(ErrorCode.INVALID_PARAM, "账号已存在");
+            }
+        }
         User user = new User(param.getOpenId(), param.getPhone(), passwordEncoder.encode(param.getPassword()));
         user.changeInfo(param.getNickName(), param.getAvatar(), param.getIndividualSignature());
         userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public void changePassword(UserChangePasswordParam param) {
         User user = userRepository.findByPhone(param.getPhone()).orElseThrow();
@@ -47,10 +55,29 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    public String loginByOpenId(UserOpenIdLoginParam param) {
+        User user = userRepository.findByOpenId(param.getOpenId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "账号不存在"));
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(user.getId(), param.getPassword()));
+
+        LoginInfo loginInfo = LoginInfo.builder()
+                .online(1)
+                .lastLoginTime(LocalDateTime.now())
+                .build();
+        user.login(loginInfo);
+        userRepository.save(user);
+        return jwtTokenProvider.createToken(authentication);
+    }
+
     @Transactional
     @Override
     public String loginByPhone(UserPhoneLoginParam param) {
-        User user = userRepository.findByPhone(param.getPhone()).orElseThrow();
+        User user = userRepository.findByPhone(param.getPhone())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "账号不存在"));
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getId(), param.getPassword()));
 
