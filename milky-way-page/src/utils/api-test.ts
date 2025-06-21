@@ -5,7 +5,7 @@ import { getErrorMessage } from '../lib/error-handler'
 const mockUserData = {
   openId: 'test-user-' + Date.now(),
   password: 'password123',
-  nickname: '测试用户',
+  nickName: '测试用户',
   avatar: ''
 }
 
@@ -19,7 +19,7 @@ export async function testRegister() {
     const result = await authService.register({
       openId: mockUserData.openId,
       password: mockUserData.password,
-      nickname: mockUserData.nickname,
+      nickName: mockUserData.nickName,
       phone: '13800138000',
       avatar: mockUserData.avatar
     })

@@ -1,6 +1,8 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { MessageCircle, Users, Cherry, Settings } from 'lucide-react'
 import { Avatar } from './Avatar'
+import { userService } from '../services/user'
+import type { User } from '../types/api'
 import styles from '../css/SidebarNav.module.css'
 
 interface SidebarNavProps {
@@ -9,6 +11,23 @@ interface SidebarNavProps {
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+
+  // 获取当前用户信息
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const response = await userService.getUserInfo()
+        if (response.success && response.data) {
+          setCurrentUser(response.data)
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+      }
+    }
+
+    loadCurrentUser()
+  }, [])
   const navItems = [
     { id: 'messages', icon: MessageCircle, label: '消息' },
     { id: 'friends', icon: Users, label: '好友' },
@@ -20,7 +39,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
       {/* 用户头像 */}
       <Avatar 
         size={48}
-        userId="current-user"
+        userId={currentUser?.openId || "current-user"}
+        avatarUrl={currentUser?.avatar}
         className={styles.userAvatar}
       />
 

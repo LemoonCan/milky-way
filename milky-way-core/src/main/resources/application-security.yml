@@ -20,6 +20,8 @@ security:
     - /swagger-resources/**
     - /webjars/**
     - /error
+  get-permit-urls:
+    - /files/**
   cors:
     allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
       - https://localhost:5173

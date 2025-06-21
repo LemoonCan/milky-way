@@ -1,11 +1,9 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
-import { Sparkles, Camera, AlertCircle } from 'lucide-react'
+import { Sparkles, AlertCircle } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { useAuthStore } from '../store/auth'
-import { fileService } from '../services/file'
 import styles from '../css/RegisterPage.module.css'
 
 interface RegisterPageProps {
@@ -17,8 +15,7 @@ export interface RegisterFormData {
   username: string
   password: string
   confirmPassword: string
-  nickname: string
-  avatar?: string
+  nickName: string
 }
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNavigateToLogin }) => {
@@ -27,20 +24,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
     username: '',
     password: '',
     confirmPassword: '',
-    nickname: '',
-    avatar: ''
+    nickName: ''
   })
   
   const [errors, setErrors] = useState({
     username: '',
     password: '',
     confirmPassword: '',
-    nickname: ''
+    nickName: ''
   })
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleInputChange = (field: keyof RegisterFormData, value: string) => {
     setFormData(prev => ({
@@ -61,38 +53,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
       clearError()
     }
     
-    // 只有当修改头像相关字段时才清除上传错误
-    // 头像上传错误应该只在重新上传头像时清除
-    // if (uploadError) {
-    //   setUploadError('')
-    // }
-  }
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type.startsWith('image/')) {
-      setUploading(true)
-      setUploadError('') // 清除之前的上传错误
-      
-      try {
-        // 先上传到后端获取URL
-        const fileInfo = await fileService.uploadAvatar(file)
-        
-        // 使用文件访问URL作为头像
-        setFormData(prev => ({
-          ...prev,
-          avatar: fileInfo.fileAccessUrl
-        }))
-        // 上传成功后确保清除错误信息
-        setUploadError('')
-      } catch (error) {
-        console.error('头像上传失败:', error)
-        const errorMessage = error instanceof Error ? error.message : '头像上传失败'
-        setUploadError(errorMessage)
-      } finally {
-        setUploading(false)
-      }
-    }
   }
 
   const validateForm = () => {
@@ -100,7 +60,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
       username: '',
       password: '',
       confirmPassword: '',
-      nickname: ''
+      nickName: ''
     }
 
     // 验证账号
@@ -127,10 +87,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
     }
 
     // 验证昵称
-    if (!formData.nickname.trim()) {
-      newErrors.nickname = '请输入昵称'
-    } else if (formData.nickname.length > 20) {
-      newErrors.nickname = '昵称不能超过20个字符'
+    if (!formData.nickName.trim()) {
+      newErrors.nickName = '请输入昵称'
+    } else if (formData.nickName.length > 20) {
+      newErrors.nickName = '昵称不能超过20个字符'
     }
 
     setErrors(newErrors)
@@ -170,50 +130,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
             </div>
           )}
           
-          {/* 头像上传 */}
-          <div className={styles.avatarSection}>
-            <label className={styles.avatarLabel}>选择头像（可选）</label>
-            <div 
-              className={styles.avatarUpload} 
-              onClick={() => {
-                if (!loading && !uploading) {
-                  setUploadError('') // 点击头像上传区域时清除上传错误
-                  fileInputRef.current?.click()
-                }
-              }}
-              style={{ cursor: (loading || uploading) ? 'not-allowed' : 'pointer' }}
-            >
-              <Avatar className={styles.avatar}>
-                {formData.avatar ? (
-                  <AvatarImage src={formData.avatar} alt="头像预览" />
-                ) : (
-                  <AvatarFallback className={styles.avatarFallback}>
-                    <Camera className={styles.avatarIcon} />
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div className={styles.avatarHint}>
-                <span className={styles.uploadText}>
-                  {uploading ? '上传中...' : '点击上传头像'}
-                </span>
-                <span className={styles.uploadSubtext}>支持 JPG、PNG 格式</span>
-              </div>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarUpload}
-              disabled={loading || uploading}
-              className={styles.hiddenInput}
-            />
-            {/* 头像上传错误提示 */}
-            {uploadError && (
-              <div className={styles.errorText} style={{ marginTop: '8px' }}>
-                {uploadError}
-              </div>
-            )}
-          </div>
+
 
           {/* 昵称 */}
           <div className={styles.inputGroup}>
@@ -221,16 +138,16 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
             <Input
               type="text"
               placeholder="请输入昵称"
-              value={formData.nickname}
-              onChange={(e) => handleInputChange('nickname', e.target.value)}
+              value={formData.nickName}
+              onChange={(e) => handleInputChange('nickName', e.target.value)}
               disabled={loading}
               className={cn(
                 styles.input,
-                errors.nickname && styles.inputError
+                errors.nickName && styles.inputError
               )}
             />
-            {errors.nickname && (
-              <span className={styles.errorText}>{errors.nickname}</span>
+            {errors.nickName && (
+              <span className={styles.errorText}>{errors.nickName}</span>
             )}
           </div>
 

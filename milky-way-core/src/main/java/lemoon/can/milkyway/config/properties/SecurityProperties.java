@@ -15,6 +15,7 @@ import java.util.List;
 @Data
 public class SecurityProperties {
     private List<String> permitUrls;
+    private List<String> getPermitUrls;
     private CorsProperties cors;
 
     private WebSocketProperties websocket;

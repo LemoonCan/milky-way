@@ -28,4 +28,10 @@ public class UserQueryServiceImpl implements UserQueryService {
                 .map(userConverter::toDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public UserDTO getById(String id) {
+        UserDO userDO = userMapper.selectUserById(id);
+        return userConverter.toDTO(userDO);
+    }
 }

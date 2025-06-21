@@ -10,9 +10,10 @@ export interface ApiResponse<T = unknown> {
 export interface User {
   id: string
   openId: string
-  nickname: string
+  nickName: string
   phone?: string
   avatar?: string
+  individualSignature?: string // 个性签名
   createdAt?: string
   updatedAt?: string
 }
@@ -21,7 +22,7 @@ export interface User {
 export interface RegisterRequest {
   openId: string
   password: string
-  nickname: string
+  nickName: string
   phone?: string
   avatar?: string
 }

@@ -14,7 +14,7 @@ class AuthService {
    * 用户注册
    */
   async register(data: RegisterRequest): Promise<ApiResponse<void>> {
-    const response = await http.post<ApiResponse<void>>('/register', data)
+    const response = await http.post<ApiResponse<void>>('/auth/register', data)
     return response.data
   }
 
@@ -22,7 +22,7 @@ class AuthService {
    * 账号登录
    */
   async loginByOpenId(data: LoginByOpenIdRequest): Promise<ApiResponse<void>> {
-    const response = await http.patch<ApiResponse<void>>('/loginByOpenId', data)
+    const response = await http.patch<ApiResponse<void>>('/auth/loginByOpenId', data)
     return response.data
   }
 
@@ -30,7 +30,7 @@ class AuthService {
    * 手机号登录
    */
   async loginByPhone(data: LoginByPhoneRequest): Promise<ApiResponse<void>> {
-    const response = await http.patch<ApiResponse<void>>('/loginByPhone', data)
+    const response = await http.patch<ApiResponse<void>>('/auth/loginByPhone', data)
     return response.data
   }
 

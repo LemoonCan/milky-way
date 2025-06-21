@@ -5,6 +5,7 @@ import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.JwtTokenProvider;
 import lemoon.can.milkyway.domain.user.LoginInfo;
 import lemoon.can.milkyway.domain.user.User;
+import lemoon.can.milkyway.facade.dto.UserDTO;
 import lemoon.can.milkyway.facade.param.UserChangePasswordParam;
 import lemoon.can.milkyway.facade.param.UserOpenIdLoginParam;
 import lemoon.can.milkyway.facade.param.UserPhoneLoginParam;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void register(UserRegisterParam param) {
-        if(StringUtils.hasLength(param.getOpenId())){
+        if (StringUtils.hasLength(param.getOpenId())) {
             if (userRepository.existsByOpenId(param.getOpenId())) {
                 throw new BusinessException(ErrorCode.INVALID_PARAM, "账号已存在");
             }
@@ -50,8 +51,23 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void changePassword(UserChangePasswordParam param) {
-        User user = userRepository.findByPhone(param.getPhone()).orElseThrow();
+        User user = userRepository.findByPhone(param.getPhone())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PARAM, "用户不存在"));
         user.changePassword(passwordEncoder.encode(param.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changeInfo(UserDTO param) {
+        User user = userRepository.findById(param.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.INVALID_PARAM, "用户不存在"));
+        if(!user.getOpenId().equals(param.getOpenId())) {
+            if (userRepository.existsByOpenId(param.getOpenId())) {
+                throw new BusinessException(ErrorCode.INVALID_PARAM, "账号已存在");
+            }
+        }
+        user.changeOpenId(param.getOpenId());
+        user.changeInfo(param.getNickName(), param.getAvatar(), param.getIndividualSignature());
         userRepository.save(user);
     }
 

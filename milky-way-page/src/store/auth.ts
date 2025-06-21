@@ -78,8 +78,7 @@ export const useAuthStore = create<AuthStore>()(
           const registerData = {
             openId: formData.username, // 使用username作为openId
             password: formData.password,
-            nickname: formData.nickname,
-            avatar: formData.avatar
+            nickName: formData.nickName
           }
           
           const result = await authService.register(registerData)

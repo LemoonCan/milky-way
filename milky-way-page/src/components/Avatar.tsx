@@ -3,6 +3,7 @@ import React from 'react'
 interface AvatarProps {
   size?: number
   userId?: string
+  avatarUrl?: string
   className?: string
   style?: React.CSSProperties
 }
@@ -79,11 +80,40 @@ const PersonIcon = ({ patternIndex, size }: { patternIndex: number, size: number
 export const Avatar: React.FC<AvatarProps> = ({ 
   size = 40, 
   userId = 'default',
+  avatarUrl,
   className = '',
   style = {}
 }) => {
   const avatarStyle = getAvatarStyle(userId)
   
+  // 如果有真实头像URL，显示图片；否则显示生成的头像
+  if (avatarUrl) {
+    return (
+      <div
+        className={className}
+        style={{
+          width: `${size}px`,
+          height: `${size}px`,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          position: 'relative',
+          ...style
+        }}
+      >
+        <img
+          src={avatarUrl}
+          alt="用户头像"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      </div>
+    )
+  }
+  
+  // 显示生成的头像
   return (
     <div
       className={className}

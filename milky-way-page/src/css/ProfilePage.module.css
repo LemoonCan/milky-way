@@ -1,0 +1,344 @@
+/* 个人信息页面样式模块 */
+
+.container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F5F5F5;
+  padding: 20px;
+}
+
+.profileCard {
+  background: white;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* 加载状态 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--milky-border);
+  border-top: 3px solid var(--milky-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 头部 */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--milky-border);
+  background: white;
+  position: relative;
+}
+
+.backButton {
+  color: #8c8c8c;
+  padding: 8px 12px;
+  height: auto;
+  font-size: 14px;
+  border-radius: 12px;
+  border: 1px solid #d3d3d3;
+}
+
+.backIcon {
+  color: #8c8c8c;
+  width: 16px;
+  height: 16px;
+  margin-right: 3px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--milky-text);
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 内容区域 */
+.content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* 隐藏滚动条但保持滚动功能 */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* 隐藏 Webkit 浏览器的滚动条 */
+.content::-webkit-scrollbar {
+  display: none;
+}
+
+/* 警告/成功提示 */
+.errorAlert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 71, 87, 0.1);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 12px;
+  color: var(--milky-unread);
+  font-size: 14px;
+}
+
+.successAlert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 12px;
+  color: #22c55e;
+  font-size: 14px;
+}
+
+.alertIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* 头像上传区域 */
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.avatarUpload {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px dashed var(--milky-border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafafa;
+}
+
+.avatarUpload:hover {
+  border-color: var(--milky-primary);
+  background: rgba(252, 214, 108, 0.05);
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.avatarFallback {
+  background: var(--milky-border-light);
+  color: var(--milky-text-light);
+}
+
+.avatarIcon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+.avatarHint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.uploadText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+}
+
+.uploadSubtext {
+  font-size: 12px;
+  color: var(--milky-text-light);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* 输入框组 */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+}
+
+.input {
+  border: 2px solid var(--milky-border) !important;
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  font-size: 14px !important;
+  min-height: 48px !important;
+  background: white !important;
+  color: var(--milky-text) !important;
+  transition: all 0.2s ease !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  line-height: 1.4 !important;
+}
+
+.input:focus {
+  border-color: var(--milky-primary) !important;
+  background: white !important;
+  box-shadow: 0 0 0 3px rgba(252, 214, 108, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  outline: none !important;
+  --tw-ring-shadow: none !important;
+  --tw-ring-offset-shadow: none !important;
+}
+
+.input:hover {
+  border-color: #d1d5db;
+  background: white;
+}
+
+.input::placeholder {
+  color: var(--milky-text-light);
+}
+
+.inputError {
+  border-color: var(--milky-unread) !important;
+  background: rgba(255, 71, 87, 0.02) !important;
+}
+
+.inputDisabled {
+  background: #f9fafb !important;
+  color: var(--milky-text-light) !important;
+  cursor: not-allowed !important;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px !important;
+  font-family: inherit;
+}
+
+.charCount {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  text-align: right;
+}
+
+.errorText {
+  font-size: 12px;
+  color: var(--milky-unread);
+  margin-top: 4px;
+}
+
+/* 底部保存按钮区域 */
+.footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--milky-border);
+  background: white;
+}
+
+.saveButton {
+  width: 100%;
+  height: 48px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.saveButtonActive {
+  background: var(--milky-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 16px rgba(252, 214, 108, 0.3);
+}
+
+.saveButtonActive:hover {
+  background: #e6c266 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(252, 214, 108, 0.4);
+}
+
+.saveButtonDisabled {
+  background: var(--milky-border-light) !important;
+  color: var(--milky-text-light) !important;
+  cursor: not-allowed !important;
+}
+
+.saveButtonDisabled:hover {
+  background: var(--milky-border-light) !important;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .profileCard {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .header {
+    padding: 16px 20px 12px;
+  }
+  
+  .title {
+    font-size: 16px;
+  }
+  
+  .content {
+    padding: 20px;
+    gap: 16px;
+  }
+  
+  .footer {
+    padding: 16px 20px;
+  }
+  
+  .avatarUpload {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+} 

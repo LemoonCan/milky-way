@@ -6,6 +6,7 @@ import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -58,6 +59,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 保护关闭？
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitUrls().toArray(new String[0])).permitAll() // 放行接口
+                        .requestMatchers(HttpMethod.GET, securityProperties.getGetPermitUrls().toArray(new String[0])).permitAll()
                         .anyRequest().authenticated()) // 其他接口需认证
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class); // JWT认证过滤器(先于路径匹配执行)
 

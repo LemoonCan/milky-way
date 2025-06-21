@@ -17,5 +17,8 @@ public interface UserMapper {
     List<UserDO> selectAll();
 
     @Select("select id, nick_name, avatar from users")
-    SimpleUserDTO selectSimpleById(String userId);
+    SimpleUserDTO selectSimpleById(String id);
+
+    @Select("select open_id, phone, nick_name, avatar, individual_signature, register_time from users where id = #{id}")
+    UserDO selectUserById(String id);
 }

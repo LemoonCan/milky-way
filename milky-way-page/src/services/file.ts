@@ -60,7 +60,9 @@ class FileService {
       const httpError = error as { response?: { status: number } }
       if (httpError?.response?.status && httpError.response.status !== 200) {
         const status = httpError.response.status
-        if (status === 413) {
+        if (status==403){
+            throw new Error('访问受限')
+        }else if(status === 413) {
           throw new Error('文件过大，请选择较小的文件')
         } else if (status >= 400 && status < 500) {
           throw new Error('文件上传失败，请检查文件格式')

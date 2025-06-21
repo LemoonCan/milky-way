@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { SidebarNav } from './components/SidebarNav'
 import { ChatList } from './components/ChatList'
 import { ChatWindow } from './components/ChatWindow'
+import { SettingsPage } from './components/SettingsPage'
+import { ProfilePage } from './components/ProfilePage'
 import { useChatStore } from './store/chat'
-import { useAuthStore } from './store/auth'
 import styles from './css/App.module.css'
 import chatWindowStyles from './css/ChatWindow.module.css'
 
 function ChatApp() {
   const [activeTab, setActiveTab] = useState('messages')
+  const [showProfile, setShowProfile] = useState(false)
   const { chatUsers, currentChatId, setCurrentChat } = useChatStore()
-  const { logout, currentUser } = useAuthStore()
+
 
   const currentUser_chat = chatUsers.find((user) => user.id === currentChatId) || null
 
@@ -18,11 +20,12 @@ function ChatApp() {
     setCurrentChat(userId)
   }
 
-  const handleLogout = () => {
-    if (confirm('确定要退出登录吗？')) {
-      logout()
-      // 页面会由AppRouter处理重定向
-    }
+  const handleNavigateToProfile = () => {
+    setShowProfile(true)
+  }
+
+  const handleBackFromProfile = () => {
+    setShowProfile(false)
   }
 
   const renderMainContent = () => {
@@ -74,46 +77,16 @@ function ChatApp() {
           </div>
         )
       case 'settings':
-        return (
-          <div className={`${chatWindowStyles.chatWindowBase} ${styles.emptyState}`}>
-            <div className={styles.emptyStateInner}>
-              <div className={styles.emptyStateContent}>
-                <div className={styles.emptyStateIcon}>
-                  <span style={{ fontSize: '24px' }}>⚙️</span>
-                </div>
-                <h3 className={styles.emptyStateTitle}>
-                  设置功能
-                </h3>
-                <p className={styles.emptyStateDesc}>
-                  设置功能正在开发中...
-                </p>
-                <div style={{ marginTop: '20px' }}>
-                  <button
-                    onClick={handleLogout}
-                    style={{
-                      padding: '8px 16px',
-                      backgroundColor: '#ff4757',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '14px'
-                    }}
-                  >
-                    退出登录
-                  </button>
-                </div>
-                {currentUser && (
-                  <div style={{ 
-                    marginTop: '16px', 
-                    fontSize: '12px', 
-                    color: 'var(--milky-text-light)' 
-                  }}>
-                    当前用户：{currentUser.nickname} (@{currentUser.openId})
-                  </div>
-                )}
-              </div>
+        if (showProfile) {
+          return (
+            <div className={chatWindowStyles.chatWindowBase}>
+              <ProfilePage onBack={handleBackFromProfile} />
             </div>
+          )
+        }
+        return (
+          <div className={chatWindowStyles.chatWindowBase}>
+            <SettingsPage onNavigateToProfile={handleNavigateToProfile} />
           </div>
         )
       default:
