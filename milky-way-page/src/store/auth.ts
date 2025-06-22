@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { authService } from '../services/auth'
 import { tokenManager } from '../lib/http'
 import { getErrorMessage } from '../lib/error-handler'
+import { useUserStore } from './user'
 import type { RegisterFormData } from '../components/RegisterPage'
 import type { User } from '../types/api'
 
@@ -33,6 +34,14 @@ export const useAuthStore = create<AuthStore>()(
 
       // 登录方法
       login: async (openId: string, password: string) => {
+        const currentState = get()
+        
+        // 如果正在登录中，避免重复请求
+        if (currentState.loading) {
+          console.warn('登录请求正在进行中，忽略重复请求')
+          return false
+        }
+
         set({ loading: true, error: null })
         
         try {
@@ -118,6 +127,11 @@ export const useAuthStore = create<AuthStore>()(
         } finally {
           // 无论服务端登出是否成功，都清除本地状态
           tokenManager.removeToken()
+          
+          // 清除用户信息缓存
+          const userStore = useUserStore.getState()
+          userStore.clearUser()
+          
           set({
             isAuthenticated: false,
             currentUser: null,

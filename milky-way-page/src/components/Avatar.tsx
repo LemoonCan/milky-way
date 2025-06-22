@@ -1,4 +1,5 @@
 import React from 'react'
+import { LazyImage } from './LazyImage'
 
 interface AvatarProps {
   size?: number
@@ -86,7 +87,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 }) => {
   const avatarStyle = getAvatarStyle(userId)
   
-  // 如果有真实头像URL，显示图片；否则显示生成的头像
+  // 如果有真实头像URL，显示缓存图片；否则显示生成的头像
   if (avatarUrl) {
     return (
       <div
@@ -100,14 +101,44 @@ export const Avatar: React.FC<AvatarProps> = ({
           ...style
         }}
       >
-        <img
+        <LazyImage
           src={avatarUrl}
           alt="用户头像"
+          width="100%"
+          height="100%"
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
+            objectFit: 'cover' as const
           }}
+          fallback={
+            // 如果头像加载失败，显示生成的头像
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: avatarStyle.backgroundColor,
+                color: avatarStyle.color,
+              }}
+            >
+              <PersonIcon patternIndex={avatarStyle.patternIndex} size={size} />
+            </div>
+          }
+          placeholder={
+            // 加载时显示的占位符
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 1.5s infinite',
+                borderRadius: '12px'
+              }}
+            />
+          }
         />
       </div>
     )

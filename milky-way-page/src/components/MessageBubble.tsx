@@ -6,11 +6,17 @@ import styles from '../css/MessageBubble.module.css'
 interface MessageBubbleProps {
   message: Message
   userId?: string
+  currentUserId?: string
+  currentUserAvatar?: string
+  onAvatarClick?: (isFromMe: boolean, element: HTMLElement) => void
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   userId,
+  currentUserId,
+  currentUserAvatar,
+  onAvatarClick,
 }) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', {
@@ -24,7 +30,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <div className={`${styles.messageContainer} ${isFromMe ? styles.messageContainerFromMe : styles.messageContainerFromOther}`}>
       {!isFromMe && (
-        <div className={`${styles.avatarContainer} ${styles.avatarContainerLeft}`}>
+        <div 
+          className={`${styles.avatarContainer} ${styles.avatarContainerLeft}`}
+          onClick={(e) => onAvatarClick?.(false, e.currentTarget)}
+          style={{ cursor: onAvatarClick ? 'pointer' : 'default' }}
+        >
           <Avatar 
             size={32}
             userId={userId || 'other-user'}
@@ -46,10 +56,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       </div>
       
       {isFromMe && (
-        <div className={`${styles.avatarContainer} ${styles.avatarContainerRight}`}>
+        <div 
+          className={`${styles.avatarContainer} ${styles.avatarContainerRight}`}
+          onClick={(e) => onAvatarClick?.(true, e.currentTarget)}
+          style={{ cursor: onAvatarClick ? 'pointer' : 'default' }}
+        >
           <Avatar 
             size={32}
-            userId="current-user"
+            userId={currentUserId || "current-user"}
+            avatarUrl={currentUserAvatar}
           />
         </div>
       )}

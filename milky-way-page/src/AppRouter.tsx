@@ -33,10 +33,15 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // 登录页面组件包装器
 const LoginPageWrapper: React.FC = () => {
   const navigate = useNavigate()
-  const { login, clearError } = useAuthStore()
+  const { login, clearError, loading } = useAuthStore()
 
   // 处理登录
   const handleLogin = async (username: string, password: string) => {
+    // 如果正在登录中，避免重复调用
+    if (loading) {
+      return
+    }
+
     try {
       const success = await login(username, password)
       

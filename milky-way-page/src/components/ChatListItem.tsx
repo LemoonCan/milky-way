@@ -14,6 +14,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
   isActive,
   onClick,
 }) => {
+
   const formatTime = (date: Date) => {
     const now = new Date()
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
@@ -61,7 +62,6 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           {user.lastMessage}
         </p>
       </div>
-
     </div>
   )
 } 

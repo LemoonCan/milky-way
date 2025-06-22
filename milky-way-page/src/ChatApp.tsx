@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { SidebarNav } from './components/SidebarNav'
 import { ChatList } from './components/ChatList'
 import { ChatWindow } from './components/ChatWindow'
 import { SettingsPage } from './components/SettingsPage'
 import { ProfilePage } from './components/ProfilePage'
 import { useChatStore } from './store/chat'
+import { useUserStore } from './store/user'
 import styles from './css/App.module.css'
 import chatWindowStyles from './css/ChatWindow.module.css'
 
@@ -12,6 +13,12 @@ function ChatApp() {
   const [activeTab, setActiveTab] = useState('messages')
   const [showProfile, setShowProfile] = useState(false)
   const { chatUsers, currentChatId, setCurrentChat } = useChatStore()
+  const { fetchUserInfo } = useUserStore()
+
+  // 应用启动时获取用户信息
+  useEffect(() => {
+    fetchUserInfo()
+  }, [fetchUserInfo])
 
 
   const currentUser_chat = chatUsers.find((user) => user.id === currentChatId) || null

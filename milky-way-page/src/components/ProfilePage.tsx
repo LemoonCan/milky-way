@@ -5,6 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
 import { ArrowLeft, Camera, AlertCircle, Check } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { userService } from '../services/user'
+import { useUserStore } from '../store/user'
 import { fileService } from '../services/file'
 import type { UpdateUserRequest } from '../services/user'
 import styles from '../css/ProfilePage.module.css'
@@ -62,6 +63,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     )
   }, [formData, originalData])
 
+  const { currentUser, fetchUserInfo, updateUserInfo } = useUserStore()
+
   // 加载用户信息
   useEffect(() => {
     loadUserInfo()
@@ -72,21 +75,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     setError('')
     
     try {
-      const response = await userService.getUserInfo()
+      await fetchUserInfo()
       
-      if (response.success && response.data) {
-        const userData = response.data
+      if (currentUser) {
         const profileData: ProfileFormData = {
-          nickName: userData.nickName || '',
-          avatar: userData.avatar || '',
-          individualSignature: userData.individualSignature || '', // 个性签名字段
-          openId: userData.openId || ''
+          nickName: currentUser.nickName || '',
+          avatar: currentUser.avatar || '',
+          individualSignature: currentUser.individualSignature || '', // 个性签名字段
+          openId: currentUser.openId || ''
         }
         
         setOriginalData(profileData)
         setFormData(profileData)
       } else {
-        setError(response.msg || '获取用户信息失败')
+        setError('获取用户信息失败')
       }
     } catch (err) {
       console.error('获取用户信息失败:', err)
@@ -188,6 +190,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
       const response = await userService.updateUserInfo(updateData)
       
       if (response.success) {
+        // 更新全局状态
+        updateUserInfo({
+          nickName: updateData.nickName,
+          avatar: updateData.avatar,
+          individualSignature: updateData.individualSignature
+        })
+        
         setOriginalData({ ...formData })
         setSuccess(true)
         

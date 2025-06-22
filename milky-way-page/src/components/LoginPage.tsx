@@ -12,7 +12,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegister }) => {
-  const { login, loading, error, clearError } = useAuthStore()
+  const { loading, error, clearError } = useAuthStore()
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -66,10 +66,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
     e.preventDefault()
     
     if (validateForm()) {
-      const success = await login(formData.username, formData.password)
-      if (success) {
-        onLogin(formData.username, formData.password)
-      }
+      // 直接调用父组件的登录处理函数，避免重复调用
+      onLogin(formData.username, formData.password)
     }
   }
 
@@ -105,6 +103,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               disabled={loading}
+              autoComplete="username"
               className={cn(
                 styles.input,
                 errors.username && styles.inputError
@@ -123,6 +122,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               disabled={loading}
+              autoComplete="current-password"
               className={cn(
                 styles.input,
                 errors.password && styles.inputError

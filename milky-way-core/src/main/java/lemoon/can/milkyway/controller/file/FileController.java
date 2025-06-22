@@ -58,6 +58,9 @@ public class FileController {
         return ResponseEntity.ok()
                 .contentType(FileUtil.parseMediaType(fileDTO.getFileType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileDTO.getFileName() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400, s-maxage=86400")
+                .header(HttpHeaders.ETAG, "\"" + fileId + "\"")
+                .header(HttpHeaders.EXPIRES, java.time.Instant.now().plus(1, java.time.temporal.ChronoUnit.DAYS).toString())
                 .body(fileDTO.getResource());
     }
 

@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { Avatar } from './Avatar'
+import { ProfileModal } from './ProfileModal'
 import { Smile, Paperclip, Send } from 'lucide-react'
 import { useChatStore } from '@/store/chat'
+import { useUserStore } from '../store/user'
 import type { ChatUser, Message } from '@/store/chat'
 import styles from '../css/ChatWindow.module.css'
 
@@ -12,6 +14,10 @@ interface ChatWindowProps {
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [inputValue, setInputValue] = useState('')
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [modalUser, setModalUser] = useState<any>(null)
+  const [showActions, setShowActions] = useState(false)
+  const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const { getChatMessages, addMessage } = useChatStore()
@@ -25,6 +31,64 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  // 获取当前用户信息
+  const { currentUser: currentUserInfo } = useUserStore()
+
+  // 处理头像点击
+  const handleAvatarClick = (isFromMe: boolean, element: HTMLElement) => {
+    // 确保在设置弹框状态前，先设置触发元素
+    setAvatarElement(element)
+    
+    if (isFromMe && currentUserInfo) {
+      // 点击自己的头像
+      setModalUser({
+        id: currentUserInfo.openId || 'current-user',
+        openId: currentUserInfo.openId,
+        nickname: currentUserInfo.nickName,
+        account: currentUserInfo.openId,
+        avatar: currentUserInfo.avatar,
+        signature: currentUserInfo.individualSignature,
+        region: '未知'
+      } as any)
+      setShowActions(false)
+    } else if (!isFromMe && currentUser) {
+      // 点击好友的头像
+      setModalUser({
+        id: currentUser.id,
+        nickname: currentUser.name,
+        account: currentUser.id,
+        avatar: currentUser.avatar,
+        signature: '这是一个很酷的人',
+        region: '加拿大 狼村'
+      } as any)
+      setShowActions(true)
+    }
+    
+    // 使用 setTimeout 确保 DOM 更新后再显示弹框
+    setTimeout(() => {
+      setShowProfileModal(true)
+    }, 0)
+  }
+
+  const handleCloseProfileModal = () => {
+    setShowProfileModal(false)
+  }
+
+  const handleMessage = () => {
+    setShowProfileModal(false)
+    // 已经在当前聊天中，不需要切换
+  }
+
+  const handleVoiceCall = () => {
+    setShowProfileModal(false)
+    console.log('发起语音通话:', modalUser?.nickname)
+  }
+
+  const handleVideoCall = () => {
+    setShowProfileModal(false)
+    console.log('发起视频通话:', modalUser?.nickname)
+  }
 
   const handleSendMessage = () => {
     if (!inputValue.trim() || !currentUser) return
@@ -102,6 +166,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
             key={message.id}
             message={message}
             userId={currentUser.id}
+            currentUserId={currentUserInfo?.openId || "current-user"}
+            currentUserAvatar={currentUserInfo?.avatar}
+            onAvatarClick={(isFromMe, element) => {
+              handleAvatarClick(isFromMe, element)
+            }}
           />
         ))}
         <div ref={messagesEndRef} />
@@ -157,6 +226,20 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           按 Enter 发送，Shift + Enter 换行
         </div>
       </div>
+
+      {/* 个人信息弹框 */}
+      {modalUser && (
+        <ProfileModal
+          user={modalUser}
+          isVisible={showProfileModal}
+          onClose={handleCloseProfileModal}
+          triggerElement={avatarElement}
+          showActions={showActions}
+          onMessage={handleMessage}
+          onVoiceCall={handleVoiceCall}
+          onVideoCall={handleVideoCall}
+        />
+      )}
     </div>
   )
 } 

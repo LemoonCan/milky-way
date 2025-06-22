@@ -160,6 +160,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               disabled={loading}
+              autoComplete="username"
               className={cn(
                 styles.input,
                 errors.username && styles.inputError
@@ -179,6 +180,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               disabled={loading}
+              autoComplete="new-password"
               className={cn(
                 styles.input,
                 errors.password && styles.inputError
@@ -198,6 +200,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
               value={formData.confirmPassword}
               onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
               disabled={loading}
+              autoComplete="new-password"
               className={cn(
                 styles.input,
                 errors.confirmPassword && styles.inputError
