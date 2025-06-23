@@ -43,6 +43,7 @@ subprojects {
             dependency "org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4"
             dependency "org.mapstruct:mapstruct:1.6.3"
             dependency "org.mapstruct:mapstruct-processor:1.6.3"
+            dependency "com.belerweb:pinyin4j:2.5.1"
         }
     }
 }

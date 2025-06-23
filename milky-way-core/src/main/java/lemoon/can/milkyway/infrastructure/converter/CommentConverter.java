@@ -4,6 +4,7 @@ import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.CommentDTO;
 import lemoon.can.milkyway.infrastructure.repository.dos.CommentDO;
 import org.mapstruct.Mapper;
+import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -15,7 +16,9 @@ import java.util.stream.Collectors;
  * @author lemoon
  * @since 2025/6/6
  */
-@Mapper(componentModel = "spring",uses = {UserConverter.class})
+@Mapper(componentModel = "spring",
+        uses = {UserConverter.class},
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class CommentConverter {
     @Autowired
     private SecureId secureId;

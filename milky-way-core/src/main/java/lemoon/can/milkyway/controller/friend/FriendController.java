@@ -7,9 +7,11 @@ import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.controller.Result;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.dto.FriendDTO;
+import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.param.FriendApplyHandleParam;
 import lemoon.can.milkyway.facade.param.FriendApplyParam;
 import lemoon.can.milkyway.facade.param.FriendOperateParam;
+import lemoon.can.milkyway.facade.param.FriendsQueryParam;
 import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.facade.service.query.FriendQueryService;
 import lombok.RequiredArgsConstructor;
@@ -55,9 +57,16 @@ public class FriendController {
 
     @GetMapping
     @Operation(summary = "获取好友列表")
-    public ResponseEntity<Result<List<FriendDTO>>> friends() {
-        List<FriendDTO> list = friendQueryService.getFriends(UserInfoHolder.id());
-        return ResponseEntity.ok(Result.success(list));
+    public ResponseEntity<Result<Slices<FriendDTO>>> friends(@RequestParam(required = false) Character lastLetter,
+                                                             @RequestParam(required = false) String lastNickName,
+                                                             @RequestParam int pageSize) {
+        FriendsQueryParam param = new FriendsQueryParam();
+        param.setUserId(UserInfoHolder.id());
+        param.setLastLetter(lastLetter);
+        param.setLastNickName(lastNickName);
+        param.setPageSize(pageSize);
+        Slices<FriendDTO> friends = friendQueryService.getFriends(param);
+        return ResponseEntity.ok(Result.success(friends));
     }
 
     @DeleteMapping

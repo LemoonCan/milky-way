@@ -2,6 +2,8 @@ package lemoon.can.milkyway.infrastructure.service.query;
 
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.dto.FriendDTO;
+import lemoon.can.milkyway.facade.dto.Slices;
+import lemoon.can.milkyway.facade.param.FriendsQueryParam;
 import lemoon.can.milkyway.facade.service.query.FriendQueryService;
 import lemoon.can.milkyway.infrastructure.converter.FriendConverter;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
@@ -31,11 +33,16 @@ public class FriendQueryServiceImpl implements FriendQueryService {
     }
 
     @Override
-    public List<FriendDTO> getFriends(String userId) {
-        //TODO 按照好友昵称排序(中文按拼音排序，英文按字母排序)
-        List<FriendDO> list = friendMapper.findFriends(userId);
-        return list.stream()
+    public Slices<FriendDTO> getFriends(FriendsQueryParam param) {
+        List<FriendDO> list = friendMapper.findFriends(param.getUserId(),
+                param.getLastLetter(), param.getLastNickName(), param.getPageSize() + 1);
+        boolean hasNext = list.size() > param.getPageSize();
+        if(hasNext) {
+            list.remove(list.size() - 1);
+        }
+        List<FriendDTO> friendDTOS = list.stream()
                 .map(friendConverter::toDTO)
                 .toList();
+        return new Slices<>(friendDTOS, hasNext);
     }
 }

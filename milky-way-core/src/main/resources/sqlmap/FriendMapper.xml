@@ -37,15 +37,22 @@
     <select id="findFriends" resultMap="FriendDOMap">
         select f.remark     as remark,
                f.status     as status,
-               f.permission as permission,
                u.id         as friend_id,
                u.phone      as friend_phone,
                u.nick_name  as friend_nick_name,
+               u.nick_name_first_letter as friend_nick_name_first_letter,
                u.avatar     as friend_avatar
         from friend f
                  left join users u on f.friend_id = u.id
         where f.user_id = #{userId}
+        <if test="lastLetter != null and lastNickName != null">
+            and (u.nick_name_first_letter > #{lastLetter} or
+            (u.nick_name_first_letter = #{lastLetter} and u.nick_name > #{lastNickName}))
+        </if>
+        order by u.nick_name_first_letter, u.nick_name
+        limit #{pageSize}
     </select>
+
     <resultMap id="FriendDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendDO">
         <result property="remark" column="remark"/>
         <result property="status" column="status"/>
@@ -55,6 +62,7 @@
             <result property="id" column="friend_id"/>
             <result property="phone" column="friend_phone"/>
             <result property="nickName" column="friend_nick_name"/>
+            <result property="nickNameFirstLetter" column="friend_nick_name_first_letter"/>
             <result property="avatar" column="friend_avatar"/>
         </association>
     </resultMap>

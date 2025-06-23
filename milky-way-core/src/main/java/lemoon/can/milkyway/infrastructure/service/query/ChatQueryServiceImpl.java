@@ -21,8 +21,8 @@ public class ChatQueryServiceImpl implements ChatQueryService {
     @Override
     public List<String> getGroupChats(String userId) {
         return chatMapper.findGroupChats(userId).stream()
-                .map(item->
-                        secureId.simpleEncode(item,secureId.getChatSalt()))
+                .map(item ->
+                        secureId.simpleEncode(item, secureId.getChatSalt()))
                 .toList();
     }
 }

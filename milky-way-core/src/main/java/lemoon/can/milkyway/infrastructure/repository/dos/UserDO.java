@@ -15,6 +15,7 @@ public class UserDO {
     private String openId;
     private String phone;
     private String nickName;
+    private String nickNameFirstLetter;
     private String avatar;
     private String individualSignature;
     private LocalDateTime registerTime;

@@ -26,6 +26,7 @@ dependencies {
     implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter"
     implementation "org.mapstruct:mapstruct"
     annotationProcessor "org.mapstruct:mapstruct-processor"
+    implementation "com.belerweb:pinyin4j"
 }
 
 test {

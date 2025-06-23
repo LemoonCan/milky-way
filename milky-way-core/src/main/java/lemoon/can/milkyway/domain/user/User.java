@@ -3,6 +3,7 @@ package lemoon.can.milkyway.domain.user;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lemoon.can.milkyway.common.utils.LanguageUtils;
 import lemoon.can.milkyway.domain.user.id.SnowflakeId;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,6 +46,10 @@ public class User {
      * 昵称
      */
     private String nickName;
+    /**
+     * 昵称首字母
+     */
+    private Character nickNameFirstLetter;
     /**
      * 头像
      */
@@ -113,6 +118,7 @@ public class User {
      */
     public void changeInfo(String nickName, String avatar, String individualSignature) {
         this.nickName = nickName;
+        this.nickNameFirstLetter = LanguageUtils.getFirstLetter(this.nickName);
         this.avatar = avatar;
         this.individualSignature = individualSignature;
     }

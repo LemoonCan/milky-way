@@ -19,8 +19,11 @@ public class SimpleUserDTO implements Serializable {
      */
     private String nickName;
     /**
+     * 昵称首字母
+     */
+    private String nickNameFirstLetter;
+    /**
      * 头像
      */
     private String avatar;
-
 }
