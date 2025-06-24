@@ -46,7 +46,7 @@ const LoginPageWrapper: React.FC = () => {
       const success = await login(username, password)
       
       if (success) {
-        navigate('/main')
+        navigate('/main/messages')
       } 
     } catch (error) {
       console.error('Login error:', error)
@@ -141,7 +141,7 @@ export const AppRouter: React.FC = () => {
         path="/" 
         element={
           isAuthenticated ? 
-            <Navigate to="/main" replace /> : 
+            <Navigate to="/main/messages" replace /> : 
             <Navigate to="/login" replace />
         } 
       />
@@ -167,7 +167,7 @@ export const AppRouter: React.FC = () => {
       
       {/* 主应用路由 */}
       <Route 
-        path="/main" 
+        path="/main/*" 
         element={
           <ProtectedRoute>
             <ChatApp />
@@ -186,7 +186,7 @@ export const AppRouter: React.FC = () => {
         path="*" 
         element={
           isAuthenticated ? 
-            <Navigate to="/main" replace /> : 
+            <Navigate to="/main/messages" replace /> : 
             <Navigate to="/login" replace />
         } 
       />

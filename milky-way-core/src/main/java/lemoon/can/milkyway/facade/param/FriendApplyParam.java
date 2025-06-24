@@ -23,7 +23,6 @@ public class FriendApplyParam {
     /**
      * 申请消息
      */
-    @NotBlank(message = "申请消息不能为空")
     private String applyMessage;
 
     /**

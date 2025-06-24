@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.infrastructure.service.query;
 
-import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
 import lemoon.can.milkyway.facade.service.query.UserQueryService;
 import lemoon.can.milkyway.infrastructure.converter.UserConverter;
@@ -32,6 +31,18 @@ public class UserQueryServiceImpl implements UserQueryService {
     @Override
     public UserDTO getById(String id) {
         UserDO userDO = userMapper.selectUserById(id);
+        return userConverter.toDTO(userDO);
+    }
+
+    @Override
+    public UserDTO getByOpenId(String openId) {
+        UserDO userDO = userMapper.selectUserByOpenId(openId);
+        return userConverter.toDTO(userDO);
+    }
+
+    @Override
+    public UserDTO getByPhone(String phone) {
+        UserDO userDO = userMapper.selectUserByPhone(phone);
         return userConverter.toDTO(userDO);
     }
 }

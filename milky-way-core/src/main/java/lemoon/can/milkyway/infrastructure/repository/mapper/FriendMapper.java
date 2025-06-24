@@ -24,4 +24,5 @@ public interface FriendMapper {
      * @return 好友列表
      */
     List<FriendDO> findFriends(@Param("userId") String userId, Character lastLetter, String lastNickName, int pageSize);
+
 }

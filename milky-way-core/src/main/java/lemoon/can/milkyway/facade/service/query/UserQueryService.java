@@ -12,4 +12,8 @@ public interface UserQueryService {
     List<UserDTO> getAll();
 
     UserDTO getById(String id);
+
+    UserDTO getByOpenId(String openId);
+
+    UserDTO getByPhone(String phone);
 }

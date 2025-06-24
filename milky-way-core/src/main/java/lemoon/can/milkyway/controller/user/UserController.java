@@ -49,12 +49,14 @@ public class UserController {
     @PostMapping("/matchByOpenId")
     @Operation(summary = "通过openId匹配用户")
     public ResponseEntity<Result<UserDTO>> matchByOpenId(@RequestParam String openId) {
-        return ResponseEntity.ok(Result.success(null));
+        UserDTO userDTO = userQueryService.getByOpenId(openId);
+        return ResponseEntity.ok(Result.success(userDTO));
     }
 
     @PostMapping("/matchByPhone")
     @Operation(summary = "通过手机号匹配用户")
     public ResponseEntity<Result<UserDTO>> matchByPhone(@RequestParam String phone) {
-        return ResponseEntity.ok(Result.success(null));
+        UserDTO userDTO = userQueryService.getByPhone(phone);
+        return ResponseEntity.ok(Result.success(userDTO));
     }
 }

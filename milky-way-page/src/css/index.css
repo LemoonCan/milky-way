@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
-  /* 微信主题色彩 */
+  /* 银河系主题色彩 */
   --milky-primary: #FCD66C;
+  --milky-primary-hover: #f0c34c;
+  --milky-primary-light: rgba(252, 214, 108, 0.1);
   --milky-bg: #f7f8fc;
   --milky-sidebar: #FAFAFA;
   --milky-sidebar-hover: rgba(0, 0, 0, 0.04);

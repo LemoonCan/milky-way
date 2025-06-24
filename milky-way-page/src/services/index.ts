@@ -2,6 +2,7 @@
 export { authService, default as AuthService } from './auth'
 export { fileService, default as FileService } from './file'
 export { userService, default as UserService } from './user'
+export { friendService, default as FriendService } from './friend'
 
 // 导出HTTP客户端和token管理器
 export { default as http, tokenManager } from '../lib/http'

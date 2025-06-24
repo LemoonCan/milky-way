@@ -15,6 +15,10 @@ public class SimpleUserDTO implements Serializable {
      */
     private String id;
     /**
+     * 账号
+     */
+    private String openId;
+    /**
      * 昵称
      */
     private String nickName;

@@ -21,4 +21,10 @@ public interface UserMapper {
 
     @Select("select open_id, phone, nick_name, avatar, individual_signature, register_time from users where id = #{id}")
     UserDO selectUserById(String id);
+
+    @Select("select id, open_id, phone, nick_name, avatar, individual_signature, register_time from users where open_id = #{openId}")
+    UserDO selectUserByOpenId(String openId);
+
+    @Select("select id, open_id, phone, nick_name, avatar, individual_signature, register_time from users where phone = #{phone}")
+    UserDO selectUserByPhone(String phone);
 }

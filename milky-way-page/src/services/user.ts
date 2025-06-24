@@ -26,6 +26,14 @@ class UserService {
     const response = await http.post<ApiResponse<void>>('/users/userInfo', data)
     return response.data
   }
+
+  /**
+   * 通过openId获取用户详细信息
+   */
+  async getUserByOpenId(openId: string): Promise<ApiResponse<User>> {
+    const response = await http.post<ApiResponse<User>>(`/users/matchByOpenId?openId=${openId}`)
+    return response.data
+  }
 }
 
 // 导出服务实例  

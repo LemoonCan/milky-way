@@ -38,6 +38,7 @@
         select f.remark     as remark,
                f.status     as status,
                u.id         as friend_id,
+               u.open_id    as friend_open_id,
                u.phone      as friend_phone,
                u.nick_name  as friend_nick_name,
                u.nick_name_first_letter as friend_nick_name_first_letter,
@@ -60,6 +61,7 @@
 
         <association property="friend" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
             <result property="id" column="friend_id"/>
+            <result property="openId" column="friend_open_id"/>
             <result property="phone" column="friend_phone"/>
             <result property="nickName" column="friend_nick_name"/>
             <result property="nickNameFirstLetter" column="friend_nick_name_first_letter"/>
