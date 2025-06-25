@@ -1,0 +1,145 @@
+/* FriendApplicationItem 组件样式 */
+
+.applicationItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-bottom: 1px solid #e7e7e7;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.applicationItem:hover {
+  background-color: #f5f5f5;
+}
+
+.applicationItem:last-child {
+  border-bottom: none;
+}
+
+.applicationItem.selected {
+  background-color: #e7f3ff;
+  border-left: 3px solid #007aff;
+}
+
+.applicationItem.selected:hover {
+  background-color: #e7f3ff;
+}
+
+/* 头像 */
+.avatar {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* 内容区域 */
+.content {
+  flex: 1;
+  margin-right: 12px;
+  min-width: 0;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.nickname {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  font-size: 12px;
+  color: #8e8e93;
+  flex-shrink: 0;
+}
+
+.message {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 状态显示 */
+.status {
+  flex-shrink: 0;
+}
+
+.statusPending {
+  color: #ff9500;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusAccepted {
+  color: #07c160;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusRejected {
+  color: #ff4444;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusDefault {
+  color: #8e8e93;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .applicationItem {
+    padding: 10px 12px;
+  }
+  
+  .avatarImg,
+  .avatarPlaceholder {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .nickname {
+    font-size: 15px;
+  }
+  
+  .statusPending,
+  .statusAccepted,
+  .statusRejected,
+  .statusDefault {
+    font-size: 13px;
+  }
+} 

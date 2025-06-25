@@ -1,9 +1,10 @@
 import http from '../lib/http'
 import type { 
   ApiResponse, 
-  FriendApplication, 
   FriendListData,
+  FriendApplicationListData,
   FriendsQueryParams,
+  FriendApplicationsQueryParams,
   AddFriendRequest,
   HandleFriendApplicationRequest,
   User
@@ -22,8 +23,8 @@ class FriendService {
   /**
    * 获取好友申请列表
    */
-  async getFriendApplications(): Promise<ApiResponse<FriendApplication[]>> {
-    const response = await http.get<ApiResponse<FriendApplication[]>>('/friends/applications')
+  async getFriendApplications(params: FriendApplicationsQueryParams): Promise<ApiResponse<FriendApplicationListData>> {
+    const response = await http.get<ApiResponse<FriendApplicationListData>>('/friends/applications', { params })
     return response.data
   }
 

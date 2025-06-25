@@ -30,7 +30,7 @@
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 47.9 95.8% 53.1%; /* 微信主题色 */
+  --primary: 47.9 95.8% 53.1%; /* 主题色 */
   --primary-foreground: 26 83.3% 14.1%;
   --secondary: 210 40% 98%;
   --secondary-foreground: 222.2 84% 4.9%;
@@ -42,7 +42,7 @@
   --destructive-foreground: 210 40% 98%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 47.9 95.8% 53.1%; /* 微信主题色作为焦点环 */
+  --ring: 47.9 95.8% 53.1%; /* 主题色作为焦点环 */
   --radius: 0.5rem;
 }
 

@@ -3,7 +3,6 @@ package lemoon.can.milkyway.infrastructure.repository.mapper;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendDO;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
  */
 @Mapper
 public interface FriendMapper {
-    List<FriendApplicationDO> findApplications(@Param("toUserId") String toUserId);
+    List<FriendApplicationDO> findApplications(String toUserId, Long lastId, int pageSize);
 
     /**
      * 查询好友
@@ -23,6 +22,6 @@ public interface FriendMapper {
      * @param pageSize 每页大小
      * @return 好友列表
      */
-    List<FriendDO> findFriends(@Param("userId") String userId, Character lastLetter, String lastNickName, int pageSize);
+    List<FriendDO> findFriends(String userId, Character lastLetter, String lastNickName, int pageSize);
 
 }

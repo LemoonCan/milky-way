@@ -5,6 +5,7 @@ import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -47,6 +48,8 @@ public class FriendApplication {
     /**
      * 创建时间
      */
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createTime;
 
     public FriendApplication(String fromUserId, String toUserId, String applyMsg) {

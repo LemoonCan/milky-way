@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @since 2025/6/6
  */
 @Mapper(componentModel = "spring",
-        uses = {UserConverter.class},
+        uses = {UserConverter.class, DateTimeConverter.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class CommentConverter {
     @Autowired

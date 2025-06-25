@@ -1,0 +1,330 @@
+/* FriendApplicationVerifyDialog 组件样式模块 */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog {
+  background: white;
+  border-radius: 12px;
+  width: 480px;
+  max-width: 90vw;
+  max-height: 85vh;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease-out;
+}
+
+.header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--milky-text);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--milky-text-light);
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background-color: rgba(232, 234, 237, 0.3);
+}
+
+.content {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+/* 错误提示 */
+.errorMessage {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px 20px;
+  border-left: 4px solid #f44336;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: rgba(232, 234, 237, 0.1);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.userInfo {
+  margin-left: 16px;
+  flex: 1;
+}
+
+.nickName {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--milky-text);
+  margin-bottom: 4px;
+}
+
+.userId {
+  font-size: 14px;
+  color: var(--milky-text-light);
+  line-height: 1.4;
+}
+
+/* 申请消息区域 */
+.messageSection {
+  margin-bottom: 16px;
+}
+
+.messageLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text-primary);
+  margin-bottom: 8px;
+}
+
+.messageContent {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: none;
+  background-color: #f5f5f5;
+  color: var(--milky-text);
+  min-height: 80px;
+  display: flex;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+.messageCount {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* 备注区域 */
+.remarkSection {
+  margin-bottom: 16px;
+}
+
+.remarkLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text-primary);
+  margin-bottom: 8px;
+}
+
+.remarkInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.remarkInput:focus {
+  border-color: var(--milky-primary);
+  box-shadow: 0 0 0 2px rgba(252, 214, 108, 0.15);
+}
+
+.remarkCount {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* 权限设置区域 */
+.permissionSection {
+  margin-bottom: 16px;
+}
+
+.permissionLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text-primary);
+  margin-bottom: 8px;
+}
+
+.permissionOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.permissionOption {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.permissionOption:hover {
+  background-color: rgba(252, 214, 108, 0.05);
+  border-color: var(--milky-primary);
+}
+
+.permissionOption input[type="radio"] {
+  margin-right: 12px;
+  accent-color: var(--milky-primary);
+}
+
+.permissionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.permissionText strong {
+  font-size: 14px;
+  color: var(--milky-text);
+}
+
+.permissionText small {
+  font-size: 12px;
+  color: var(--milky-text-light);
+}
+
+/* 底部按钮区域 */
+.footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(232, 234, 237, 0.3);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.backButton,
+.rejectButton {
+  background: #f5f5f5;
+  color: var(--milky-text);
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  flex: 1;
+  justify-content: center;
+}
+
+.backButton:hover,
+.rejectButton:hover {
+  background: #e8e8e8;
+  border-color: #d0d0d0;
+}
+
+.acceptButton,
+.confirmButton {
+  background: var(--milky-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  flex: 1;
+  justify-content: center;
+}
+
+.acceptButton:hover:not(:disabled),
+.confirmButton:hover:not(:disabled) {
+  background: var(--milky-primary-hover);
+}
+
+.acceptButton:disabled,
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .dialog {
+    width: 95vw;
+    margin: 10px;
+  }
+  
+  .footer {
+    flex-direction: column;
+  }
+  
+  .backButton,
+  .rejectButton,
+  .acceptButton,
+  .confirmButton {
+    flex: none;
+    width: 100%;
+  }
+} 

@@ -38,6 +38,14 @@ public class FriendServiceImpl implements FriendService {
     @Override
     @Transactional
     public void addFriend(FriendApplyParam param) {
+        if(friendRepository.existsById(new FriendId(param.getFromUserId(), param.getToUserId()))) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED, "已是好友");
+        }
+
+        if(friendApplicationRepository.existsByFromUserIdAndToUserId(param.getFromUserId(), param.getToUserId())) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED, "请勿重复申请");
+        }
+
         FriendApplication friendApplication = new FriendApplication(param.getFromUserId(),
                 param.getToUserId(),
                 param.getApplyMessage());

@@ -11,6 +11,10 @@ export interface UpdateUserRequest {
 
 // 用户服务类
 class UserService {
+  // 简单的内存缓存，存储最近请求的用户数据（5分钟有效）
+  private userCache = new Map<string, { data: ApiResponse<User>; timestamp: number }>()
+  private readonly CACHE_DURATION = 5 * 60 * 1000 // 5分钟
+
   /**
    * 获取当前用户信息
    */
@@ -28,11 +32,40 @@ class UserService {
   }
 
   /**
-   * 通过openId获取用户详细信息
+   * 通过openId获取用户详细信息（带缓存）
    */
   async getUserByOpenId(openId: string): Promise<ApiResponse<User>> {
+    // 检查缓存
+    const cached = this.userCache.get(openId)
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+      console.log('Using cached user data for:', openId)
+      return cached.data
+    }
+
+    console.log('Fetching user data from API for:', openId)
     const response = await http.post<ApiResponse<User>>(`/users/matchByOpenId?openId=${openId}`)
-    return response.data
+    const result = response.data
+
+    // 缓存成功的响应
+    if (result.success) {
+      this.userCache.set(openId, {
+        data: result,
+        timestamp: Date.now()
+      })
+    }
+
+    return result
+  }
+
+  /**
+   * 清除指定用户的缓存
+   */
+  clearUserCache(openId?: string): void {
+    if (openId) {
+      this.userCache.delete(openId)
+    } else {
+      this.userCache.clear()
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.domain.user;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,6 +8,7 @@ import lemoon.can.milkyway.common.utils.LanguageUtils;
 import lemoon.can.milkyway.domain.user.id.SnowflakeId;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
@@ -62,6 +64,8 @@ public class User {
     /**
      * 注册时间
      */
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime registerTime;
 
 

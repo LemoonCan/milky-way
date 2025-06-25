@@ -130,7 +130,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <span className={styles.genderIcon}>🧑</span>
             </h3>
             <div className={styles.account}>
-              微信号：{user.account || user.openId || user.id}
+              账号：{user.account || user.openId || user.id}
             </div>
             <div className={styles.region}>
               地区：{user.region || '未知'}  

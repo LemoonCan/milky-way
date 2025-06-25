@@ -14,14 +14,23 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [loading, setLoading] = useState(true)
   const moreActionsRef = useRef<HTMLDivElement>(null)
+  const lastFetchedOpenIdRef = useRef<string | null>(null)
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
 
   // 获取用户详细信息
   useEffect(() => {
+    // 如果已经请求过相同的openId，则跳过请求
+    if (lastFetchedOpenIdRef.current === friend.openId) {
+      setLoading(false)
+      return
+    }
+
     const fetchUserDetails = async () => {
       try {
         console.log(friend);
         setLoading(true)
+        // 记录当前请求的openId
+        lastFetchedOpenIdRef.current = friend.openId
         const response = await userService.getUserByOpenId(friend.openId)
         if (response.success && response.data) {
           // userDetails 暂时不在界面中使用，如果未来需要可以重新添加
@@ -29,6 +38,8 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         }
       } catch (error) {
         console.error('Failed to fetch user details:', error)
+        // 如果请求失败，清除记录以允许重试
+        lastFetchedOpenIdRef.current = null
       } finally {
         setLoading(false)
       }

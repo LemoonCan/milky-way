@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 2025/5/13
  */
 public interface FriendApplicationRepository extends JpaRepository<FriendApplication, Long> {
+    boolean existsByFromUserIdAndToUserId(String fromUserId, String toUserId);
 }

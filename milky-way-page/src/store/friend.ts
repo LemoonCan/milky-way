@@ -7,19 +7,27 @@ interface FriendState {
   friends: Friend[]
   friendApplications: FriendApplication[]
   selectedFriend: Friend | null
+  selectedFriendApplication: FriendApplication | null
   isLoading: boolean
   isFriendsLoading: boolean
   isApplicationsLoading: boolean
   error: string | null
   hasNextPage: boolean
+  hasNextApplicationsPage: boolean
+  // 新增：游标分页状态
+  lastLetter: string | null
+  lastNickName: string | null
+  lastApplicationId: string | null
 
   // 操作方法
   setSelectedFriend: (friend: Friend | null) => void
+  setSelectedFriendApplication: (application: FriendApplication | null) => void
   fetchFriends: (refresh?: boolean) => Promise<void>
   fetchMoreFriends: () => Promise<void>
-  fetchFriendApplications: () => Promise<void>
+  fetchFriendApplications: (refresh?: boolean) => Promise<void>
+  fetchMoreFriendApplications: () => Promise<void>
   addFriend: (toUserId: string, applyMessage: string, extraInfo?: { remark?: string; permission?: 'ALL' | 'CHAT' }) => Promise<void>
-  handleFriendApplication: (applicationId: string, action: 'accept' | 'reject') => Promise<void>
+  handleFriendApplication: (applicationId: string, action: 'accept' | 'reject', extraInfo?: { remark?: string; permission?: 'ALL' | 'CHAT' }) => Promise<boolean>
   deleteFriend: (friendId: string) => Promise<void>
   blockFriend: (friendId: string) => Promise<void>
   unblockFriend: (friendId: string) => Promise<void>
@@ -33,17 +41,26 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   friends: [],
   friendApplications: [],
   selectedFriend: null,
+  selectedFriendApplication: null,
   isLoading: false,
   isFriendsLoading: false,
   isApplicationsLoading: false,
   error: null,
   hasNextPage: false,
+  hasNextApplicationsPage: false,
+  // 新增：游标分页状态初始化
+  lastLetter: null,
+  lastNickName: null,
+  lastApplicationId: null,
 
   // 设置选中的好友
   setSelectedFriend: (friend) => set({ selectedFriend: friend }),
 
+  // 设置选中的好友申请
+  setSelectedFriendApplication: (application) => set({ selectedFriendApplication: application }),
+
   // 获取好友列表
-  fetchFriends: async () => {
+  fetchFriends: async (refresh = true) => {
     const currentState = get()
     // 如果正在加载好友列表，避免重复请求
     if (currentState.isFriendsLoading) {
@@ -53,7 +70,15 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     set({ isFriendsLoading: true, error: null })
     
     try {
-      const params = { pageSize: 20 }
+      // 构建请求参数
+      const params: { pageSize: number; lastLetter?: string; lastNickName?: string } = { pageSize: 20 }
+      
+      // 如果不是刷新操作，使用游标参数
+      if (!refresh && currentState.lastLetter && currentState.lastNickName) {
+        params.lastLetter = currentState.lastLetter
+        params.lastNickName = currentState.lastNickName
+      }
+      
       const response = await friendService.getFriends(params)
       
       if (response.success && response.data) {
@@ -69,9 +94,21 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           permission: relation.permission
         }))
         
+        // 更新游标信息
+        let newLastLetter = null
+        let newLastNickName = null
+        
+        if (transformedFriends.length > 0) {
+          const lastFriend = transformedFriends[transformedFriends.length - 1]
+          newLastLetter = lastFriend.nickNameFirstLetter
+          newLastNickName = lastFriend.nickName
+        }
+        
         set({
-          friends: transformedFriends,
+          friends: refresh ? transformedFriends : [...currentState.friends, ...transformedFriends],
           hasNextPage: response.data.hasNext,
+          lastLetter: newLastLetter,
+          lastNickName: newLastNickName,
           isFriendsLoading: false
         })
       } else {
@@ -84,12 +121,13 @@ export const useFriendStore = create<FriendState>((set, get) => ({
 
   // 加载更多好友
   fetchMoreFriends: async () => {
-    if (get().isFriendsLoading || !get().hasNextPage) return
+    const currentState = get()
+    if (currentState.isFriendsLoading || !currentState.hasNextPage) return
     await get().fetchFriends(false)
   },
 
   // 获取好友申请列表
-  fetchFriendApplications: async () => {
+  fetchFriendApplications: async (refresh = true) => {
     const currentState = get()
     // 如果正在加载申请列表，避免重复请求
     if (currentState.isApplicationsLoading) {
@@ -99,16 +137,44 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     set({ isApplicationsLoading: true, error: null })
     
     try {
-      const response = await friendService.getFriendApplications()
+      // 构建请求参数
+      const params: { pageSize: number; lastId?: string } = { pageSize: 20 }
+      
+      // 如果不是刷新操作，使用游标参数
+      if (!refresh && currentState.lastApplicationId) {
+        params.lastId = currentState.lastApplicationId
+      }
+      
+      const response = await friendService.getFriendApplications(params)
       
       if (response.success && response.data) {
-        set({ friendApplications: response.data, isApplicationsLoading: false })
+        // 更新游标信息
+        let newLastApplicationId = null
+        
+        if (response.data.data.length > 0) {
+          const lastApplication = response.data.data[response.data.data.length - 1]
+          newLastApplicationId = lastApplication.id
+        }
+        
+        set({ 
+          friendApplications: refresh ? response.data.data : [...currentState.friendApplications, ...response.data.data],
+          hasNextApplicationsPage: response.data.hasNext,
+          lastApplicationId: newLastApplicationId,
+          isApplicationsLoading: false 
+        })
       } else {
         set({ error: response.msg || '获取好友申请失败', isApplicationsLoading: false })
       }
     } catch {
       set({ error: '网络错误，请重试', isApplicationsLoading: false })
     }
+  },
+
+  // 加载更多好友申请
+  fetchMoreFriendApplications: async () => {
+    const currentState = get()
+    if (currentState.isApplicationsLoading || !currentState.hasNextApplicationsPage) return
+    await get().fetchFriendApplications(false)
   },
 
   // 添加好友
@@ -121,7 +187,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       if (response.success) {
         set({ isLoading: false })
         // 刷新好友申请列表
-        await get().fetchFriendApplications()
+        await get().fetchFriendApplications(true)
       } else {
         set({ error: response.msg || '添加好友失败', isLoading: false })
       }
@@ -131,24 +197,33 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   },
 
   // 处理好友申请
-  handleFriendApplication: async (applicationId, action) => {
+  handleFriendApplication: async (applicationId, action, extraInfo) => {
     set({ isLoading: true, error: null })
     
     try {
-      const response = await friendService.handleFriendApplication({ applicationId, action })
+      // 转换action为后端期望的status格式
+      const status = action === 'accept' ? 'ACCEPTED' : 'REJECTED'
+      const response = await friendService.handleFriendApplication({ 
+        friendApplicationId: applicationId, 
+        status,
+        extraInfo
+      })
       
       if (response.success) {
         set({ isLoading: false })
         // 刷新好友列表和申请列表
         await Promise.all([
           get().fetchFriends(true),
-          get().fetchFriendApplications()
+          get().fetchFriendApplications(true)
         ])
+        return true // 返回成功标识
       } else {
         set({ error: response.msg || '处理好友申请失败', isLoading: false })
+        return false // 返回失败标识
       }
     } catch {
       set({ error: '网络错误，请重试', isLoading: false })
+      return false // 返回失败标识
     }
   },
 

@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import { FriendList } from './FriendList'
 import { FriendDetail } from './FriendDetail'
+import { FriendApplicationDetail } from './FriendApplicationDetail'
 import { AddFriendDialog } from './AddFriendDialog'
 import { useFriendStore } from '../store/friend'
 import styles from '../css/FriendPage.module.css'
 
 export const FriendPage: React.FC = () => {
   const [showAddFriendDialog, setShowAddFriendDialog] = useState(false)
-  const { selectedFriend, fetchFriends, fetchFriendApplications, error, clearError } = useFriendStore()
+  const { selectedFriend, selectedFriendApplication, fetchFriends, fetchFriendApplications, error, clearError } = useFriendStore()
 
   // 初始化时获取好友列表和申请列表
   useEffect(() => {
-    fetchFriends(true)
+    fetchFriends(true) // 明确传入true，表示刷新操作
     fetchFriendApplications()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 处理添加好友
   const handleAddFriend = () => {
@@ -42,10 +43,12 @@ export const FriendPage: React.FC = () => {
       {/* 左侧好友列表 */}
       <FriendList onAddFriend={handleAddFriend} />
       
-      {/* 右侧好友详情 */}
+      {/* 右侧详情 */}
       <div className={styles.friendDetail}>
         {selectedFriend ? (
           <FriendDetail friend={selectedFriend} />
+        ) : selectedFriendApplication ? (
+          <FriendApplicationDetail application={selectedFriendApplication} />
         ) : (
           <div className={styles.emptyState}>
             {/* 空状态，不显示任何内容 */}

@@ -11,6 +11,6 @@
         FROM likes l
         JOIN users u ON l.like_user_id = u.id
         WHERE l.moment_id = #{momentId}
-        ORDER BY l.created_at DESC
+        ORDER BY l.created_time DESC
     </select>
 </mapper> 

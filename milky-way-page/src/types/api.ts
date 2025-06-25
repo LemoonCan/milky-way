@@ -14,8 +14,8 @@ export interface User {
   phone?: string
   avatar?: string
   individualSignature?: string // 个性签名
-  createdAt?: string
-  updatedAt?: string
+  createTime?: string
+  updateTime?: string
 }
 
 // 注册参数
@@ -85,21 +85,36 @@ export interface Friend {
   permission?: string | null
 }
 
+// 好友申请用户信息
+export interface FriendApplicationUser {
+  id: string
+  openId?: string | null
+  nickName: string
+  nickNameFirstLetter?: string | null
+  avatar?: string
+}
+
+// 好友申请 - 根据实际API响应更新
 export interface FriendApplication {
   id: string
-  fromUserId: string
-  toUserId: string
-  fromUserNickName: string
-  fromUserAvatar?: string
-  message?: string
-  status: 'pending' | 'accepted' | 'rejected'
-  createdAt: string
-  updatedAt: string
+  fromUser: FriendApplicationUser
+  toUser: FriendApplicationUser
+  applyMsg?: string
+  status: 'APPLYING' | 'ACCEPTED' | 'REJECTED'
+  createTime?: string
+  updateTime?: string
 }
 
 // 好友列表分页响应 - 基于实际API响应
 export interface FriendListData {
   data: FriendRelation[]
+  hasNext: boolean
+  size: number
+}
+
+// 好友申请列表分页响应
+export interface FriendApplicationListData {
+  data: FriendApplication[]
   hasNext: boolean
   size: number
 }
@@ -120,6 +135,12 @@ export interface FriendsQueryParams {
   pageSize: number
 }
 
+// 好友申请查询参数
+export interface FriendApplicationsQueryParams {
+  lastId?: string
+  pageSize: number
+}
+
 // 添加好友参数
 export interface AddFriendRequest {
   toUserId: string
@@ -132,8 +153,12 @@ export interface AddFriendRequest {
 
 // 处理好友申请参数
 export interface HandleFriendApplicationRequest {
-  applicationId: string
-  action: 'accept' | 'reject'
+  friendApplicationId: string
+  status: 'ACCEPTED' | 'REJECTED'
+  extraInfo?: {
+    remark?: string
+    permission?: 'ALL' | 'CHAT'
+  }
 }
 
 // 好友操作参数

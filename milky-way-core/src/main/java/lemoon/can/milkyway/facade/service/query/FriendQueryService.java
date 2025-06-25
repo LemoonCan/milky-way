@@ -3,6 +3,7 @@ package lemoon.can.milkyway.facade.service.query;
 import lemoon.can.milkyway.facade.dto.FriendApplicationDTO;
 import lemoon.can.milkyway.facade.dto.FriendDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
+import lemoon.can.milkyway.facade.param.FriendsApplicationQueryParam;
 import lemoon.can.milkyway.facade.param.FriendsQueryParam;
 
 import java.util.List;
@@ -15,10 +16,10 @@ public interface FriendQueryService {
     /**
      * 获取好友申请列表
      *
-     * @param toUserId 接收者的 OpenId
+     * @param param
      * @return 好友申请列表
      */
-    List<FriendApplicationDTO> getApplications(String toUserId);
+    Slices<FriendApplicationDTO> getApplications(FriendsApplicationQueryParam param);
 
     /**
      * 获取好友列表

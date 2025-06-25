@@ -6,7 +6,9 @@
         select fa.id        as id,
                fa.apply_msg as apply_msg,
                fa.status    as status,
+               fa.create_time as create_time,
                u1.id        as from_id,
+               u1.open_id   as from_open_id,
                u1.nick_name as from_nick_name,
                u1.avatar    as from_avatar,
                u2.id        as to_id,
@@ -16,14 +18,21 @@
                  left join users u1 on fa.from_user_id = u1.id
                  left join users u2 on fa.to_user_id = u2.id
         where fa.to_user_id = #{toUserId}
+        <if test="lastId != null">
+            and fa.id &lt; #{lastId}
+        </if>
+        order by fa.id desc
+        limit #{pageSize}
     </select>
     <resultMap id="FriendApplicationDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO">
         <id property="id" column="id"/> <!-- 主键 -->
         <result property="applyMsg" column="apply_msg"/> <!-- 普通字段 -->
         <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
 
         <association property="fromUser" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
             <result property="id" column="from_id"/>
+            <result property="openId" column="from_open_id"/>
             <result property="nickName" column="from_nick_name"/>
             <result property="avatar" column="from_avatar"/>
         </association>

@@ -12,50 +12,18 @@
   box-shadow: var(--milky-shadow-card);
 }
 
-.header {
-  padding: 10px 20px 16px;
-  background-color: var(--milky-chat-list-bg);
-}
-
-.titleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.title {
-  font-size: 22px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--milky-text);
-  letter-spacing: -0.5px;
-}
-
-.addButton {
-  background: var(--milky-primary);
-  border: none;
-  border-radius: 8px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.addButton:hover {
-  background: var(--milky-primary-hover);
-  transform: scale(1.05);
-}
-
-.addButton:active {
-  transform: scale(0.95);
-}
-
+/* 搜索栏样式 */
 .searchContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background-color: var(--milky-chat-list-bg);
+  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
+}
+
+.searchInputWrapper {
+  flex: 1;
   position: relative;
 }
 
@@ -88,6 +56,30 @@
   border-color: var(--milky-primary);
 }
 
+.addFriendButton {
+  background: var(--milky-primary);
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.addFriendButton:hover {
+  background: var(--milky-primary-hover);
+  transform: scale(1.05);
+}
+
+.addFriendButton:active {
+  transform: scale(0.95);
+}
+
 .listContainer {
   flex: 1;
   overflow-y: auto;
@@ -99,6 +91,82 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+/* 展开/收起区域样式 */
+.sectionContainer {
+  margin-bottom: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  background-color: var(--milky-chat-list-bg);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
+}
+
+.sectionHeader:hover {
+  background-color: var(--milky-chat-bg);
+}
+
+.sectionIcon {
+  margin-right: 8px;
+  color: var(--milky-text-light);
+  transition: transform 0.2s ease;
+}
+
+.sectionAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: var(--milky-primary-light);
+  color: var(--milky-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.sectionInfo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--milky-text);
+}
+
+.sectionBadge {
+  background-color: #ff4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.sectionCount {
+  font-size: 14px;
+  color: var(--milky-text-light);
+}
+
+.sectionContent {
+  background-color: white;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
+}
+
+.applicationsContainer {
+  /* 应用项容器 */
+}
+
 .friendsContainer {
   padding: 0;
 }
@@ -108,7 +176,76 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 128px;
+  height: 80px;
   color: var(--milky-text-light);
   font-size: 14px;
+  padding: 0 20px;
+}
+
+/* 新增：加载更多相关样式 */
+.loadMoreContainer {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingMore {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--milky-text-light);
+  font-size: 14px;
+}
+
+.loadingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--milky-border);
+  border-top: 2px solid var(--milky-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadMoreButton {
+  background: var(--milky-primary-light);
+  color: var(--milky-primary);
+  border: 1px solid var(--milky-primary);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.loadMoreButton:hover {
+  background: var(--milky-primary);
+  color: white;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .friendList {
+    width: 100%;
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .searchContainer {
+    padding: 12px 16px;
+  }
+  
+  .sectionHeader {
+    padding: 10px 16px;
+  }
+  
+  .sectionAvatar {
+    width: 36px;
+    height: 36px;
+  }
 } 

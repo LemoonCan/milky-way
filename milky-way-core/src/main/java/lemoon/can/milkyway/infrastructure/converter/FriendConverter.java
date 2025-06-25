@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author lemoon
  * @since 2025/5/14
  */
-@Mapper(componentModel = "spring", uses = {UserConverter.class})
+@Mapper(componentModel = "spring", uses = {UserConverter.class, DateTimeConverter.class})
 public abstract class FriendConverter {
     @Autowired
     protected SecureId secureId;
