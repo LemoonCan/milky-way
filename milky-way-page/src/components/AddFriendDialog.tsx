@@ -53,10 +53,8 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
         setSearchResult(null)
         setSearchError('用户不存在')
       }
-    } catch (error) {
-      console.error('Search error:', error)
+    } catch {
       setSearchResult(null)
-      setSearchError('搜索失败，请重试')
     }
   }
 

@@ -30,12 +30,12 @@ public class MomentQueryServiceImpl implements MomentQueryService {
 
     @Override
     public Slices<MomentDTO> listFriendMoments(String userId, String lastId, int pageSize) {
-        Long realLastId = secureId.decode(lastId, secureId.getMomentSalt());
+        Long realLastId = secureId.simpleDecode(lastId, secureId.getMomentSalt());
         List<MomentDTO> moments = momentMapper.listFriendMoments(userId, realLastId, pageSize + 1)
                 .stream()
                 .map(item -> {
                     MomentDTO dto = new MomentDTO();
-                    dto.setId(secureId.encode(item.getId(), secureId.getMomentSalt()));
+                    dto.setId(secureId.simpleEncode(item.getId(), secureId.getMomentSalt()));
                     SimpleUserDTO userDTO = new SimpleUserDTO();
                     userDTO.setId(item.getUserId());
                     userDTO.setNickName(item.getUserNickName());

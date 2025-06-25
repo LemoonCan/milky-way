@@ -38,13 +38,13 @@ public class MomentServiceImpl implements MomentService {
         Moment moment = new Moment(param.getContentType(), param.getText(), param.getMedias(), param.getPublishUserId());
         moment.setLocation(param.getLocation());
         momentRepository.save(moment);
-        return secureId.encode(moment.getId(), secureId.getMomentSalt());
+        return secureId.simpleEncode(moment.getId(), secureId.getMomentSalt());
     }
 
     @Transactional
     @Override
     public void delete(String momentId) {
-        Long realMomentId = secureId.decode(momentId, secureId.getMomentSalt());
+        Long realMomentId = secureId.simpleDecode(momentId, secureId.getMomentSalt());
         momentRepository.deleteById(realMomentId);
         commentRepository.deleteByMomentId(realMomentId);
         likeRepository.deleteByMomentId(realMomentId);
@@ -53,7 +53,7 @@ public class MomentServiceImpl implements MomentService {
     @Transactional
     @Override
     public void like(String momentId, String userId) {
-        Long realMomentId = secureId.decode(momentId, secureId.getMomentSalt());
+        Long realMomentId = secureId.simpleDecode(momentId, secureId.getMomentSalt());
         Moment moment = momentRepository.findById(realMomentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "内容不存在"));
         if (likeRepository.findById(new LikeId(realMomentId, userId)).isPresent()) {
@@ -70,7 +70,7 @@ public class MomentServiceImpl implements MomentService {
     @Transactional
     @Override
     public void unlike(String momentId, String userId) {
-        Long realMomentId = secureId.decode(momentId, secureId.getMomentSalt());
+        Long realMomentId = secureId.simpleDecode(momentId, secureId.getMomentSalt());
         Moment moment = momentRepository.findById(realMomentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "内容不存在"));
         if (likeRepository.findById(new LikeId(realMomentId, userId)).isEmpty()) {
@@ -84,7 +84,7 @@ public class MomentServiceImpl implements MomentService {
     @Transactional
     @Override
     public void comment(CommentParam param) {
-        Long realMomentId = secureId.decode(param.getMomentId(), secureId.getMomentSalt());
+        Long realMomentId = secureId.simpleDecode(param.getMomentId(), secureId.getMomentSalt());
         Comment comment = new Comment(realMomentId, param.getCommentUserId(), param.getContent());
         comment.setParentCommentId(param.getParentCommentId());
 

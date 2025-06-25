@@ -231,9 +231,9 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         // 搜索结果为空不应该设置全局错误，由调用方处理
         return null
       }
-    } catch {
+    } catch(error) {
       set({ error: '网络错误，请重试', isLoading: false })
-      return null
+      throw error
     }
   },
 

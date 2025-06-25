@@ -1,6 +1,6 @@
 ## 技术选型
 后端：SpringBoot+MySQL+Redis+Netty(WebSocket)
-前端：Vue
+前端：React 18 + Vite + TypeScript + Tailwind CSS
 
 ## 功能
 - 用户

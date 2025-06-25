@@ -54,7 +54,7 @@ public class FriendServiceImpl implements FriendService {
     @Transactional
     public void handleApplication(FriendApplyHandleParam param) {
         String userId = param.getUserId();
-        Long id = secureId.decode(param.getFriendApplicationId(), secureId.getFriendApplicationSalt());
+        Long id = secureId.simpleDecode(param.getFriendApplicationId(), secureId.getFriendApplicationSalt());
         //申请处理
         FriendApplication friendApplication = friendApplicationRepository.findById(id).orElseThrow();
         if (!friendApplication.getToUserId().equals(userId)) {

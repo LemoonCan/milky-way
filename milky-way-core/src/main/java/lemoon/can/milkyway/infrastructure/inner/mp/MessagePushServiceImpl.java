@@ -31,7 +31,7 @@ public class MessagePushServiceImpl implements MessagePushService {
     public void friendApplyMsg(FriendApplication friendApplication) {
         //点对点
         FriendApplicationContentDTO payload = new FriendApplicationContentDTO();
-        payload.setId(secureId.encode(friendApplication.getId(), secureId.getFriendApplicationSalt()));
+        payload.setId(secureId.simpleEncode(friendApplication.getId(), secureId.getFriendApplicationSalt()));
         payload.setStatus(friendApplication.getStatus());
         payload.setApplyMsg(friendApplication.getApplyMsg());
         payload.setFromUser(userMapper.selectSimpleById(friendApplication.getFromUserId()));

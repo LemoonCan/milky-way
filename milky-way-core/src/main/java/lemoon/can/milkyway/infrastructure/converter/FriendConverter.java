@@ -26,6 +26,6 @@ public abstract class FriendConverter {
 
     @Named("encodeFriendApplicationId")
     protected String encodeFriendApplicationId(Long id) {
-        return secureId.encode(id, secureId.getFriendApplicationSalt());
+        return secureId.simpleEncode(id, secureId.getFriendApplicationSalt());
     }
 }
