@@ -42,7 +42,8 @@ public class FriendServiceImpl implements FriendService {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "已是好友");
         }
 
-        if(friendApplicationRepository.existsByFromUserIdAndToUserId(param.getFromUserId(), param.getToUserId())) {
+        if(friendApplicationRepository.existsByFromUserIdAndToUserIdAndStatus(param.getFromUserId(), param.getToUserId(),
+                FriendApplyStatus.APPLYING)) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "请勿重复申请");
         }
 
