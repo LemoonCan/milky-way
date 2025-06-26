@@ -3,20 +3,21 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.FriendMapper">
     <select id="findApplications" resultMap="FriendApplicationDOMap">
-        select fa.id        as id,
-               fa.apply_msg as apply_msg,
-               fa.status    as status,
-               fa.create_time as create_time,
-               u1.id        as from_id,
-               u1.open_id   as from_open_id,
-               u1.nick_name as from_nick_name,
-               u1.avatar    as from_avatar,
-               u2.id        as to_id,
-               u2.nick_name as to_nick_name,
-               u2.avatar    as to_avatar
+        select fa.id as id,
+        fa.apply_channel as apply_channel,
+        fa.apply_msg as apply_msg,
+        fa.status as status,
+        fa.create_time as create_time,
+        u1.id as from_id,
+        u1.open_id as from_open_id,
+        u1.nick_name as from_nick_name,
+        u1.avatar as from_avatar,
+        u2.id as to_id,
+        u2.nick_name as to_nick_name,
+        u2.avatar as to_avatar
         from friend_application fa
-                 left join users u1 on fa.from_user_id = u1.id
-                 left join users u2 on fa.to_user_id = u2.id
+        left join users u1 on fa.from_user_id = u1.id
+        left join users u2 on fa.to_user_id = u2.id
         where fa.to_user_id = #{toUserId}
         <if test="lastId != null">
             and fa.id &lt; #{lastId}
@@ -26,7 +27,8 @@
     </select>
     <resultMap id="FriendApplicationDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO">
         <id property="id" column="id"/> <!-- 主键 -->
-        <result property="applyMsg" column="apply_msg"/> <!-- 普通字段 -->
+        <result property="applyChannel" column="apply_channel"/> <!-- 普通字段 -->
+        <result property="applyMsg" column="apply_msg"/>
         <result property="status" column="status"/>
         <result property="createTime" column="create_time"/>
 
@@ -44,16 +46,17 @@
     </resultMap>
 
     <select id="findFriends" resultMap="FriendDOMap">
-        select f.remark     as remark,
-               f.status     as status,
-               u.id         as friend_id,
-               u.open_id    as friend_open_id,
-               u.phone      as friend_phone,
-               u.nick_name  as friend_nick_name,
-               u.nick_name_first_letter as friend_nick_name_first_letter,
-               u.avatar     as friend_avatar
+        select f.remark as remark,
+        f.status as status,
+        f.permission as permission,
+        u.id as friend_id,
+        u.open_id as friend_open_id,
+        u.phone as friend_phone,
+        u.nick_name as friend_nick_name,
+        u.nick_name_first_letter as friend_nick_name_first_letter,
+        u.avatar as friend_avatar
         from friend f
-                 left join users u on f.friend_id = u.id
+        left join users u on f.friend_id = u.id
         where f.user_id = #{userId}
         <if test="lastLetter != null and lastNickName != null">
             and (u.nick_name_first_letter > #{lastLetter} or
@@ -63,18 +66,19 @@
         limit #{pageSize}
     </select>
 
+    <!-- 如果无主键字段，通过association来映射嵌套对象，可能导致意外的合并，需按下述方式声明 -->
+    <!-- association可处理一对多场景(1个主对象包含n个子对象) -->
     <resultMap id="FriendDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.FriendDO">
         <result property="remark" column="remark"/>
         <result property="status" column="status"/>
         <result property="permission" column="permission"/>
 
-        <association property="friend" javaType="lemoon.can.milkyway.infrastructure.repository.dos.UserDO">
-            <result property="id" column="friend_id"/>
-            <result property="openId" column="friend_open_id"/>
-            <result property="phone" column="friend_phone"/>
-            <result property="nickName" column="friend_nick_name"/>
-            <result property="nickNameFirstLetter" column="friend_nick_name_first_letter"/>
-            <result property="avatar" column="friend_avatar"/>
-        </association>
+        <result property="friend.id" column="friend_id"/>
+        <result property="friend.openId" column="friend_open_id"/>
+        <result property="friend.phone" column="friend_phone"/>
+        <result property="friend.nickName" column="friend_nick_name"/>
+        <result property="friend.nickNameFirstLetter" column="friend_nick_name_first_letter"/>
+        <result property="friend.avatar" column="friend_avatar"/>
     </resultMap>
+
 </mapper>

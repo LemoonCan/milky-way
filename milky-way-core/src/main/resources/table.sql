@@ -47,6 +47,7 @@ CREATE TABLE friend_application
     id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
     from_user_id VARCHAR(24)  NOT NULL COMMENT '申请人唯一标识',
     to_user_id   VARCHAR(24)  NOT NULL COMMENT '接收人唯一标识',
+    apply_channel VARCHAR(64) NOT NULL COMMENT '申请渠道',
     apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
     status       VARCHAR(16)  NOT NULL COMMENT '状态',
     remark       VARCHAR(100) COMMENT '备注',

@@ -58,6 +58,12 @@ public class FriendController {
         return ResponseEntity.ok(Result.success());
     }
 
+    @GetMapping("/count")
+    public ResponseEntity<Result<Integer>> countFriends() {
+        int count = friendQueryService.countFriends(UserInfoHolder.id());
+        return ResponseEntity.ok(Result.success(count));
+    }
+
     @GetMapping
     @Operation(summary = "获取好友列表")
     public ResponseEntity<Result<Slices<FriendDTO>>> friends(@RequestParam(required = false) Character lastLetter,

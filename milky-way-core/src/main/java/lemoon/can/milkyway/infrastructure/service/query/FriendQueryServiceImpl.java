@@ -59,4 +59,9 @@ public class FriendQueryServiceImpl implements FriendQueryService {
                 .toList();
         return new Slices<>(friendDTOS, hasNext);
     }
+
+    @Override
+    public int countFriends(String userId) {
+        return friendMapper.countFriends(userId);
+    }
 }

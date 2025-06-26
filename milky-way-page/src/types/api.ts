@@ -71,17 +71,18 @@ export interface FriendInfo {
 export interface FriendRelation {
   friend: FriendInfo
   remark?: string
-  status: 'ESTABLISHED' | 'BLOCKED'
+  status: 'ESTABLISHED' | 'BLACKLISTED'
   permission?: string | null
 }
 
 export interface Friend {
+  id: string
   openId: string
   nickName: string
   nickNameFirstLetter: string
   avatar?: string
   remark?: string
-  status: 'ESTABLISHED' | 'BLOCKED'
+  status: 'ESTABLISHED' | 'BLACKLISTED' | 'BLACKLISTED_BY'
   permission?: string | null
 }
 
@@ -100,6 +101,7 @@ export interface FriendApplication {
   fromUser: FriendApplicationUser
   toUser: FriendApplicationUser
   applyMsg?: string
+  applyChannel?: string // 申请来源渠道
   status: 'APPLYING' | 'ACCEPTED' | 'REJECTED'
   createTime?: string
   updateTime?: string
@@ -145,6 +147,7 @@ export interface FriendApplicationsQueryParams {
 export interface AddFriendRequest {
   toUserId: string
   applyMessage: string
+  applyChannel?: string // 申请来源渠道
   extraInfo?: {
     remark?: string
     permission?: 'ALL' | 'CHAT'

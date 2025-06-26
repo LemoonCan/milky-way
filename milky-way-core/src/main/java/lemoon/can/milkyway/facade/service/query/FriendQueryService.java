@@ -28,4 +28,6 @@ public interface FriendQueryService {
      * @return
      */
     Slices<FriendDTO> getFriends(FriendsQueryParam param);
+
+    int countFriends(String userId);
 }

@@ -66,7 +66,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
         remark: remark.trim() || undefined,
         permission
       }
-      await addFriend(searchResult.id, message.trim(), extraInfo)
+      await addFriend(searchResult.id, message.trim(), 'ACCOUNT_SEARCH', extraInfo)
       handleClose()
     } catch (error) {
       console.error('Add friend error:', error)

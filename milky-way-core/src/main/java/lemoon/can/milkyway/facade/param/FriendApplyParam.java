@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.facade.param;
 
 import jakarta.validation.constraints.NotBlank;
+import lemoon.can.milkyway.common.enums.FriendApplyChannel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,11 @@ public class FriendApplyParam {
      */
     @NotBlank(message = "好友信息不能为空")
     private String toUserId;
+    /**
+     * 申请渠道
+     */
+    @NotBlank(message = "申请渠道不能为空")
+    FriendApplyChannel applyChannel;
     /**
      * 申请消息
      */

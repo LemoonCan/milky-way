@@ -27,7 +27,7 @@
 
 .basicInfo {
   flex: 1;
-  padding-top: 8px;
+  padding-top: 0;
 }
 
 .displayName {

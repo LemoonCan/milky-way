@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.domain.friend;
 
 import jakarta.persistence.*;
+import lemoon.can.milkyway.common.enums.FriendApplyChannel;
 import lemoon.can.milkyway.common.enums.FriendApplyStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,10 @@ public class FriendApplication {
      */
     private String toUserId;
     /**
+     * 申请渠道
+     */
+    private FriendApplyChannel applyChannel;
+    /**
      * 申请信息
      */
     private String applyMsg;
@@ -52,9 +57,10 @@ public class FriendApplication {
     @Column(updatable = false)
     private LocalDateTime createTime;
 
-    public FriendApplication(String fromUserId, String toUserId, String applyMsg) {
+    public FriendApplication(String fromUserId, String toUserId, FriendApplyChannel applyChannel, String applyMsg) {
         this.fromUserId = fromUserId;
         this.toUserId = toUserId;
+        this.applyChannel = applyChannel;
         this.applyMsg = applyMsg;
         this.status = FriendApplyStatus.APPLYING;
     }

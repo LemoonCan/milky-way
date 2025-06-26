@@ -25,7 +25,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({
           userId={friend.openId}
           size={44}
         />
-        {friend.status === 'BLOCKED' && (
+        {friend.status === 'BLACKLISTED' && (
           <div className={styles.blockedIndicator} title="已拉黑">
             🚫
           </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { Search, UserPlus, ChevronDown, ChevronRight, Users } from 'lucide-react'
+import { Search, UserPlus, ChevronDown, ChevronRight, UserCheck } from 'lucide-react'
 import { FriendListItem } from './FriendListItem'
 import { FriendApplicationItem } from './FriendApplicationItem'
 import { useFriendStore } from '../store/friend'
@@ -30,10 +30,17 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     fetchMoreFriendApplications,
     lastLetter,
     lastNickName,
-    lastApplicationId
+    lastApplicationId,
+    totalFriendsCount,
+    fetchFriendsCount
   } = useFriendStore()
   
   const listContainerRef = useRef<HTMLDivElement>(null)
+
+  // 组件加载时获取好友总数（只在组件挂载时执行一次）
+  useEffect(() => {
+    fetchFriendsCount()
+  }, []) // 移除依赖项，只在组件挂载时执行一次
 
   // 本地搜索过滤好友
   const filteredFriends = useMemo(() => {
@@ -151,7 +158,7 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
               {newFriendsExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </div>
             <div className={styles.sectionAvatar}>
-              <Users size={20} />
+              <UserPlus size={20} />
             </div>
             <div className={styles.sectionInfo}>
               <div className={styles.sectionTitle}>新朋友</div>
@@ -188,17 +195,16 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                       {isApplicationsLoading ? (
                         <div className={styles.loadingMore}>
                           <div className={styles.loadingSpinner}></div>
-                          <span>加载更多申请...</span>
+                          <span>加载更多...</span>
                         </div>
                       ) : (
                         <button 
                           className={styles.loadMoreButton}
                           onClick={() => {
-                            console.log('手动点击加载更多申请，当前游标:', { lastApplicationId })
                             fetchMoreFriendApplications()
                           }}
                         >
-                          点击加载更多申请
+                          加载更多...
                         </button>
                       )}
                     </div>
@@ -216,11 +222,13 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
               {friendsExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </div>
             <div className={styles.sectionAvatar}>
-              <Users size={20} />
+              <UserCheck size={20} />
             </div>
             <div className={styles.sectionInfo}>
               <div className={styles.sectionTitle}>朋友们</div>
-              <div className={styles.sectionCount}>{filteredFriends.length}</div>
+              <div className={styles.sectionCount}>
+                {searchQuery ? filteredFriends.length : totalFriendsCount}
+              </div>
             </div>
           </div>
           
@@ -251,17 +259,16 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                       {isFriendsLoading ? (
                         <div className={styles.loadingMore}>
                           <div className={styles.loadingSpinner}></div>
-                          <span>加载更多好友...</span>
+                          <span>加载更多...</span>
                         </div>
                       ) : (
                         <button 
                           className={styles.loadMoreButton}
                           onClick={() => {
-                            console.log('手动点击加载更多好友，当前游标:', { lastLetter, lastNickName })
                             fetchMoreFriends()
                           }}
                         >
-                          点击加载更多好友
+                          加载更多...
                         </button>
                       )}
                     </div>

@@ -9,7 +9,25 @@ interface FriendApplicationDetailProps {
   application: FriendApplication
 }
 
-
+// 根据申请渠道获取中文描述
+const getApplyChannelText = (applyChannel?: string): string => {
+  switch (applyChannel) {
+    case 'ACCOUNT_SEARCH':
+      return '通过搜索账号添加'
+    case 'PHONE_SEARCH':
+      return '通过搜索手机号添加'
+    case 'QR_CODE':
+      return '通过扫描二维码添加'
+    case 'NEARBY':
+      return '通过附近的人添加'
+    case 'GROUP_CHAT':
+      return '通过群聊添加'
+    case 'FRIEND_RECOMMEND':
+      return '通过朋友推荐添加'
+    default:
+      return '未知' // 默认值
+  }
+}
 
 export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = ({ application }) => {
   const [showVerifyDialog, setShowVerifyDialog] = useState(false)
@@ -73,7 +91,7 @@ export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = (
         <div className={styles.sourceSection}>
           <div className={styles.sectionTitle}>来源</div>
           <div className={styles.sourceContent}>
-            通过搜索手机号添加
+            {getApplyChannelText(application.applyChannel)}
           </div>
         </div>
 

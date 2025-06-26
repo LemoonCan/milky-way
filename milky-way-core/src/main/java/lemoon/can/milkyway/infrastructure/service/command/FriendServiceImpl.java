@@ -49,6 +49,7 @@ public class FriendServiceImpl implements FriendService {
 
         FriendApplication friendApplication = new FriendApplication(param.getFromUserId(),
                 param.getToUserId(),
+                param.getApplyChannel(),
                 param.getApplyMessage());
         friendApplication.setExtraInfo(new FriendApplicationExtraInfo(
                 param.getExtraInfo().getRemark(),

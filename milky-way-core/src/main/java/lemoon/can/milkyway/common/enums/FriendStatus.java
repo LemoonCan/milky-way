@@ -10,14 +10,6 @@ public enum FriendStatus {
      */
     ESTABLISHED,
     /**
-     * 已删除
-     */
-    DELETED,
-    /**
-     * 被删除
-     */
-    DELETED_BY,
-    /**
      * 已拉黑
      */
     BLACKLISTED,

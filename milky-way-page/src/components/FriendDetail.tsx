@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Avatar } from './Avatar'
 import { MessageCircle, Phone, Video, MoreHorizontal, UserMinus, UserX, UserCheck } from 'lucide-react'
+import { ConfirmDialog } from './ui/confirm-dialog'
 import { useFriendStore } from '../store/friend'
 import { userService } from '../services/user'
-import type { Friend } from '../types/api'
+import type { Friend, User } from '../types/api'
 import styles from '../css/FriendDetail.module.css'
 
 interface FriendDetailProps {
@@ -13,6 +14,10 @@ interface FriendDetailProps {
 export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showBlockDialog, setShowBlockDialog] = useState(false)
+  const [showUnblockDialog, setShowUnblockDialog] = useState(false)
+  const [userDetails, setUserDetails] = useState<User | null>(null)
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const lastFetchedOpenIdRef = useRef<string | null>(null)
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
@@ -33,7 +38,8 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         lastFetchedOpenIdRef.current = friend.openId
         const response = await userService.getUserByOpenId(friend.openId)
         if (response.success && response.data) {
-          // userDetails 暂时不在界面中使用，如果未来需要可以重新添加
+          // 保存用户详细信息到state中
+          setUserDetails(response.data)
           console.log('User details fetched:', response.data)
         }
       } catch (error) {
@@ -78,25 +84,34 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     console.log('Video call to:', friend.nickName)
   }
 
-  const handleDeleteFriend = async () => {
-    if (window.confirm(`确定要删除好友 ${friend.nickName} 吗？`)) {
-      await deleteFriend(friend.openId)
-      setShowMoreActions(false)
-    }
+  const handleDeleteFriend = () => {
+    setShowDeleteDialog(true)
   }
 
-  const handleBlockFriend = async () => {
-    if (window.confirm(`确定要拉黑好友 ${friend.nickName} 吗？`)) {
-      await blockFriend(friend.openId)
-      setShowMoreActions(false)
-    }
+  const handleBlockFriend = () => {
+    setShowBlockDialog(true)
   }
 
-  const handleUnblockFriend = async () => {
-    if (window.confirm(`确定要解除拉黑 ${friend.nickName} 吗？`)) {
-      await unblockFriend(friend.openId)
-      setShowMoreActions(false)
-    }
+  const handleUnblockFriend = () => {
+    setShowUnblockDialog(true)
+  }
+
+  const confirmDeleteFriend = async () => {
+    await deleteFriend(friend.id)
+    setShowDeleteDialog(false)
+    setShowMoreActions(false)
+  }
+
+  const confirmBlockFriend = async () => {
+    await blockFriend(friend.id)
+    setShowBlockDialog(false)
+    setShowMoreActions(false)
+  }
+
+  const confirmUnblockFriend = async () => {
+    await unblockFriend(friend.id)
+    setShowUnblockDialog(false)
+    setShowMoreActions(false)
   }
 
   // 如果正在加载，显示加载状态
@@ -118,18 +133,21 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         <div className={styles.avatarContainer}>
           <Avatar
             avatarUrl={friend.avatar}
-            userId={friend.openId}
+            userId={friend.id}
             size={100}
           />
-          {friend.status === 'BLOCKED' && (
+          {friend.status === 'BLACKLISTED' && (
             <div className={styles.blockedIndicator}>已拉黑</div>
           )}
         </div>
         
         <div className={styles.basicInfo}>
           <h1 className={styles.displayName}>
-            {friend.remark && <span className={styles.genderIcon}>👤</span>}
+            {friend.remark || friend.nickName}
           </h1>
+          {friend.remark && (
+            <div className={styles.nickName}>昵称：{friend.nickName}</div>
+          )}
           <div className={styles.wechatId}>账号：{friend.openId}</div>
           <div className={styles.region}>地区：暂未设置</div>
         </div>
@@ -139,7 +157,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
       <div className={styles.signatureSection}>
         <div className={styles.sectionTitle}>个性签名</div>
         <div className={styles.signatureContent}>
-          这是一个很酷的人
+          {userDetails?.individualSignature || '暂无个性签名'}
         </div>
       </div>
 
@@ -148,7 +166,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         <button
           onClick={handleSendMessage}
           className={styles.actionButton}
-          disabled={friend.status === 'BLOCKED'}
+          disabled={friend.status === 'BLACKLISTED'}
         >
           <MessageCircle size={24} />
           <span>发消息</span>
@@ -157,7 +175,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         <button
           onClick={handleVoiceCall}
           className={styles.actionButton}
-          disabled={friend.status === 'BLOCKED'}
+          disabled={friend.status === 'BLACKLISTED'}
         >
           <Phone size={24} />
           <span>语音通话</span>
@@ -166,7 +184,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         <button
           onClick={handleVideoCall}
           className={styles.actionButton}
-          disabled={friend.status === 'BLOCKED'}
+          disabled={friend.status === 'BLACKLISTED'}
         >
           <Video size={24} />
           <span>视频通话</span>
@@ -185,7 +203,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         
         {showMoreActions && (
           <div className={styles.moreActionsMenu}>
-            {friend.status === 'BLOCKED' ? (
+            {friend.status === 'BLACKLISTED' ? (
               <button
                 onClick={handleUnblockFriend}
                 className={styles.moreActionItem}
@@ -216,6 +234,39 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
           </div>
         )}
       </div>
+
+      {/* 删除好友确认弹框 */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="删除好友"
+        message={`确定要删除好友 ${friend.remark || friend.nickName} 吗？删除后将无法再与该用户聊天。`}
+        confirmText="删除好友"
+        cancelText="取消"
+        onConfirm={confirmDeleteFriend}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
+
+      {/* 拉黑好友确认弹框 */}
+      <ConfirmDialog
+        isOpen={showBlockDialog}
+        title="拉黑好友"
+        message={`确定要拉黑 ${friend.remark || friend.nickName} 吗？拉黑后对方将无法向您发送消息。`}
+        confirmText="拉黑好友"
+        cancelText="取消"
+        onConfirm={confirmBlockFriend}
+        onCancel={() => setShowBlockDialog(false)}
+      />
+
+      {/* 解除拉黑确认弹框 */}
+      <ConfirmDialog
+        isOpen={showUnblockDialog}
+        title="解除拉黑"
+        message={`确定要解除拉黑 ${friend.remark || friend.nickName} 吗？`}
+        confirmText="解除拉黑"
+        cancelText="取消"
+        onConfirm={confirmUnblockFriend}
+        onCancel={() => setShowUnblockDialog(false)}
+      />
     </div>
   )
 } 

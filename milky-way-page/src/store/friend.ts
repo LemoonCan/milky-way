@@ -18,6 +18,9 @@ interface FriendState {
   lastLetter: string | null
   lastNickName: string | null
   lastApplicationId: string | null
+  // 好友总数
+  totalFriendsCount: number
+  isCountLoading: boolean
 
   // 操作方法
   setSelectedFriend: (friend: Friend | null) => void
@@ -26,13 +29,14 @@ interface FriendState {
   fetchMoreFriends: () => Promise<void>
   fetchFriendApplications: (refresh?: boolean) => Promise<void>
   fetchMoreFriendApplications: () => Promise<void>
-  addFriend: (toUserId: string, applyMessage: string, extraInfo?: { remark?: string; permission?: 'ALL' | 'CHAT' }) => Promise<void>
+  addFriend: (toUserId: string, applyMessage: string, applyChannel?: string, extraInfo?: { remark?: string; permission?: 'ALL' | 'CHAT' }) => Promise<void>
   handleFriendApplication: (applicationId: string, action: 'accept' | 'reject', extraInfo?: { remark?: string; permission?: 'ALL' | 'CHAT' }) => Promise<boolean>
-  deleteFriend: (friendId: string) => Promise<void>
-  blockFriend: (friendId: string) => Promise<void>
-  unblockFriend: (friendId: string) => Promise<void>
+  deleteFriend: (friendUserId: string) => Promise<void>
+  blockFriend: (friendUserId: string) => Promise<void>
+  unblockFriend: (friendUserId: string) => Promise<void>
   searchUserByOpenId: (openId: string) => Promise<User | null>
   searchUserByPhone: (phone: string) => Promise<User | null>
+  fetchFriendsCount: () => Promise<void>
   clearError: () => void
 }
 
@@ -52,6 +56,9 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   lastLetter: null,
   lastNickName: null,
   lastApplicationId: null,
+  // 好友总数
+  totalFriendsCount: 0,
+  isCountLoading: false,
 
   // 设置选中的好友
   setSelectedFriend: (friend) => set({ selectedFriend: friend }),
@@ -178,11 +185,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   },
 
   // 添加好友
-  addFriend: async (toUserId, applyMessage, extraInfo) => {
+  addFriend: async (toUserId, applyMessage, applyChannel, extraInfo) => {
     set({ isLoading: true, error: null })
     
     try {
-      const response = await friendService.addFriend({ toUserId, applyMessage, extraInfo })
+      const response = await friendService.addFriend({ toUserId, applyMessage, applyChannel, extraInfo })
       
       if (response.success) {
         set({ isLoading: false })
@@ -211,10 +218,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success) {
         set({ isLoading: false })
-        // 刷新好友列表和申请列表
+        // 刷新好友列表和申请列表，并更新好友总数
         await Promise.all([
           get().fetchFriends(true),
-          get().fetchFriendApplications(true)
+          get().fetchFriendApplications(true),
+          get().fetchFriendsCount()
         ])
         return true // 返回成功标识
       } else {
@@ -228,18 +236,20 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   },
 
   // 删除好友
-  deleteFriend: async (friendOpenId) => {
+  deleteFriend: async (friendUserId) => {
     set({ isLoading: true, error: null })
     
     try {
-      const response = await friendService.deleteFriend(friendOpenId)
+      const response = await friendService.deleteFriend(friendUserId)
       
       if (response.success) {
         set({ 
-          friends: get().friends.filter(f => f.openId !== friendOpenId),
-          selectedFriend: get().selectedFriend?.openId === friendOpenId ? null : get().selectedFriend,
+          friends: get().friends.filter(f => f.id !== friendUserId),
+          selectedFriend: get().selectedFriend?.id === friendUserId ? null : get().selectedFriend,
           isLoading: false 
         })
+        // 更新好友总数
+        get().fetchFriendsCount()
       } else {
         set({ error: response.msg || '删除好友失败', isLoading: false })
       }
@@ -249,17 +259,23 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   },
 
   // 拉黑好友
-  blockFriend: async (friendOpenId) => {
+  blockFriend: async (friendUserId) => {
     set({ isLoading: true, error: null })
     
     try {
-      const response = await friendService.blockFriend(friendOpenId)
+      const response = await friendService.blockFriend(friendUserId)
       
       if (response.success) {
+        const updatedFriends = get().friends.map(f =>
+          f.id === friendUserId ? { ...f, status: 'BLACKLISTED' as const } : f
+        )
+        const updatedSelectedFriend = get().selectedFriend?.id === friendUserId
+          ? { ...get().selectedFriend!, status: 'BLACKLISTED' as const }
+          : get().selectedFriend
+        
         set({ 
-          friends: get().friends.map(f => 
-            f.openId === friendOpenId ? { ...f, status: 'BLOCKED' } : f
-          ),
+          friends: updatedFriends,
+          selectedFriend: updatedSelectedFriend,
           isLoading: false 
         })
       } else {
@@ -271,17 +287,23 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   },
 
   // 解除拉黑
-  unblockFriend: async (friendOpenId) => {
+  unblockFriend: async (friendUserId) => {
     set({ isLoading: true, error: null })
     
     try {
-      const response = await friendService.unblockFriend(friendOpenId)
+      const response = await friendService.unblockFriend(friendUserId)
       
       if (response.success) {
+        const updatedFriends = get().friends.map(f => 
+          f.id === friendUserId ? { ...f, status: 'ESTABLISHED' as const } : f
+        )
+        const updatedSelectedFriend = get().selectedFriend?.id === friendUserId
+          ? { ...get().selectedFriend!, status: 'ESTABLISHED' as const }
+          : get().selectedFriend
+        
         set({ 
-          friends: get().friends.map(f => 
-            f.openId === friendOpenId ? { ...f, status: 'ESTABLISHED' } : f
-          ),
+          friends: updatedFriends,
+          selectedFriend: updatedSelectedFriend,
           isLoading: false 
         })
       } else {
@@ -329,6 +351,31 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     } catch {
       set({ error: '网络错误，请重试', isLoading: false })
       return null
+    }
+  },
+
+  // 获取好友总数
+  fetchFriendsCount: async () => {
+    const currentState = get()
+    // 如果正在加载，避免重复请求
+    if (currentState.isCountLoading) {
+      return
+    }
+
+    set({ isCountLoading: true })
+    
+    try {
+      const response = await friendService.countFriends()
+      
+      if (response.success && typeof response.data === 'number') {
+        set({ totalFriendsCount: response.data, isCountLoading: false })
+      } else {
+        set({ isCountLoading: false })
+      }
+    } catch (error) {
+      console.error('获取好友总数失败:', error)
+      set({ isCountLoading: false })
+      // 不设置全局错误，因为这不是关键功能
     }
   },
 

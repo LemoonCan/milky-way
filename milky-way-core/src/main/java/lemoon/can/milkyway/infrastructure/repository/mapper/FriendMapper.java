@@ -3,6 +3,7 @@ package lemoon.can.milkyway.infrastructure.repository.mapper;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendApplicationDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.FriendDO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -24,4 +25,6 @@ public interface FriendMapper {
      */
     List<FriendDO> findFriends(String userId, Character lastLetter, String lastNickName, int pageSize);
 
+    @Select("select count(1) from friend where user_id = #{userId}")
+    int countFriends(String userId);
 }
