@@ -62,13 +62,11 @@ public class SecureId {
     }
 
     public String simpleEncode(Long id, String fixedSalt) {
-        String randomSalt = generateRandomSalt();
         Hashids hashids = new Hashids(fixedSalt, 12);
         return hashids.encode(id);
     }
 
     public Long simpleDecode(String encoded, String fixedSalt) {
-
         Hashids decoder = new Hashids(fixedSalt, 12);
         long[] decoded = decoder.decode(encoded);
         if (decoded.length == 0) {

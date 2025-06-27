@@ -1,11 +1,10 @@
 package lemoon.can.milkyway.infrastructure.converter;
 
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.CommentDTO;
+import lemoon.can.milkyway.infrastructure.converter.helper.DateTimeConverterHelper;
 import lemoon.can.milkyway.infrastructure.repository.dos.CommentDO;
 import org.mapstruct.Mapper;
 import org.mapstruct.ReportingPolicy;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,12 +16,9 @@ import java.util.stream.Collectors;
  * @since 2025/6/6
  */
 @Mapper(componentModel = "spring",
-        uses = {UserConverter.class, DateTimeConverter.class},
+        uses = {UserConverter.class, DateTimeConverterHelper.class},
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class CommentConverter {
-    @Autowired
-    private SecureId secureId;
-
     public List<CommentDTO> buildTree(List<CommentDO> flatList) {
         Map<Long, CommentDTO> map = flatList.stream()
                 .collect(Collectors.toMap(CommentDO::getId, this::toDto));

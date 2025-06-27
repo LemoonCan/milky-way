@@ -34,7 +34,8 @@ security:
     comment-salt: ${COMMENT_SECUREID_SALT}
   websocket:
     cors-allowed-origins:
-       - http://localhost:8081
+       - https://localhost:8081
+       - https://localhost:5173
        - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
 
 file:

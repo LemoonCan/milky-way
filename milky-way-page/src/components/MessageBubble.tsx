@@ -6,6 +6,7 @@ import styles from '../css/MessageBubble.module.css'
 interface MessageBubbleProps {
   message: Message
   userId?: string
+  userAvatar?: string // 消息发送者的头像
   currentUserId?: string
   currentUserAvatar?: string
   onAvatarClick?: (isFromMe: boolean, element: HTMLElement) => void
@@ -14,6 +15,7 @@ interface MessageBubbleProps {
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   userId,
+  userAvatar,
   currentUserId,
   currentUserAvatar,
   onAvatarClick,
@@ -38,6 +40,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           <Avatar 
             size={32}
             userId={userId || 'other-user'}
+            avatarUrl={userAvatar}
           />
         </div>
       )}

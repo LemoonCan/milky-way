@@ -1,12 +1,11 @@
 package lemoon.can.milkyway.facade.dto;
 
+import lemoon.can.milkyway.common.enums.MessageSenderType;
 import lemoon.can.milkyway.common.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 /**
  * @author lemoon
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageDTO {
+public class MessageInfoDTO {
     /**
      * 消息ID
      */
@@ -26,6 +25,11 @@ public class MessageDTO {
      * 聊天室ID
      */
     private String chatId;
+
+    /**
+     * 发送者类型
+     */
+    private MessageSenderType senderType;
 
     /**
      * 发送者信息

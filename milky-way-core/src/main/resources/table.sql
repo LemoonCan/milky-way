@@ -76,6 +76,7 @@ CREATE TABLE chat
     type        VARCHAR(50)  NOT NULL COMMENT '聊天室类型',
     title       VARCHAR(255) NOT NULL COMMENT '聊天室标题',
     bulletin    TEXT COMMENT '聊天室公告',
+    extra_info  JSON COMMENT '扩展信息',
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );

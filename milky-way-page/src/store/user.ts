@@ -55,16 +55,20 @@ export const useUserStore = create<UserStore>()((set, get) => ({
           lastFetchTime: now
         })
       } else {
+        // 静默处理错误，不在控制台显示
         set({
           loading: false,
           error: response.msg || '获取用户信息失败'
         })
       }
     } catch (error) {
-      console.error('获取用户信息失败:', error)
+      // 在开发环境中，API 可能不可用，静默处理错误
+      const errorMessage = error instanceof Error ? error.message : '获取用户信息失败'
+      console.debug('用户信息获取失败 (这在开发环境中是正常的):', errorMessage)
+      
       set({
         loading: false,
-        error: error instanceof Error ? error.message : '获取用户信息失败'
+        error: errorMessage
       })
     }
   },

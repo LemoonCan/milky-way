@@ -109,14 +109,14 @@ export interface FriendApplication {
 
 // 好友列表分页响应 - 基于实际API响应
 export interface FriendListData {
-  data: FriendRelation[]
+  items: FriendRelation[]
   hasNext: boolean
   size: number
 }
 
 // 好友申请列表分页响应
 export interface FriendApplicationListData {
-  data: FriendApplication[]
+  items: FriendApplication[]
   hasNext: boolean
   size: number
 }
@@ -173,4 +173,41 @@ export interface FriendOperateRequest {
 export interface UserSearchRequest {
   openId?: string
   phone?: string
+}
+
+// 聊天消息相关类型
+export interface MessageDTO {
+  id: string
+  chatId: string
+  sender: SimpleUserDTO
+  senderType: 'me' | 'other'
+  type: 'TEXT' | 'IMAGE' | 'FILE'
+  content: string
+  sentTime: string
+  read: boolean
+  readTime?: string
+}
+
+// 简单用户信息DTO
+export interface SimpleUserDTO {
+  id: string
+  openId: string
+  nickName: string
+  avatar?: string
+}
+
+// 聊天消息查询参数
+export interface ChatMessagesQueryParam {
+  chatId: string
+  before?: string  // 分页游标，查询在此ID之前的消息
+  after?: string   // 分页游标，查询在此ID之后的消息
+  pageSize: number
+}
+
+// 分页返回类型
+export interface Slices<T> {
+  items: T[]
+  hasNext: boolean
+  lastId?: string
+  size: number
 } 

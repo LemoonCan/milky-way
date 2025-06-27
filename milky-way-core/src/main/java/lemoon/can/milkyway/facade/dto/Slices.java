@@ -13,11 +13,11 @@ import java.util.List;
 public class Slices<T> implements Serializable {
     Boolean hasNext;
     Integer size;
-    List<T> data;
+    List<T> items;
 
-    public Slices(List<T> data, Boolean hasNext) {
-        this.data = data;
+    public Slices(List<T> items, Boolean hasNext) {
+        this.items = items;
         this.hasNext = hasNext;
-        this.size = data.size();
+        this.size = items.size();
     }
 }

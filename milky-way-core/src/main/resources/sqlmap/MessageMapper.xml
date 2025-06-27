@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lemoon.can.milkyway.infrastructure.repository.mapper.MessageMapper">
+    <select id="getMessagesBefore" resultMap="MessageDOMap">
+        SELECT
+            m.id,
+            m.chat_id,
+            m.type,
+            m.content,
+            m.sent_time,
+            m.sender_id,
+            u.open_id as sender_open_id,
+            u.nick_name as sender_nick_name,
+            u.avatar as sender_avatar
+        FROM message m
+        left join users u on m.sender_id = u.id
+        WHERE m.chat_id = #{chatId}
+        <if test="before != null">
+            AND m.id &lt; #{before}
+        </if>
+        ORDER BY m.id desc
+        LIMIT #{pageSize}
+    </select>
+
+    <select id="getMessagesAfter" resultMap="MessageDOMap">
+        SELECT
+            m.id,
+            m.chat_id,
+            m.type,
+            m.content,
+            m.sent_time,
+            m.sender_id,
+            u.open_id as sender_open_id,
+            u.nick_name as sender_nick_name,
+            u.avatar as sender_avatar
+        FROM message m
+        left join users u on m.sender_id = u.id
+        WHERE m.chat_id = #{chatId}
+        <if test="after != null">
+            AND m.id &gt; #{after}
+        </if>
+        ORDER BY m.id
+        LIMIT #{pageSize}
+    </select>
+
+    <resultMap id="MessageDOMap" type="lemoon.can.milkyway.infrastructure.repository.dos.MessageDO">
+        <id property="id" column="id"/>
+        <result property="chatId" column="chat_id"/>
+        <result property="type" column="type"/>
+        <result property="content" column="content"/>
+        <result property="sentTime" column="sent_time"/>
+        <result property="read" column="read"/>
+        <result property="readTime" column="read_time"/>
+
+        <!-- 嵌套 SimpleUserDTO -->
+        <association property="sender" javaType="lemoon.can.milkyway.facade.dto.SimpleUserDTO">
+            <id property="id" column="sender_id"/>
+            <result property="openId" column="sender_open_id"/>
+            <result property="nickName" column="sender_nick_name"/>
+            <result property="avatar" column="sender_avatar"/>
+        </association>
+    </resultMap>
+
+</mapper>

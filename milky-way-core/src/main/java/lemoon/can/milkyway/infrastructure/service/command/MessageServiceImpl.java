@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
     private final MessageRepository messageRepository;
-    private final MessageConverter messageMapper;
+    private final MessageConverter messageConverter;
     private final SecureId secureId;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
@@ -39,7 +39,7 @@ public class MessageServiceImpl implements MessageService {
         message = messageRepository.save(message);
         User sender = userRepository.findById(message.getSenderId()).orElseThrow(
                 () -> new BusinessException(ErrorCode.NOT_FOUND, "Sender not found"));
-        MessageDTO messageDTO = messageMapper.toDTO(message, sender);
+        MessageDTO messageDTO = messageConverter.toDTO(message, sender);
 
         //消息推送
         Chat chat = chatRepository.findById(message.getChatId());

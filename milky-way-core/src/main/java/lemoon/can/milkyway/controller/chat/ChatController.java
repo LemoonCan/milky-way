@@ -1,14 +1,12 @@
 package lemoon.can.milkyway.controller.chat;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.controller.Result;
-import lemoon.can.milkyway.facade.dto.ChatDTO;
-import lemoon.can.milkyway.facade.param.ChatCreateParam;
-import lemoon.can.milkyway.facade.param.ChatDeleteParam;
-import lemoon.can.milkyway.facade.param.ChatMemberParam;
-import lemoon.can.milkyway.facade.param.ChatUpdateParam;
+import lemoon.can.milkyway.facade.dto.*;
+import lemoon.can.milkyway.facade.param.*;
 import lemoon.can.milkyway.facade.service.command.ChatService;
 import lemoon.can.milkyway.facade.service.query.ChatQueryService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/chats")
 @RequiredArgsConstructor
+@Tag(name = "chat-api", description = "聊天相关接口")
 public class ChatController {
     private final ChatService chatService;
     private final ChatQueryService chatQueryService;
@@ -79,5 +78,29 @@ public class ChatController {
     public ResponseEntity<Result<List<String>>> groupChats() {
         List<String> groupChats = chatQueryService.getGroupChats(UserInfoHolder.id());
         return ResponseEntity.ok(Result.success(groupChats));
+    }
+
+    @GetMapping
+    @Operation(summary = "查询聊天列表")
+    public ResponseEntity<Result<Slices<ChatInfoDTO>>> getChatList(@RequestParam(required = false) String lastId,
+                                                                   @RequestParam Integer pageSize) {
+        Slices<ChatInfoDTO> chatList = chatQueryService.getChatList(UserInfoHolder.id(), lastId, pageSize);
+        return ResponseEntity.ok(Result.success(chatList));
+    }
+
+    @GetMapping("/messages/{chatId}")
+    @Operation(summary = "查询聊天消息")
+    public ResponseEntity<Result<Slices<MessageInfoDTO>>> getChatMessages(@PathVariable String chatId,
+                                                                          @RequestParam(required = false) String before,
+                                                                          @RequestParam(required = false) String after,
+                                                                          @RequestParam Integer pageSize) {
+        ChatMessagesQueryParam param = new ChatMessagesQueryParam();
+        param.setChatId(chatId);
+        param.setBefore(before);
+        param.setAfter(after);
+        param.setPageSize(pageSize);
+        param.setOperatorUserId(UserInfoHolder.id());
+        Slices<MessageInfoDTO> slices = chatQueryService.getChatMessages(param);
+        return ResponseEntity.ok(Result.success(slices));
     }
 }

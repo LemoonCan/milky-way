@@ -90,7 +90,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success && response.data) {
         // 转换数据结构以匹配组件预期的格式
-        const transformedFriends: Friend[] = response.data.data.map((relation: FriendRelation) => ({
+        const transformedFriends: Friend[] = response.data.items.map((relation: FriendRelation) => ({
           id: relation.friend.id,
           openId: relation.friend.openId,
           nickName: relation.friend.nickName,
@@ -158,13 +158,13 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         // 更新游标信息
         let newLastApplicationId = null
         
-        if (response.data.data.length > 0) {
-          const lastApplication = response.data.data[response.data.data.length - 1]
+        if (response.data.items.length > 0) {
+          const lastApplication = response.data.items[response.data.items.length - 1]
           newLastApplicationId = lastApplication.id
         }
         
         set({ 
-          friendApplications: refresh ? response.data.data : [...currentState.friendApplications, ...response.data.data],
+          friendApplications: refresh ? response.data.items : [...currentState.friendApplications, ...response.data.items],
           hasNextApplicationsPage: response.data.hasNext,
           lastApplicationId: newLastApplicationId,
           isApplicationsLoading: false 

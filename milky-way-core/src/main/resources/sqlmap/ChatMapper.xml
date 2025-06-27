@@ -23,4 +23,102 @@
         join chat c on cm.chat_id = c.id
         where cm.user_id = #{user_id} and c.type='GROUP';
     </select>
+
+    <!-- 游标分页查询聊天列表 - 最终优化版本 -->
+    <select id="findChatsByUserId" resultType="lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO">
+        SELECT
+        c.id,                                  -- 会话 ID
+        c.type AS chatType,                    -- 会话类型：SINGLE 或 GROUP
+
+        -- 会话标题：单聊优先显示朋友备注、其次昵称，群聊显示群名称
+        CASE
+        WHEN c.type = 'SINGLE' THEN
+        COALESCE(f.remark, u_friend.nick_name)
+        ELSE
+        c.title
+        END AS title,
+
+        -- 会话头像：群取 extra_info 里的 group_avator，单聊取对方头像
+        CASE
+        WHEN c.type = 'GROUP' THEN
+        JSON_UNQUOTE(JSON_EXTRACT(c.extra_info, '$.group_avator'))
+        ELSE
+        u_friend.avatar
+        END AS avatar,
+
+        -- 最后一条消息内容（来自预处理子查询 lm）
+        COALESCE(lm.content, '') AS lastMessage,
+
+        -- 最后一条消息时间
+        lm.sent_time AS lastMessageTime,
+
+        -- 未读数：统计当前用户在该聊天中未读的消息数量
+        COALESCE(unread.unreadCount, 0) AS unreadCount,
+
+        -- 在线状态：仅对 SINGLE 会话展示，GROUP 永远为 false
+        CASE
+        WHEN c.type = 'SINGLE' THEN COALESCE(u_friend.online, false)
+        ELSE false
+        END AS online
+
+        FROM chat_member cm
+        JOIN chat c ON cm.chat_id = c.id
+
+        -- 对方 chat_member，仅适用于 SINGLE 聊天（排除自己）
+        LEFT JOIN chat_member cm_friend ON (
+        cm_friend.chat_id = c.id
+        AND cm_friend.user_id != #{userId}
+        AND c.type = 'SINGLE'
+        )
+
+        -- 对方用户信息（SINGLE 聊天用）
+        LEFT JOIN users u_friend ON (
+        u_friend.id = cm_friend.user_id
+        )
+
+        -- 朋友关系信息（获取备注）
+        LEFT JOIN friend f ON (
+        f.user_id = #{userId}
+        AND f.friend_id = cm_friend.user_id
+        AND c.type = 'SINGLE'
+        )
+
+        -- 最后一条消息子查询（提升性能，避免重复查询）
+        LEFT JOIN (
+        SELECT m1.id, m1.chat_id, m1.content, m1.sent_time
+        FROM message m1
+        INNER JOIN (
+        SELECT chat_id, MAX(sent_time) AS max_time
+        FROM message
+        GROUP BY chat_id
+        ) m2 ON m1.chat_id = m2.chat_id AND m1.sent_time = m2.max_time
+        ) lm ON lm.chat_id = c.id
+
+        -- 未读消息数子查询
+        LEFT JOIN (
+        SELECT 
+        chat_id, 
+        COUNT(*) AS unreadCount
+        FROM message
+        WHERE read_time IS NULL 
+        AND sender_id != #{userId}
+        GROUP BY chat_id
+        ) unread ON unread.chat_id = c.id
+
+        -- 当前用户参与的会话
+        WHERE cm.user_id = #{userId}
+
+        -- 分页：只查询 ID 小于 lastId 的记录（用于向下翻页）
+        <if test="lastId != null">
+            AND c.id &lt; #{lastId}
+        </if>
+
+        -- 排序：先按消息ID，再按会话 ID
+        ORDER BY
+        lm.id DESC, c.id DESC
+
+        -- 分页大小限制
+        LIMIT #{pageSize}
+
+    </select>
 </mapper>
