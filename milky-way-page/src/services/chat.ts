@@ -1,5 +1,5 @@
 import http from '../lib/http'
-import { webSocketClient, type WebSocketMessage } from '../utils/websocket'
+import { webSocketClient, type WebSocketMessage, type RetryInfo, ConnectionStatus } from '../utils/websocket'
 import type { ApiResponse } from '../types/api'
 
 export interface ChatInfo {
@@ -77,17 +77,26 @@ export class ChatService {
    * 初始化聊天服务
    */
   async initialize(): Promise<void> {
-    if (this.isInitialized) {
+    console.log('🔄 [ChatService] initialize() 开始...')
+    
+    // 检查是否真正连接，而不只是初始化标志
+    if (this.isInitialized && webSocketClient.isConnected()) {
+      console.log('✅ [ChatService] 服务已初始化且WebSocket已连接，跳过')
       return
     }
 
+    console.log('🔧 [ChatService] 重置初始化状态')
+    this.isInitialized = false
+
     try {
+      console.log('🔗 [ChatService] 调用 webSocketClient.connect()')
       // 建立WebSocket连接
       await webSocketClient.connect()
       this.isInitialized = true
-      console.log('聊天服务初始化成功')
+      console.log('🎉 [ChatService] 聊天服务初始化成功')
     } catch (error) {
-      console.error('聊天服务初始化失败:', error)
+      console.error('❌ [ChatService] 聊天服务初始化失败:', error)
+      this.isInitialized = false  // 失败时确保标志为false
       throw error
     }
   }
@@ -98,14 +107,61 @@ export class ChatService {
   destroy(): void {
     webSocketClient.disconnect()
     this.isInitialized = false
-    console.log('聊天服务已销毁')
+    console.log('[ChatService] 聊天服务已销毁')
   }
 
   /**
    * 检查服务是否已初始化
    */
   isReady(): boolean {
-    return this.isInitialized && webSocketClient.isConnected()
+    const ready = this.isInitialized && webSocketClient.isConnected()
+    console.log('🔍 [ChatService] isReady() 检查:', {
+      isInitialized: this.isInitialized,
+      isConnected: webSocketClient.isConnected(),
+      ready
+    })
+    return ready
+  }
+
+  /**
+   * 获取连接状态
+   */
+  getConnectionStatus(): ConnectionStatus {
+    return webSocketClient.getConnectionStatus()
+  }
+
+  /**
+   * 获取重试信息
+   */
+  getRetryInfo(): RetryInfo {
+    return webSocketClient.getRetryInfo()
+  }
+
+  /**
+   * 设置状态变更回调
+   */
+  setStatusChangeCallback(callback: (retryInfo: RetryInfo) => void): void {
+    webSocketClient.setStatusChangeCallback(callback)
+  }
+
+  /**
+   * 重新连接
+   */
+  async reconnect(): Promise<void> {
+    console.log('🔄 [ChatService] reconnect() 开始...')
+    console.log('🔧 [ChatService] 重置初始化状态')
+    this.isInitialized = false
+    
+    try {
+      console.log('🔗 [ChatService] 调用 webSocketClient.reset()')
+      await webSocketClient.reset()
+      this.isInitialized = true
+      console.log('🎉 [ChatService] 重连成功')
+    } catch (error) {
+      console.error('❌ [ChatService] 重连失败:', error)
+      this.isInitialized = false  // 失败时确保标志为false
+      throw error
+    }
   }
 
   /**
@@ -132,7 +188,7 @@ export class ChatService {
         throw new Error(response.data.msg || '获取聊天列表失败')
       }
     } catch (error) {
-      console.error('获取聊天列表失败:', error)
+      console.error('[ChatService] 获取聊天列表失败:', error)
       throw error
     }
   }
@@ -161,7 +217,7 @@ export class ChatService {
         throw new Error(response.data.msg || '获取聊天消息失败')
       }
     } catch (error) {
-      console.error('获取聊天消息失败:', error)
+      console.error('[ChatService] 获取聊天消息失败:', error)
       throw error
     }
   }
@@ -179,7 +235,7 @@ export class ChatService {
         throw new Error(response.data.msg || '获取群聊列表失败')
       }
     } catch (error) {
-      console.error('获取群聊列表失败:', error)
+      console.error('[ChatService] 获取群聊列表失败:', error)
       throw error
     }
   }
@@ -205,11 +261,6 @@ export class ChatService {
    * 订阅群聊
    */
   subscribeToGroupChat(chatId: string): void {
-    if (!this.isReady()) {
-      console.warn('聊天服务未就绪，无法订阅群聊')
-      return
-    }
-
     webSocketClient.subscribeToGroupChat(chatId)
   }
 
@@ -232,15 +283,6 @@ export class ChatService {
    */
   removeMessageHandler(handler: (message: WebSocketMessage) => void): void {
     webSocketClient.removeMessageHandler(handler)
-  }
-
-  /**
-   * 重新连接
-   */
-  async reconnect(): Promise<void> {
-    webSocketClient.disconnect()
-    this.isInitialized = false
-    await this.initialize()
   }
 }
 

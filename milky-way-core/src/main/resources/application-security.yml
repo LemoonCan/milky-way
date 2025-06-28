@@ -25,6 +25,8 @@ security:
   cors:
     allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
       - https://localhost:5173
+      - https://localhost:5174
+      - https://localhost:5175
       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
   secure-id:
     friend-application-salt: ${FRIEND_APPLICATION_SECUREID_SALT}
@@ -36,6 +38,8 @@ security:
     cors-allowed-origins:
        - https://localhost:8081
        - https://localhost:5173
+       - https://localhost:5174
+       - https://localhost:5175
        - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
 
 file:

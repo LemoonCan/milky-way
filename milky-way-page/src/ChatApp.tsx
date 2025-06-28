@@ -89,14 +89,15 @@ function ChatApp() {
     })
   }, []) // 移除依赖，只在组件挂载时执行一次
 
-  // 用户登录后初始化WebSocket连接
+  // 用户登录后初始化WebSocket连接 - 改进逻辑
   useEffect(() => {
-    if (isAuthenticated && !isConnected) {
+    if (isAuthenticated) {
+      console.log('[ChatApp] 用户已认证，初始化聊天服务，当前连接状态:', isConnected)
       initializeChatService().catch(error => {
         console.error('初始化聊天服务失败:', error)
       })
     }
-  }, [isAuthenticated, isConnected, initializeChatService])
+  }, [isAuthenticated, initializeChatService]) // 移除isConnected依赖，避免重复初始化
 
   // 根据当前路径确定激活的标签
   const getActiveTab = () => {

@@ -77,8 +77,61 @@
   margin: 0;
 }
 
+.messageTimeContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 .messageTime {
   font-size: 12px;
-  margin-top: 4px;
   color: var(--milky-text-light);
-} 
+}
+
+.sendStatusIcon {
+  flex-shrink: 0;
+}
+
+.sendStatusIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 2px;
+  transition: background-color 0.2s ease;
+}
+
+.sendStatusIconWrapper:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+}
+
+.sendStatusSending {
+  color: var(--milky-text-light);
+  animation: rotate 1s linear infinite;
+}
+
+.sendStatusSent {
+  color: var(--milky-text-light);
+}
+
+.sendStatusFailed {
+  color: #ff4444;
+  cursor: pointer;
+}
+
+.sendStatusFailed:hover {
+  color: #ff6666;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+ 

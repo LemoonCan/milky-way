@@ -16,6 +16,9 @@ import lemoon.can.milkyway.infrastructure.repository.MessageRepository;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * @author lemoon
@@ -32,18 +35,25 @@ public class MessageServiceImpl implements MessageService {
     private final ChatProcessorManager chatProcessorManager;
 
     @Override
+    @Transactional
     public MessageDTO sendMessage(MessageSendParam param) {
         Message message = new Message(secureId.simpleDecode(param.getChatId(), secureId.getChatSalt()),
                 param.getSenderUserId(),
                 param.getMessageType(), param.getContent());
-        message = messageRepository.save(message);
-        User sender = userRepository.findById(message.getSenderId()).orElseThrow(
-                () -> new BusinessException(ErrorCode.NOT_FOUND, "Sender not found"));
+        messageRepository.saveAndFlush(message);
+        User sender = userRepository.findById(message.getSenderId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "Sender not found"));
         MessageDTO messageDTO = messageConverter.toDTO(message, sender);
 
         //消息推送
-        Chat chat = chatRepository.findById(message.getChatId());
-        chatProcessorManager.pushMessage(chat, message);
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // 事务提交后的逻辑
+                Chat chat = chatRepository.findById(message.getChatId());
+                chatProcessorManager.pushMessage(chat, message);
+            }
+        });
 
         return messageDTO;
     }

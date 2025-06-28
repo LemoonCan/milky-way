@@ -5,6 +5,7 @@ import { ProfileModal } from './ProfileModal'
 import { Smile, Paperclip, Send } from 'lucide-react'
 import { useChatStore } from '@/store/chat'
 import { useUserStore } from '../store/user'
+import { chatService } from '../services/chat'
 import type { ChatUser } from '@/store/chat'
 import styles from '../css/ChatWindow.module.css'
 
@@ -32,7 +33,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const { getChatMessages, addMessage, sendMessageViaWebSocket, isConnected, loadMoreOlderMessages, chatMessagesMap } = useChatStore()
+  const { getChatMessages, addMessage, sendMessageViaWebSocket, isConnected, loadMoreOlderMessages, chatMessagesMap, updateMessageSendStatus } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -134,7 +135,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     if (!inputValue.trim() || !currentUser) return
 
     try {
-      if (isConnected) {
+      if (isConnected()) {
         // 使用WebSocket发送消息
         await sendMessageViaWebSocket(currentUser.id, inputValue.trim())
       } else {
@@ -152,6 +153,54 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       // 发送失败时，仍然清空输入框，但可以在此处添加错误提示
       setInputValue('')
     }
+  }
+
+  // 重发消息处理
+  const handleRetryMessage = async (messageId: string) => {
+    if (!currentUser) return
+
+    const targetMessage = messages.find(msg => msg.id === messageId)
+    if (!targetMessage) return
+
+    // 设置状态为发送中
+    updateMessageSendStatus(currentUser.id, messageId, 'sending')
+
+    // 重试发送逻辑，与sendMessageViaWebSocket保持一致
+    const retryMessage = async (attempt: number = 1): Promise<void> => {
+      try {
+        if (!isConnected()) {
+          throw new Error('WebSocket未连接')
+        }
+        
+        // 使用chatService直接发送，避免创建新消息
+        await chatService.sendMessage({
+          chatId: currentUser.id,
+          content: targetMessage.content,
+          messageType: 'TEXT'
+        })
+        
+        // 重发成功，更新状态（保持显示成功图标）
+        updateMessageSendStatus(currentUser.id, messageId, 'sent')
+        
+      } catch (error) {
+        console.error(`重发消息失败，第${attempt}次尝试:`, error)
+        
+        if (attempt < 3) {
+          // 还有重试机会，继续尝试
+          console.log(`准备进行第${attempt + 1}次重试...`)
+          setTimeout(() => {
+            retryMessage(attempt + 1)
+          }, 1000 * attempt)
+        } else {
+          // 3次都失败了，标记为失败
+          console.error('重发消息失败，已重试3次')
+          updateMessageSendStatus(currentUser.id, messageId, 'failed')
+        }
+      }
+    }
+
+    // 开始重试
+    await retryMessage()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -195,7 +244,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
               {currentUser.name}
             </h2>
             <p className={styles.chatHeaderStatus}>
-              {isConnected ? '实时连接' : '离线模式'} · {currentUser.online ? '在线' : '离线'}
+              {currentUser.online ? '在线' : '离线'}
             </p>
           </div>
         </div>
@@ -227,13 +276,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           </div>
         )}
         
-        {/* 显示错误信息 */}
-        {chatState?.error && (
-          <div style={{ textAlign: 'center', padding: '10px', color: 'red' }}>
-            {chatState.error}
-          </div>
-        )}
-        
         {messages.map((message) => (
           <MessageBubble
             key={message.id}
@@ -245,6 +287,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
             onAvatarClick={(isFromMe, element) => {
               handleAvatarClick(isFromMe, element)
             }}
+            onRetryMessage={handleRetryMessage}
           />
         ))}
         <div ref={messagesEndRef} />

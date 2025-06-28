@@ -1,5 +1,6 @@
 import React from 'react'
 import { Avatar } from './Avatar'
+import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
 import type { Message } from '@/store/chat'
 import styles from '../css/MessageBubble.module.css'
 
@@ -10,6 +11,7 @@ interface MessageBubbleProps {
   currentUserId?: string
   currentUserAvatar?: string
   onAvatarClick?: (isFromMe: boolean, element: HTMLElement) => void
+  onRetryMessage?: (messageId: string) => void // 重发消息回调
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -19,6 +21,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   currentUserId,
   currentUserAvatar,
   onAvatarClick,
+  onRetryMessage,
 }) => {
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', {
@@ -28,6 +31,43 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   }
 
   const isFromMe = message.sender === 'me'
+
+  // 渲染发送状态图标
+  const renderSendStatus = () => {
+    if (!isFromMe || !message.sendStatus) return null
+    
+    switch (message.sendStatus) {
+      case 'sending':
+        return (
+          <RotateCw 
+            size={14} 
+            className={styles.sendStatusIcon + ' ' + styles.sendStatusSending}
+          />
+        )
+      case 'failed':
+        return (
+          <div 
+            className={styles.sendStatusIconWrapper}
+            onClick={() => onRetryMessage?.(message.id)}
+            title="点击重发"
+          >
+            <AlertCircle 
+              size={14} 
+              className={styles.sendStatusIcon + ' ' + styles.sendStatusFailed}
+            />
+          </div>
+        )
+      case 'sent':
+        return (
+          <CheckCheck 
+            size={14} 
+            className={styles.sendStatusIcon + ' ' + styles.sendStatusSent}
+          />
+        )
+      default:
+        return null
+    }
+  }
 
   return (
     <div className={`${styles.messageContainer} ${isFromMe ? styles.messageContainerFromMe : styles.messageContainerFromOther}`}>
@@ -53,9 +93,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             {message.content}
           </p>
         </div>
-        <span className={styles.messageTime}>
-          {formatTime(message.timestamp)}
-        </span>
+        <div className={styles.messageTimeContainer}>
+          <span className={styles.messageTime}>
+            {formatTime(message.timestamp)}
+          </span>
+          {renderSendStatus()}
+        </div>
       </div>
       
       {isFromMe && (

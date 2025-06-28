@@ -1,5 +1,7 @@
 package lemoon.can.milkyway.controller.chat;
 
+import lemoon.can.milkyway.controller.Result;
+import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.param.MessageSendParam;
 import lemoon.can.milkyway.facade.service.command.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -27,10 +29,11 @@ public class ChatWebSocketController {
      * @param param 消息参数
      */
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload MessageSendParam param, Principal principal) {
+    public Result<MessageDTO> sendMessage(@Payload MessageSendParam param, Principal principal) {
         // 调用消息服务处理消息并推送给接收方
         // MessageService内部会保存消息并通过ChatProcessorManager推送
         param.setSenderUserId(principal.getName());
-        messageService.sendMessage(param);
+        MessageDTO messageDTO = messageService.sendMessage(param);
+        return Result.success(messageDTO);
     }
 }

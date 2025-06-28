@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 /**
  * @author lemoon
@@ -18,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 @RequiredArgsConstructor
 public class MessageConverter {
     private final SecureIdConverterHelper secureIdConverterHelper;
+
     public MessageDTO toDTO(Message message, User sender) {
         if (message == null) {
             return null;
@@ -29,7 +31,7 @@ public class MessageConverter {
         messageDTO.setContent(message.getContent());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         messageDTO.setSentTime(formatter.format(message.getSentTime()));
-        messageDTO.setReadTime(formatter.format(message.getReadTime()));
+        messageDTO.setReadTime(Optional.ofNullable(message.getReadTime()).isEmpty() ? null : formatter.format(message.getReadTime()));
         messageDTO.setRead(message.getReadTime() != null);
         SimpleUserDTO senderDTO = new SimpleUserDTO();
         senderDTO.setId(sender.getId());
