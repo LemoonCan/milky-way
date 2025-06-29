@@ -105,7 +105,10 @@ public class ChatController {
     }
 
     @PatchMapping("/read")
-    public ResponseEntity<Result<Void>> read(@RequestParam String chatId) {
-        return null;
+    @Operation(summary = "标记消息已读")
+    public ResponseEntity<Result<Void>> read(@RequestBody @Valid MessageReadParam param) {
+        param.setUserId(UserInfoHolder.id());
+        chatService.read(param);
+        return ResponseEntity.ok(Result.success());
     }
 }

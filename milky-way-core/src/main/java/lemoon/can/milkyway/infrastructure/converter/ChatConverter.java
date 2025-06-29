@@ -16,5 +16,6 @@ import org.mapstruct.Mapping;
 public abstract class ChatConverter {
 
     @Mapping(target = "id", source = "id", qualifiedByName = "encodeChatId")
+    @Mapping(target = "minUnreadMessageId", source = "minUnreadMessageId", qualifiedByName = "encodeMessageId")
     public abstract ChatInfoDTO toDto(ChatInfoDO chatInfoDO);
 }

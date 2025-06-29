@@ -12,4 +12,5 @@ import java.util.List;
  * @since 2025/5/15
  */
 public interface MessageRepository extends JpaRepository<Message, Long> {
+    boolean existsByIdAndChatId(Long id, Long chatId);
 }

@@ -40,10 +40,9 @@ public class ChatInfoDTO implements Serializable {
      */
     private int unreadCount;
     /**
-     * TODO
      * 未读的起始消息ID
      */
-    private String unreadStartMessageId;
+    private String minUnreadMessageId;
     /**
      * 是否在线(单聊时显示对方在线状态，群聊时无效)
      */

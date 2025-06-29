@@ -13,6 +13,9 @@ import java.util.List;
  */
 @Mapper
 public interface ChatMapper {
+    @Select("SELECT COUNT(*)>0 FROM chat WHERE id = #{id}")
+    boolean existsById(Long id);
+
     @Insert("INSERT INTO chat(id, type, title, bulletin) VALUES(#{id}, #{type}, #{title}, #{bulletin})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     Long insert(ChatDO chatDO);

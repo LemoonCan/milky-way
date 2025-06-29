@@ -53,6 +53,7 @@ export interface ChatStore {
   updateMessageSendStatus: (chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed') => void
   clearMessageSendStatus: (chatId: string, messageId: string) => void
   getChatMessages: (chatId: string) => Message[]
+  markChatAsRead: (chatId: string) => Promise<void>
   initializeChatService: () => Promise<void>
   sendMessageViaWebSocket: (chatId: string, content: string) => Promise<void>
   handleWebSocketMessage: (wsMessage: WebSocketMessage) => void
@@ -228,11 +229,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   
   setCurrentChat: (chatId: string) => {
     set({ currentChatId: chatId })
-    // 当切换聊天时，如果该聊天还没有加载过消息，则加载最新消息
+    
     const state = get()
+    
+    // 当切换聊天时，如果该聊天还没有加载过消息，则加载最新消息
     if (!state.chatMessagesMap[chatId]) {
       get().loadChatMessages(chatId, true)
     }
+    
+    // 异步标记消息为已读（不等待完成）
+    setTimeout(() => {
+      get().markChatAsRead(chatId).catch(error => {
+        console.error(`[ChatStore] 自动标记聊天 ${chatId} 已读失败:`, error)
+      })
+    }, 100) // 稍微延迟执行，确保页面切换流畅
   },
   
   loadChatMessages: async (chatId: string, refresh = false) => {
@@ -420,6 +430,72 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   getChatMessages: (chatId: string) => {
     const state = get()
     return state.chatMessagesMap[chatId]?.messages || []
+  },
+
+  markChatAsRead: async (chatId: string) => {
+    const state = get()
+    
+    // 查找对应的聊天用户
+    const chatUser = state.chatUsers.find(user => user.id === chatId)
+    if (!chatUser || chatUser.unreadCount === 0) {
+      console.log(`[ChatStore] 聊天 ${chatId} 没有未读消息，跳过标记已读`)
+      return
+    }
+
+    // 获取该聊天的消息状态
+    const chatMessagesState = state.chatMessagesMap[chatId]
+    
+    // 如果还没有消息数据，先加载消息
+    if (!chatMessagesState || !chatMessagesState.messages || chatMessagesState.messages.length === 0) {
+      console.log(`[ChatStore] 聊天 ${chatId} 还没有消息数据，先加载消息`)
+      await get().loadChatMessages(chatId, true)
+      const updatedState = get()
+      const updatedChatMessagesState = updatedState.chatMessagesMap[chatId]
+      if (!updatedChatMessagesState || !updatedChatMessagesState.messages || updatedChatMessagesState.messages.length === 0) {
+        console.warn(`[ChatStore] 加载消息后仍然没有消息数据，无法标记已读`)
+        return
+      }
+    }
+
+    // 获取最新消息ID
+    const latestChatMessagesState = get().chatMessagesMap[chatId]
+    const latestMessageId = latestChatMessagesState.newestMessageId || latestChatMessagesState.messages[latestChatMessagesState.messages.length - 1]?.id
+    
+    if (!latestMessageId) {
+      console.warn(`[ChatStore] 无法获取聊天 ${chatId} 的最新消息ID，无法标记已读`)
+      return
+    }
+
+    try {
+      console.log(`[ChatStore] 开始标记聊天 ${chatId} 的消息已读，最新消息ID: ${latestMessageId}`)
+      
+      // 调用后端接口标记消息已读
+      await chatService.markMessagesAsRead({
+        chatId,
+        messageId: latestMessageId
+      })
+
+      // 标记成功后，更新本地状态：将该聊天的未读数量设为0
+      const currentState = get()
+      const updatedChatUsers = currentState.chatUsers.map(user => {
+        if (user.id === chatId) {
+          return {
+            ...user,
+            unreadCount: 0
+          }
+        }
+        return user
+      })
+
+      set({
+        chatUsers: updatedChatUsers
+      })
+
+      console.log(`[ChatStore] 成功标记聊天 ${chatId} 的消息已读`)
+    } catch (error) {
+      console.error(`[ChatStore] 标记聊天 ${chatId} 消息已读失败:`, error)
+      // 标记失败时不更新本地状态
+    }
   },
 
   initializeChatService: async () => {

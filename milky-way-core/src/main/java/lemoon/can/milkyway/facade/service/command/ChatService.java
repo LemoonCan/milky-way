@@ -1,10 +1,7 @@
 package lemoon.can.milkyway.facade.service.command;
 
 import lemoon.can.milkyway.facade.dto.ChatDTO;
-import lemoon.can.milkyway.facade.param.ChatCreateParam;
-import lemoon.can.milkyway.facade.param.ChatDeleteParam;
-import lemoon.can.milkyway.facade.param.ChatMemberParam;
-import lemoon.can.milkyway.facade.param.ChatUpdateParam;
+import lemoon.can.milkyway.facade.param.*;
 
 /**
  * @author lemoon
@@ -49,5 +46,9 @@ public interface ChatService {
      */
     void updateMemerInfo(ChatMemberParam param);
 
-    void read(String chatId, String userId);
+    /**
+     * 标记已读
+     * @param param
+     */
+    void read(MessageReadParam param);
 }

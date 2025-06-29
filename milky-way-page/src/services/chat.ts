@@ -70,6 +70,12 @@ export interface SendMessageRequest {
   messageType?: 'TEXT' | 'IMAGE' | 'FILE'
 }
 
+// 添加消息标记已读请求参数接口
+export interface MessageReadRequest {
+  chatId: string
+  messageId: string
+}
+
 export class ChatService {
   private isInitialized = false
 
@@ -236,6 +242,25 @@ export class ChatService {
       }
     } catch (error) {
       console.error('[ChatService] 获取群聊列表失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 标记消息为已读
+   * @param request 标记已读请求参数
+   */
+  async markMessagesAsRead(request: MessageReadRequest): Promise<void> {
+    try {
+      const response = await http.patch<ApiResponse<void>>('/chats/read', request)
+      
+      if (response.data.success === false) {
+        throw new Error(response.data.msg || '标记消息已读失败')
+      }
+      
+      console.log(`[ChatService] 标记聊天 ${request.chatId} 的消息已读成功`)
+    } catch (error) {
+      console.error('[ChatService] 标记消息已读失败:', error)
       throw error
     }
   }

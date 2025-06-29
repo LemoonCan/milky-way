@@ -16,6 +16,9 @@ public class SecureIdConverterHelper {
 
     @Named("encodeChatId")
     public String encodeChatId(Long id) {
+        if (id == null) {
+            return null;
+        }
         return secureId.simpleEncode(id, secureId.getChatSalt());
     }
     @Named("decodeChatId")
@@ -25,6 +28,9 @@ public class SecureIdConverterHelper {
 
     @Named("encodeFriendApplicationId")
     public String encodeFriendApplicationId(Long id) {
+        if (id == null) {
+            return null;
+        }
         return secureId.simpleEncode(id, secureId.getFriendApplicationSalt());
     }
     @Named("decodeFriendApplicationId")
@@ -34,6 +40,9 @@ public class SecureIdConverterHelper {
 
     @Named("encodeMessageId")
     public String encodeMessageId(Long id) {
+        if (id == null) {
+            return null;
+        }
         return secureId.simpleEncode(id, secureId.getMessageSalt());
     }
     @Named("decodeMessageId")

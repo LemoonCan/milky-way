@@ -10,7 +10,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ErrorCode {
-    INVALID_PARAM("参数错误"),
+    INVALID_PARAM("非法参数"),
     NOT_FOUND("资源不存在"),
     UNSUPPORTED("不支持的操作"),
     SYSTEM_ERROR("系统错误"),

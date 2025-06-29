@@ -4,17 +4,14 @@ import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
-import lemoon.can.milkyway.domain.chat.Chat;
-import lemoon.can.milkyway.domain.chat.ChatMember;
-import lemoon.can.milkyway.domain.chat.GroupChat;
-import lemoon.can.milkyway.domain.chat.SingleChat;
+import lemoon.can.milkyway.domain.chat.*;
 import lemoon.can.milkyway.facade.dto.ChatDTO;
-import lemoon.can.milkyway.facade.param.ChatCreateParam;
-import lemoon.can.milkyway.facade.param.ChatDeleteParam;
-import lemoon.can.milkyway.facade.param.ChatMemberParam;
-import lemoon.can.milkyway.facade.param.ChatUpdateParam;
+import lemoon.can.milkyway.facade.param.*;
 import lemoon.can.milkyway.facade.service.command.ChatService;
+import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.repository.ChatRepository;
+import lemoon.can.milkyway.infrastructure.repository.MessageReadCursorRepository;
+import lemoon.can.milkyway.infrastructure.repository.MessageRepository;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatMemberDO;
 import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMapper;
@@ -37,6 +34,9 @@ public class ChatServiceImpl implements ChatService {
     private final SecureId secureId;
     private final ChatMapper chatMapper;
     private final ChatMemberMapper chatMemberMapper;
+    private final SecureIdConverterHelper secureIdConverterHelper;
+    private final MessageReadCursorRepository messageReadCursorRepository;
+    private final MessageRepository messageRepository;
 
     @Transactional
     @Override
@@ -62,6 +62,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void deleteChat(ChatDeleteParam param) {
         //权限校验
         Long chatId = secureId.simpleDecode(param.getChatId(), secureId.getChatSalt());
@@ -69,6 +70,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void updateChat(ChatUpdateParam param) {
         //TODO 权限校验
         Long chatId = secureId.simpleDecode(param.getChatId(), secureId.getChatSalt());
@@ -81,6 +83,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void addMember(String chatId, String userId) {
         Long realChatId = secureId.simpleDecode(chatId, secureId.getChatSalt());
 
@@ -99,12 +102,14 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    @Transactional
     public void deleteMember(String chatId, String userId) {
         Long realChatId = secureId.simpleDecode(chatId, secureId.getChatSalt());
         chatMemberMapper.deleteByChatIdAndUserId(realChatId, userId);
     }
 
     @Override
+    @Transactional
     public void updateMemerInfo(ChatMemberParam param) {
         ChatMemberDO updateParam = new ChatMemberDO();
         updateParam.setChatId(secureId.simpleDecode(param.getChatId(), secureId.getChatSalt()));
@@ -117,7 +122,29 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void read(String chatId, String userId) {
+    @Transactional
+    public void read(MessageReadParam param) {
+        //检查聊天室是否存在
+        Long chatId = secureIdConverterHelper.decodeChatId(param.getChatId());
+        if(!chatMapper.existsById(chatId)){
+            throw new BusinessException(ErrorCode.INVALID_PARAM, "非法参数");
+        }
+        //检查消息是否存在
+        Long messageId = secureIdConverterHelper.decodeMessageId(param.getMessageId());
+        if(!messageRepository.existsByIdAndChatId(messageId, chatId)){
+            throw new BusinessException(ErrorCode.INVALID_PARAM, "非法参数");
+        }
 
+        MessageReadCursorId id = new MessageReadCursorId(param.getUserId(),chatId );
+        if (messageReadCursorRepository.existsById(id)) {
+            // 已存在，更新
+            MessageReadCursor cursor = messageReadCursorRepository.findById(id).get();
+            cursor.markRead(secureIdConverterHelper.decodeMessageId(param.getMessageId()));
+            messageReadCursorRepository.save(cursor);
+        } else {
+            // 不存在，创建
+            MessageReadCursor cursor = new MessageReadCursor(id, messageId);
+            messageReadCursorRepository.save(cursor);
+        }
     }
 }

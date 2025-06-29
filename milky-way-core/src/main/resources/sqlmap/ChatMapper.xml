@@ -55,6 +55,9 @@
         -- 未读数：统计当前用户在该聊天中未读的消息数量
         COALESCE(unread.unreadCount, 0) AS unreadCount,
 
+        -- 最小未读消息ID
+        COALESCE(unread.minUnreadMessageId, NULL) AS minUnreadMessageId,
+
         -- 在线状态：仅对 SINGLE 会话展示，GROUP 永远为 false
         CASE
         WHEN c.type = 'SINGLE' THEN COALESCE(u_friend.online, false)
@@ -94,15 +97,17 @@
         ) m2 ON m1.chat_id = m2.chat_id AND m1.sent_time = m2.max_time
         ) lm ON lm.chat_id = c.id
 
-        -- 未读消息数子查询
+        -- 未读消息数和最小未读消息ID子查询
         LEFT JOIN (
-        SELECT 
-        chat_id, 
-        COUNT(*) AS unreadCount
-        FROM message
-        WHERE read_time IS NULL 
-        AND sender_id != #{userId}
-        GROUP BY chat_id
+        SELECT
+        m.chat_id,
+        COUNT(*) AS unreadCount,
+        MIN(m.id) AS minUnreadMessageId
+        FROM message m
+        LEFT JOIN message_read_cursor mrc ON m.chat_id = mrc.chat_id AND mrc.user_id = #{userId}
+        WHERE m.id > COALESCE(mrc.last_read_message_id, 0)
+        AND m.sender_id != #{userId}
+        GROUP BY m.chat_id
         ) unread ON unread.chat_id = c.id
 
         -- 当前用户参与的会话
@@ -119,6 +124,5 @@
 
         -- 分页大小限制
         LIMIT #{pageSize}
-
     </select>
 </mapper>
