@@ -48,4 +48,6 @@ public interface ChatService {
      * @param param
      */
     void updateMemerInfo(ChatMemberParam param);
+
+    void read(String chatId, String userId);
 }

@@ -8,12 +8,15 @@ import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelp
 import lemoon.can.milkyway.infrastructure.repository.dos.MessageDO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 /**
  * @author lemoon
  * @since 2025/6/27
  */
-@Mapper(componentModel = "spring", uses = {DateTimeConverterHelper.class, SecureIdConverterHelper.class})
+@Mapper(componentModel = "spring",
+        uses = {DateTimeConverterHelper.class, SecureIdConverterHelper.class},
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class MessageConverter2 {
 
     @Mapping(target = "id", source = "id", qualifiedByName = "encodeMessageId")

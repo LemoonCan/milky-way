@@ -50,8 +50,6 @@
         <result property="type" column="type"/>
         <result property="content" column="content"/>
         <result property="sentTime" column="sent_time"/>
-        <result property="read" column="read"/>
-        <result property="readTime" column="read_time"/>
 
         <!-- 嵌套 SimpleUserDTO -->
         <association property="sender" javaType="lemoon.can.milkyway.facade.dto.SimpleUserDTO">

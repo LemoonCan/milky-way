@@ -115,4 +115,9 @@ public class ChatServiceImpl implements ChatService {
         updateParam.setTop(param.getTop());
         chatMemberMapper.update(updateParam);
     }
+
+    @Override
+    public void read(String chatId, String userId) {
+
+    }
 }

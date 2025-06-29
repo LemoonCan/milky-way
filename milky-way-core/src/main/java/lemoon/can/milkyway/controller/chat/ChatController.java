@@ -103,4 +103,9 @@ public class ChatController {
         Slices<MessageInfoDTO> slices = chatQueryService.getChatMessages(param);
         return ResponseEntity.ok(Result.success(slices));
     }
+
+    @PatchMapping("/read")
+    public ResponseEntity<Result<Void>> read(@RequestParam String chatId) {
+        return null;
+    }
 }

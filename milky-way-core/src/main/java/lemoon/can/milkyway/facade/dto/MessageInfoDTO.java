@@ -50,14 +50,4 @@ public class MessageInfoDTO {
      * 发送时间
      */
     private String sentTime;
-
-    /**
-     * 是否已读
-     */
-    private boolean read;
-    
-    /**
-     * 阅读时间
-     */
-    private String readTime;
 }

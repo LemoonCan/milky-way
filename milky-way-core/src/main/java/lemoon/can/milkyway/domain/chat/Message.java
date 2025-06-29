@@ -52,25 +52,11 @@ public class Message {
      */
     private LocalDateTime sentTime;
 
-    /**
-     * 消息阅读时间
-     */
-    private LocalDateTime readTime;
-
     public Message(Long chatId, String senderId, MessageType type, String content) {
         this.chatId = chatId;
         this.senderId = senderId;
         this.content = content;
         this.type = type;
         this.sentTime = LocalDateTime.now();
-    }
-
-    /**
-     * 标记消息为已读
-     */
-    public void markAsRead() {
-        if (this.readTime == null) {
-            this.readTime = LocalDateTime.now();
-        }
     }
 }

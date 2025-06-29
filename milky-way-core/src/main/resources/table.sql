@@ -44,16 +44,16 @@ CREATE TABLE friend
 -- 好友申请表
 CREATE TABLE friend_application
 (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
-    from_user_id VARCHAR(24)  NOT NULL COMMENT '申请人唯一标识',
-    to_user_id   VARCHAR(24)  NOT NULL COMMENT '接收人唯一标识',
-    apply_channel VARCHAR(64) NOT NULL COMMENT '申请渠道',
-    apply_msg    VARCHAR(255) NOT NULL COMMENT '申请消息',
-    status       VARCHAR(16)  NOT NULL COMMENT '状态',
-    remark       VARCHAR(100) COMMENT '备注',
-    permission   VARCHAR(64)  NOT NULL COMMENT '权限',
-    create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    from_user_id  VARCHAR(24)  NOT NULL COMMENT '申请人唯一标识',
+    to_user_id    VARCHAR(24)  NOT NULL COMMENT '接收人唯一标识',
+    apply_channel VARCHAR(64)  NOT NULL COMMENT '申请渠道',
+    apply_msg     VARCHAR(255) NOT NULL COMMENT '申请消息',
+    status        VARCHAR(16)  NOT NULL COMMENT '状态',
+    remark        VARCHAR(100) COMMENT '备注',
+    permission    VARCHAR(64)  NOT NULL COMMENT '权限',
+    create_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
 
 -- 文件元信息表
@@ -105,6 +105,16 @@ CREATE TABLE message
     type      VARCHAR(255) COMMENT '消息类型',
     sent_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
     read_time TIMESTAMP COMMENT '阅读时间'
+);
+
+-- 消息已读游标(用户已读才插入记录)
+CREATE TABLE message_read_cursor
+(
+    user_id              VARCHAR(24) NOT NULL COMMENT '用户ID',
+    chat_id              BIGINT      NOT NULL COMMENT '聊天室ID',
+    last_read_message_id BIGINT      NOT NULL COMMENT '最新已读消息ID',
+    read_time            TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '阅读时间',
+    PRIMARY KEY (user_id, chat_id)
 );
 
 -- 帖子

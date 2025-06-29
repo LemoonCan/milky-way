@@ -41,14 +41,4 @@ public class MessageDO {
      * 发送时间
      */
     private LocalDateTime sentTime;
-
-    /**
-     * 是否已读
-     */
-    private boolean read;
-
-    /**
-     * 阅读时间
-     */
-    private LocalDateTime readTime;
 }
