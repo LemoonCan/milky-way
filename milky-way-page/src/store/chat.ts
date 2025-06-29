@@ -71,83 +71,10 @@ export interface ChatStore {
   getConnectionDisplayText: () => string
 }
 
-// Mock 数据
-const mockUsers: ChatUser[] = [
-  {
-    id: 'user-zhang',
-    name: '复古柠檬',
-    avatar: '', // 使用生成头像避免外部请求失败
-    lastMessage: '你好，最近怎么样？',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 30), // 30分钟前
-    unreadCount: 2,
-    online: true,
-  },
-  {
-    id: 'user-li',
-    name: '变形胖机智哥',
-    avatar: '', // 使用生成头像
-    lastMessage: '今天天气不错啊',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2小时前
-    unreadCount: 0,
-    online: false,
-  },
-  {
-    id: 'user-wang',
-    name: '变形胖机智哥',
-    avatar: '', // 使用生成头像
-    lastMessage: '明天见面聊',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4小时前
-    unreadCount: 1,
-    online: true,
-  },
-  {
-    id: 'user-zhao',
-    name: '红色柠檬',
-    avatar: '', // 使用生成头像
-    lastMessage: '好的，没问题',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1天前
-    unreadCount: 0,
-    online: false,
-  },
-  {
-    id: 'user-chen',
-    name: '小白白',
-    avatar: '', // 使用生成头像避免外部请求失败
-    lastMessage: '周末一起看电影吧',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6小时前
-    unreadCount: 3,
-    online: true,
-  },
-  {
-    id: 'user-wu',
-    name: 'BQ',
-    avatar: '', // 使用生成头像
-    lastMessage: '项目进展如何？',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8小时前
-    unreadCount: 0,
-    online: false,
-  },
-  {
-    id: 'user-zhou',
-    name: '周九',
-    avatar: '', // 使用生成头像避免外部请求失败
-    lastMessage: '晚上有空吗？',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12小时前
-    unreadCount: 1,
-    online: true,
-  },
-  {
-    id: 'user-feng',
-    name: '冯十',
-    avatar: '', // 使用生成头像
-    lastMessage: '收到，谢谢！',
-    lastMessageTime: new Date(Date.now() - 1000 * 60 * 60 * 18), // 18小时前
-    unreadCount: 0,
-    online: false,
-  },
-]
+// Mock 数据 - 已清理，连接失败时不再显示测试数据
+const mockUsers: ChatUser[] = []
 
-// Mock messages are now loaded from API, keeping the mock users for backward compatibility
+// Mock messages are now loaded from API
 
 // 转换后端 MessageDTO 到前端 Message 格式
 const convertMessageDTOToMessage = (messageDTO: MessageDTO): Message => {

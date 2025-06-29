@@ -508,7 +508,7 @@ export class WebSocketClient {
 
     try {
       this.client.publish({
-        destination: '/app/message',
+        destination: '/app/chat.sendMessage',
         body: JSON.stringify(message),
         headers: {
           'content-type': 'application/json'

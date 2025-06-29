@@ -1,4 +1,5 @@
 import React from 'react'
+import { Avatar } from './Avatar'
 import type { FriendApplication } from '../types/api'
 import styles from '../css/FriendApplicationItem.module.css'
 
@@ -51,17 +52,12 @@ export const FriendApplicationItem: React.FC<FriendApplicationItemProps> = ({
       onClick={handleClick}
     >
       <div className={styles.avatar}>
-        {application.fromUser.avatar ? (
-          <img 
-            src={application.fromUser.avatar} 
-            alt={application.fromUser.nickName}
-            className={styles.avatarImg}
-          />
-        ) : (
-          <div className={styles.avatarPlaceholder}>
-            {application.fromUser.nickName.charAt(0)}
-          </div>
-        )}
+        <Avatar
+          size={40}
+          userId={application.fromUser.id}
+          avatarUrl={application.fromUser.avatar}
+          className={styles.avatarImg}
+        />
       </div>
       
       <div className={styles.content}>

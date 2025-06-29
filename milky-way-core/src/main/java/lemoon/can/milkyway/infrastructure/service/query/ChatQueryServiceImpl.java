@@ -102,7 +102,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
             //向前滚动
             List<MessageDO> messageDos = messageMapper.getMessagesBefore(
                     secureIdConverterHelper.decodeChatId(param.getChatId()),
-                    StringUtils.hasLength(param.getAfter()) ? secureIdConverterHelper.decodeMessageId(param.getAfter()) : null,
+                    StringUtils.hasLength(param.getBefore()) ? secureIdConverterHelper.decodeMessageId(param.getBefore()) : null,
                     param.getPageSize() + 1);
             hasNext = messageDos.size() > param.getPageSize();
             if (hasNext) {
