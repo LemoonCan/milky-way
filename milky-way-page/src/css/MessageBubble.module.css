@@ -17,7 +17,7 @@
 }
 
 .messageBubbleSent {
-  background-color: var(--milky-primary);
+  background-color: #51c497;
   color: #333;
   margin-left: auto;
   border-bottom-right-radius: 6px;

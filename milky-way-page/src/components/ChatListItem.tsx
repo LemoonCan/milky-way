@@ -1,5 +1,6 @@
 import React from 'react'
 import { Avatar } from './Avatar'
+import { EmojiText } from './EmojiText'
 import type { ChatUser } from '@/store/chat'
 import styles from '../css/ChatListItem.module.css'
 
@@ -80,7 +81,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           </span>
         </div>
         <p className={styles.chatItemMessage}>
-          {user.lastMessage}
+          <EmojiText text={user.lastMessage} size="1em" />
         </p>
       </div>
     </div>

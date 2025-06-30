@@ -88,6 +88,30 @@
   ::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.3);
   }
+  
+  /* Emoji 样式 */
+  .emoji-img {
+    display: inline-block !important;
+    vertical-align: -0.1em !important;
+    border: none !important;
+    outline: none !important;
+    text-decoration: none !important;
+    user-select: none;
+    pointer-events: none;
+    max-width: none !important;
+    max-height: none !important;
+    background: none !important;
+  }
+  
+  /* 确保 Emoji 在不同上下文中的显示效果 */
+  .message-text .emoji-img {
+    margin: 0 0.05em;
+  }
+  
+  /* 防止图片加载失败时的样式 */
+  .emoji-img[alt] {
+    font-style: normal;
+  }
 }
 
 @layer components {

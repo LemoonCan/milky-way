@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Avatar } from './Avatar'
+import { EmojiText } from './EmojiText'
 import { MessageCircle, Phone, Video } from 'lucide-react'
 import styles from '../css/ProfileModal.module.css'
 
@@ -126,7 +127,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           
           <div className={styles.userInfo}>
             <h3 className={styles.nickname}>
-              {user.nickname || '未设置昵称'} 
+              <EmojiText text={user.nickname || '未设置昵称'} size="1em" />
               <span className={styles.genderIcon}>🧑</span>
             </h3>
             <div className={styles.account}>
@@ -142,7 +143,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         <div className={styles.signature}>
           <div className={styles.signatureLabel}>个性签名</div>
           <div className={styles.signatureContent}>
-            {user.signature || '君子之交'}
+            <EmojiText text={user.signature || '君子之交'} size="1em" />
           </div>
         </div>
 

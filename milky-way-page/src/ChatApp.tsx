@@ -6,7 +6,7 @@ import { ChatWindow } from './components/ChatWindow'
 import { SettingsPage } from './components/SettingsPage'
 import { ProfilePage } from './components/ProfilePage'
 import { FriendPage } from './components/FriendPage'
-import { WebSocketTest } from './components/WebSocketTest'
+
 import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
 import { useAuthStore } from './store/auth'
@@ -156,7 +156,7 @@ function ChatApp() {
             onBackFromProfile={handleBackFromProfile}
           />
         } />
-        <Route path="/websocket-test" element={<WebSocketTest />} />
+
         <Route path="*" element={<Navigate to="/main/messages" replace />} />
       </Routes>
     </div>

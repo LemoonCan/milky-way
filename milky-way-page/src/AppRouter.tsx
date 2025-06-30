@@ -6,8 +6,6 @@ import { RegisterPage } from './components/RegisterPage'
 import { RegisterSuccessDialog } from './components/RegisterSuccessDialog'
 import type { RegisterFormData } from './components/RegisterPage'
 import ChatApp from './ChatApp'
-import { RouteTestPage } from './components/RouteTestPage'
-
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuthStore()
@@ -173,12 +171,6 @@ export const AppRouter: React.FC = () => {
             <ChatApp />
           </ProtectedRoute>
         } 
-      />
-      
-      {/* 测试路由（仅用于演示） */}
-      <Route 
-        path="/test" 
-        element={<RouteTestPage />} 
       />
       
       {/* 404 重定向 */}

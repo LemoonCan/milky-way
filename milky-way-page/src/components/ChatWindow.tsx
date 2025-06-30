@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { Avatar } from './Avatar'
 import { ProfileModal } from './ProfileModal'
+import { EmojiPicker } from './EmojiPicker'
 import { Smile, Paperclip, Send } from 'lucide-react'
 import { useChatStore } from '@/store/chat'
 import { useUserStore } from '../store/user'
@@ -30,6 +31,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [modalUser, setModalUser] = useState<UserInfo | null>(null)
   const [showActions, setShowActions] = useState(false)
   const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [emojiButtonElement, setEmojiButtonElement] = useState<HTMLElement | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -129,6 +132,43 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const handleVideoCall = () => {
     setShowProfileModal(false)
     console.log('发起视频通话:', modalUser?.nickname)
+  }
+
+  // 处理表情按钮点击
+  const handleEmojiButtonClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    setEmojiButtonElement(e.currentTarget)
+    setShowEmojiPicker(!showEmojiPicker)
+  }
+
+  // 处理emoji选择
+  const handleEmojiSelect = (emoji: string) => {
+    // 获取当前光标位置
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const startPos = textarea.selectionStart
+    const endPos = textarea.selectionEnd
+    
+    // 在光标位置插入emoji
+    const newValue = inputValue.substring(0, startPos) + emoji + inputValue.substring(endPos)
+    setInputValue(newValue)
+
+    // 关闭emoji选择器
+    setShowEmojiPicker(false)
+
+    // 重新聚焦到输入框并设置光标位置
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus()
+        const newCursorPos = startPos + emoji.length
+        textarea.setSelectionRange(newCursorPos, newCursorPos)
+      }
+    }, 0)
+  }
+
+  // 关闭emoji选择器
+  const handleCloseEmojiPicker = () => {
+    setShowEmojiPicker(false)
   }
 
   const handleSendMessage = async () => {
@@ -280,10 +320,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           <MessageBubble
             key={message.id}
             message={message}
-            userId={currentUser.id}
-            userAvatar={currentUser.avatar}
-            currentUserId={currentUserInfo?.openId || "current-user"}
-            currentUserAvatar={currentUserInfo?.avatar}
             onAvatarClick={(isFromMe, element) => {
               handleAvatarClick(isFromMe, element)
             }}
@@ -296,10 +332,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       {/* 输入工具栏 */}
       <div className={styles.inputToolbar}>
         <div className={styles.toolbarTop}>
-          <div className={styles.toolbarLeft}>
-            <div className={styles.toolBtn}>
-              <Smile style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
-            </div>
+                  <div className={styles.toolbarLeft}>
+          <div 
+            className={styles.toolBtn}
+            onClick={handleEmojiButtonClick}
+            style={{ cursor: 'pointer' }}
+          >
+            <Smile style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
+          </div>
             <div className={styles.toolBtn}>
               <Paperclip style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
             </div>
@@ -357,6 +397,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           onVideoCall={handleVideoCall}
         />
       )}
+
+      {/* Emoji选择器 */}
+      <EmojiPicker
+        isVisible={showEmojiPicker}
+        onClose={handleCloseEmojiPicker}
+        onEmojiSelect={handleEmojiSelect}
+        triggerElement={emojiButtonElement}
+      />
     </div>
   )
 } 

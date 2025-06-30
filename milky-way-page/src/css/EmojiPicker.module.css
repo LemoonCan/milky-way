@@ -1,0 +1,175 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.picker {
+  position: fixed;
+  width: 320px;
+  height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--milky-border);
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  z-index: 1001;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: nowrap;
+  padding: 8px;
+  border-bottom: 1px solid var(--milky-border-light);
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 48px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.categoryBtn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.categoryBtn:hover {
+  background: rgba(252, 214, 108, 0.2);
+}
+
+.categoryBtn.active {
+  background: rgba(252, 214, 108, 0.6);
+}
+
+.categoryBtn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: #FCD66C;
+  border-radius: 50%;
+}
+
+.emojiGrid {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  align-content: start;
+}
+
+.emojiBtn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 20px;
+}
+
+.emojiBtn:hover {
+  background: rgba(252, 214, 108, 0.2);
+  transform: scale(1.1);
+}
+
+.emojiBtn:active {
+  transform: scale(0.95);
+}
+
+.footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--milky-border-light);
+  background: var(--milky-bg);
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.categoryName {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  font-weight: 500;
+}
+
+/* 滚动条样式 */
+.categories::-webkit-scrollbar {
+  display: none;
+}
+
+.emojiGrid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.emojiGrid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.emojiGrid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.emojiGrid::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .picker {
+    width: calc(100vw - 20px);
+    left: 10px !important;
+    right: 10px;
+    max-width: 320px;
+  }
+  
+  .emojiGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* 动画效果 */
+.picker {
+  animation: fadeInUp 0.2s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

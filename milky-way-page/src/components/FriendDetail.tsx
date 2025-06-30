@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Avatar } from './Avatar'
+import { EmojiText } from './EmojiText'
 import { MessageCircle, Phone, Video, MoreHorizontal, UserMinus, UserX, UserCheck } from 'lucide-react'
 import { ConfirmDialog } from './ui/confirm-dialog'
 import { useFriendStore } from '../store/friend'
@@ -143,10 +144,10 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         
         <div className={styles.basicInfo}>
           <h1 className={styles.displayName}>
-            {friend.remark || friend.nickName}
+            <EmojiText text={friend.remark || friend.nickName} size="1em" />
           </h1>
           {friend.remark && (
-            <div className={styles.nickName}>昵称：{friend.nickName}</div>
+            <div className={styles.nickName}>昵称：<EmojiText text={friend.nickName} size="1em" /></div>
           )}
           <div className={styles.wechatId}>账号：{friend.openId}</div>
           <div className={styles.region}>地区：暂未设置</div>
@@ -157,7 +158,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
       <div className={styles.signatureSection}>
         <div className={styles.sectionTitle}>个性签名</div>
         <div className={styles.signatureContent}>
-          {userDetails?.individualSignature || '暂无个性签名'}
+          <EmojiText text={userDetails?.individualSignature || '暂无个性签名'} size="1em" />
         </div>
       </div>
 

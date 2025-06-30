@@ -1,28 +1,24 @@
 import React from 'react'
 import { Avatar } from './Avatar'
+import { EmojiText } from './EmojiText'
 import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
 import type { Message } from '@/store/chat'
+import { useUserStore } from '@/store/user'
 import styles from '../css/MessageBubble.module.css'
 
 interface MessageBubbleProps {
   message: Message
-  userId?: string
-  userAvatar?: string // 消息发送者的头像
-  currentUserId?: string
-  currentUserAvatar?: string
   onAvatarClick?: (isFromMe: boolean, element: HTMLElement) => void
   onRetryMessage?: (messageId: string) => void // 重发消息回调
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
-  userId,
-  userAvatar,
-  currentUserId,
-  currentUserAvatar,
   onAvatarClick,
   onRetryMessage,
 }) => {
+  const { currentUser } = useUserStore()
+  
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', {
       hour: '2-digit',
@@ -31,6 +27,23 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   }
 
   const isFromMe = message.sender === 'me'
+
+  // 根据消息类型获取头像信息
+  const getAvatarInfo = () => {
+    if (isFromMe) {
+      return {
+        userId: currentUser?.openId || "current-user",
+        avatarUrl: currentUser?.avatar
+      }
+    } else {
+      return {
+        userId: message.senderInfo?.id || 'other-user',
+        avatarUrl: message.senderInfo?.avatar
+      }
+    }
+  }
+
+  const avatarInfo = getAvatarInfo()
 
   // 渲染发送状态图标
   const renderSendStatus = () => {
@@ -79,8 +92,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         >
           <Avatar 
             size={32}
-            userId={userId || 'other-user'}
-            avatarUrl={userAvatar}
+            userId={avatarInfo.userId}
+            avatarUrl={avatarInfo.avatarUrl}
           />
         </div>
       )}
@@ -90,7 +103,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           className={`${styles.messageBubble} ${isFromMe ? styles.messageBubbleSent : styles.messageBubbleReceived}`}
         >
           <p className={styles.messageText}>
-            {message.content}
+            <EmojiText text={message.content} size="1.2em" />
           </p>
         </div>
         <div className={styles.messageTimeContainer}>
@@ -109,8 +122,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         >
           <Avatar 
             size={32}
-            userId={currentUserId || "current-user"}
-            avatarUrl={currentUserAvatar}
+            userId={avatarInfo.userId}
+            avatarUrl={avatarInfo.avatarUrl}
           />
         </div>
       )}
