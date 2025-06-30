@@ -10,6 +10,10 @@ import lombok.Data;
 @Data
 public class MessageSendParam {
     /**
+     * 客户端消息ID
+     */
+    private String clientMsgId;
+    /**
      * 发送者用户id
      */
     private String senderUserId;

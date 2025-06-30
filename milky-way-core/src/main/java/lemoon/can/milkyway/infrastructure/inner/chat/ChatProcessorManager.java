@@ -4,6 +4,7 @@ import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.Message;
+import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import java.util.Map;
 public class ChatProcessorManager {
     private final Map<String, ChatProcessor> chatProcessorMap;
 
-    public void pushMessage(Chat chat, Message message) {
+    public void pushMessage(Chat chat, MessageDTO message) {
         ChatProcessor chatProcessor = chatProcessorMap.get(chat.type().name().toLowerCase() + "ChatProcessor");
         if (chatProcessor == null) {
             throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的聊天室类型" + chat.type());

@@ -2,8 +2,8 @@ package lemoon.can.milkyway.infrastructure.inner.chat;
 
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.ChatMember;
-import lemoon.can.milkyway.domain.chat.Message;
-import lemoon.can.milkyway.facade.dto.MessageContentDTO;
+import lemoon.can.milkyway.facade.dto.MessageDTO;
+import lemoon.can.milkyway.infrastructure.converter.MessageConverter2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SingleChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
+    private final MessageConverter2 messageConverter2;
 
     /**
      * 推送单聊消息
@@ -30,17 +31,17 @@ public class SingleChatProcessor implements ChatProcessor {
      * @param message 消息对象
      */
     @Override
-    public void pushMessage(Chat chat, Message message) {
+    public void pushMessage(Chat chat, MessageDTO message) {
         // 遍历参与者，向除发送者外的参与者推送消息
         for (ChatMember member : chat.getMembers()) {
             // 跳过发送者自己
-            if (member.getUserId().equals(message.getSenderId())) {
+            if (member.getUserId().equals(message.getSender().getId())) {
                 continue;
             }
 
             //点对点
             messagingTemplate.convertAndSendToUser(member.getUserId(), "/queue/messages",
-                    new MessageContentDTO(message.getType(), message.getContent()));
+                    messageConverter2.messageContentDTO(message));
         }
     }
 }

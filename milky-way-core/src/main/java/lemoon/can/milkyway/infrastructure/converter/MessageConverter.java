@@ -31,8 +31,6 @@ public class MessageConverter {
         messageDTO.setContent(message.getContent());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         messageDTO.setSentTime(formatter.format(message.getSentTime()));
-//        messageDTO.setReadTime(Optional.ofNullable(message.getReadTime()).isEmpty() ? null : formatter.format(message.getReadTime()));
-//        messageDTO.setRead(message.getReadTime() != null);
         SimpleUserDTO senderDTO = new SimpleUserDTO();
         senderDTO.setId(sender.getId());
         senderDTO.setNickName(sender.getNickName());

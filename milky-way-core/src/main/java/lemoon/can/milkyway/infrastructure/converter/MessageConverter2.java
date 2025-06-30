@@ -33,4 +33,6 @@ public abstract class MessageConverter2 {
     @Mapping(target = "id", source = "id", qualifiedByName = "encodeMessageId")
     @Mapping(target = "chatId", source = "chatId", qualifiedByName = "encodeChatId")
     protected abstract MessageInfoDTO innerToMessageInfoDTO(MessageDO message);
+
+    public abstract MessageInfoDTO messageContentDTO(MessageDTO message);
 }

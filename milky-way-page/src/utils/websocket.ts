@@ -1,17 +1,41 @@
 import { Client, StompConfig } from '@stomp/stompjs'
 import type { IMessage, StompSubscription } from '@stomp/stompjs'
 import { tokenManager } from '../lib/http'
+import type { MessageDTO } from '../types/api'
 
 export interface WebSocketMessage {
   chatId: string
   messageType: 'TEXT' | 'IMAGE' | 'FILE'
   content: string
+  clientMsgId?: string // 客户端消息ID，用于回执匹配
   senderUserId?: string
   timestamp?: string
 }
 
+export interface MessageDTOHandler {
+  (message: MessageDTO): void
+}
+
 export interface MessageHandler {
   (message: WebSocketMessage): void
+}
+
+// 消息回执处理器接口
+export interface MessageReceiptHandler {
+  (receipt: MessageReceipt): void
+}
+
+// 消息回执类型
+export interface MessageReceipt {
+  success: boolean
+  code: string
+  msg: string
+  data?: {
+    id: string
+    clientMsgId?: string
+    chatId: string
+    [key: string]: unknown
+  }
 }
 
 // 连接状态枚举
@@ -35,6 +59,8 @@ export class WebSocketClient {
   private client: Client | null = null
   private subscriptions: Map<string, StompSubscription> = new Map()
   private messageHandlers: Set<MessageHandler> = new Set()
+  private messageDTOHandlers: Set<MessageDTOHandler> = new Set()
+  private receiptHandlers: Set<MessageReceiptHandler> = new Set()
   
   // 简化状态管理
   private status: ConnectionStatus = ConnectionStatus.DISCONNECTED
@@ -147,6 +173,7 @@ export class WebSocketClient {
     
     // 订阅消息
     this.subscribeToPersonalMessages()
+    this.subscribeToMessageReceipts()
     this.subscribeToGroupChats()
   }
 
@@ -399,8 +426,8 @@ export class WebSocketClient {
         '/user/queue/messages',
         (message: IMessage) => {
           try {
-            const messageData: WebSocketMessage = JSON.parse(message.body)
-            this.handleMessage(messageData)
+            const messageData: MessageDTO = JSON.parse(message.body)
+            this.handleMessageDTO(messageData)
           } catch (error) {
             console.error('解析个人消息失败:', error)
           }
@@ -415,6 +442,38 @@ export class WebSocketClient {
       console.log('[WebSocket] 已订阅个人消息队列')
     } catch (error) {
       console.error('[WebSocket] 订阅个人消息失败:', error)
+    }
+  }
+
+  /**
+   * 订阅消息发送回执
+   */
+  private subscribeToMessageReceipts() {
+    if (!this.client || !this.isConnected()) return
+
+    const subscriptionId = `message-receipts-${Date.now()}`
+    
+    try {
+      const subscription = this.client.subscribe(
+        '/user/queue/receipts',
+        (message: IMessage) => {
+          try {
+            const receiptData = JSON.parse(message.body)
+            this.handleMessageReceipt(receiptData)
+          } catch (error) {
+            console.error('解析消息回执失败:', error)
+          }
+        },
+        {
+          id: subscriptionId,
+          ack: 'auto'
+        }
+      )
+
+      this.subscriptions.set('receipts', subscription)
+      console.log('[WebSocket] 已订阅消息回执队列')
+    } catch (error) {
+      console.error('[WebSocket] 订阅消息回执失败:', error)
     }
   }
 
@@ -536,6 +595,34 @@ export class WebSocketClient {
   }
 
   /**
+   * 添加MessageDTO处理器
+   */
+  public addMessageDTOHandler(handler: MessageDTOHandler): void {
+    this.messageDTOHandlers.add(handler)
+  }
+
+  /**
+   * 移除MessageDTO处理器
+   */
+  public removeMessageDTOHandler(handler: MessageDTOHandler): void {
+    this.messageDTOHandlers.delete(handler)
+  }
+
+  /**
+   * 添加回执处理器
+   */
+  public addReceiptHandler(handler: MessageReceiptHandler): void {
+    this.receiptHandlers.add(handler)
+  }
+
+  /**
+   * 移除回执处理器
+   */
+  public removeReceiptHandler(handler: MessageReceiptHandler): void {
+    this.receiptHandlers.delete(handler)
+  }
+
+  /**
    * 处理接收到的消息
    */
   private handleMessage(message: WebSocketMessage): void {
@@ -545,6 +632,34 @@ export class WebSocketClient {
         handler(message)
       } catch (error) {
         console.error('[WebSocket] 处理消息时出错:', error)
+      }
+    })
+  }
+
+  /**
+   * 处理接收到的MessageDTO
+   */
+  private handleMessageDTO(message: MessageDTO): void {
+    console.log('[WebSocket] 收到MessageDTO:', message)
+    this.messageDTOHandlers.forEach(handler => {
+      try {
+        handler(message)
+      } catch (error) {
+        console.error('[WebSocket] 处理MessageDTO时出错:', error)
+      }
+    })
+  }
+
+  /**
+   * 处理接收到的消息回执
+   */
+  private handleMessageReceipt(receipt: MessageReceipt): void {
+    console.log('[WebSocket] 收到消息回执:', receipt)
+    this.receiptHandlers.forEach(handler => {
+      try {
+        handler(receipt)
+      } catch (error) {
+        console.error('[WebSocket] 处理消息回执时出错:', error)
       }
     })
   }

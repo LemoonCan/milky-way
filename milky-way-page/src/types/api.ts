@@ -178,6 +178,7 @@ export interface UserSearchRequest {
 // 聊天消息相关类型
 export interface MessageDTO {
   id: string
+  clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
   senderType: 'me' | 'other'
@@ -210,4 +211,12 @@ export interface Slices<T> {
   hasNext: boolean
   lastId?: string
   size: number
+}
+
+// 消息发送回执类型
+export interface MessageReceipt {
+  success: boolean
+  code: string
+  msg: string
+  data?: MessageDTO
 } 

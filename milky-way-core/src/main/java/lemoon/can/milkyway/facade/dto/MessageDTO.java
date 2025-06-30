@@ -23,6 +23,11 @@ public class MessageDTO {
     private String id;
 
     /**
+     * 客户端消息ID
+     */
+    private String clientMsgId;
+
+    /**
      * 聊天室ID
      */
     private String chatId;

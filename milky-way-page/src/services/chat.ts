@@ -1,5 +1,5 @@
 import http from '../lib/http'
-import { webSocketClient, type WebSocketMessage, type RetryInfo, ConnectionStatus } from '../utils/websocket'
+import { webSocketClient, type WebSocketMessage, type MessageDTOHandler, type RetryInfo, ConnectionStatus } from '../utils/websocket'
 import type { ApiResponse } from '../types/api'
 
 export interface ChatInfo {
@@ -30,6 +30,7 @@ export interface ChatInfoDTO {
 // 添加消息DTO类型，对应后端的 MessageDTO
 export interface MessageDTO {
   id: string
+  clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
   senderType: 'me' | 'other'  // 添加senderType字段
@@ -68,6 +69,7 @@ export interface SendMessageRequest {
   chatId: string
   content: string
   messageType?: 'TEXT' | 'IMAGE' | 'FILE'
+  clientMsgId?: string // 客户端消息ID，用于回执匹配
 }
 
 // 添加消息标记已读请求参数接口
@@ -276,7 +278,8 @@ export class ChatService {
     const message: WebSocketMessage = {
       chatId: request.chatId,
       content: request.content,
-      messageType: request.messageType || 'TEXT'
+      messageType: request.messageType || 'TEXT',
+      clientMsgId: request.clientMsgId // 确保传递客户端消息ID
     }
 
     webSocketClient.sendMessage(message)
@@ -308,6 +311,34 @@ export class ChatService {
    */
   removeMessageHandler(handler: (message: WebSocketMessage) => void): void {
     webSocketClient.removeMessageHandler(handler)
+  }
+
+  /**
+   * 添加MessageDTO处理器
+   */
+  addMessageDTOHandler(handler: MessageDTOHandler): void {
+    webSocketClient.addMessageDTOHandler(handler)
+  }
+
+  /**
+   * 移除MessageDTO处理器
+   */
+  removeMessageDTOHandler(handler: MessageDTOHandler): void {
+    webSocketClient.removeMessageDTOHandler(handler)
+  }
+
+  /**
+   * 添加回执处理器
+   */
+  addReceiptHandler(handler: (receipt: import('../utils/websocket').MessageReceipt) => void): void {
+    webSocketClient.addReceiptHandler(handler)
+  }
+
+  /**
+   * 移除回执处理器
+   */
+  removeReceiptHandler(handler: (receipt: import('../utils/websocket').MessageReceipt) => void): void {
+    webSocketClient.removeReceiptHandler(handler)
   }
 }
 

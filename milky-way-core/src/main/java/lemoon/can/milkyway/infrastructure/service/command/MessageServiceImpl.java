@@ -51,7 +51,7 @@ public class MessageServiceImpl implements MessageService {
             public void afterCommit() {
                 // 事务提交后的逻辑
                 Chat chat = chatRepository.findById(message.getChatId());
-                chatProcessorManager.pushMessage(chat, message);
+                chatProcessorManager.pushMessage(chat, messageDTO);
             }
         });
 
