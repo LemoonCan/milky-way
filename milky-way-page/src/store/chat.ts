@@ -2,6 +2,22 @@ import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type Slices, type MessageDTO, type SimpleUserDTO } from '../services/chat'
 import { ConnectionStatus, type RetryInfo } from '../utils/websocket'
 
+// 工具函数：比较消息ID，选择最新的
+const getNewestMessageId = (id1?: string, id2?: string): string | undefined => {
+  if (!id1) return id2
+  if (!id2) return id1
+  // 优先选择非客户端生成的ID（服务端ID）
+  if (id1.startsWith('temp-') && !id2.startsWith('temp-')) return id2
+  if (id2.startsWith('temp-') && !id1.startsWith('temp-')) return id1
+  // 都是服务端ID或都是客户端ID，选择较大的（假设ID是递增的）
+  return id1 > id2 ? id1 : id2
+}
+
+// 工具函数：检查聊天是否有消息数据
+const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
+  return !!(chatState?.messages && chatState.messages.length > 0)
+}
+
 export interface Message {
   id: string
   clientMsgId?: string // 客户端消息ID，用于回执匹配
@@ -21,6 +37,7 @@ export interface ChatUser {
   lastMessageTime: Date
   unreadCount: number
   online: boolean
+  lastMessageId?: string // 添加最新消息ID
 }
 
 // 添加聊天消息状态接口
@@ -71,6 +88,8 @@ export interface ChatStore {
   isRetrying: () => boolean
   isFailed: () => boolean
   getConnectionDisplayText: () => string
+  // 添加新方法
+  markAllSendingMessagesAsFailed: () => void
 }
 
 // Mock 数据 - 已清理，连接失败时不再显示测试数据
@@ -166,14 +185,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     console.log(`[ChatStore] 找到聊天用户:`, chatUser ? `${chatUser.name}, 未读数量: ${chatUser.unreadCount}` : '未找到')
     
     // 当切换聊天时，如果该聊天还没有加载过消息，则加载最新消息
-    if (!state.chatMessagesMap[chatId]) {
-      console.log(`[ChatStore] 聊天 ${chatId} 没有消息缓存，开始加载消息`)
+    const existingChatState = state.chatMessagesMap[chatId]
+    
+    if (!hasChatMessages(existingChatState)) {
+      console.log(`[ChatStore] 聊天 ${chatId} 没有消息数据，开始加载消息`)
       try {
         await get().loadChatMessages(chatId, true)
         console.log(`[ChatStore] 聊天 ${chatId} 消息加载完成`)
       } catch (error) {
         console.error(`[ChatStore] 聊天 ${chatId} 消息加载失败:`, error)
       }
+    } else {
+      console.log(`[ChatStore] 聊天 ${chatId} 已有 ${existingChatState.messages.length} 条消息，跳过加载`)
     }
     
     // 标记消息为已读
@@ -215,6 +238,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       
       const messages = result.items.map(dto => convertMessageDTOToMessage(dto))
       
+      // 计算最新消息ID：优先使用已存在的 newestMessageId（可能是通过WebSocket更新的）
+      const loadedNewestId = messages.length > 0 ? messages[messages.length - 1].id : undefined
+      const existingNewestId = currentChatState?.newestMessageId
+      
+      const finalNewestMessageId = getNewestMessageId(existingNewestId, loadedNewestId)
+      
       set({
         chatMessagesMap: {
           ...get().chatMessagesMap,
@@ -224,7 +253,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             hasMore: true, // 总是假设有更多新消息
             hasMoreOlder: result.hasNext, // 是否有更老的消息
             oldestMessageId: messages.length > 0 ? messages[0].id : undefined,
-            newestMessageId: messages.length > 0 ? messages[messages.length - 1].id : undefined,
+            newestMessageId: finalNewestMessageId,
             error: undefined
           }
         }
@@ -351,6 +380,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<Message>) => {
     const state = get()
     const chatMessages = state.chatMessagesMap[chatId]
+    
     if (!chatMessages) return
 
     const updatedMessages = chatMessages.messages.map(msg => 
@@ -411,30 +441,39 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     console.log(`[ChatStore] 开始标记聊天 ${chatId} 为已读，当前未读数量: ${chatUser.unreadCount}，强制模式: ${force}`)
 
-    // 获取该聊天的消息状态
-    const chatMessagesState = state.chatMessagesMap[chatId]
+    // 优先从聊天用户信息中获取最新消息ID
+    let latestMessageId = chatUser.lastMessageId
     
-    // 如果还没有消息数据，先加载消息
-    if (!chatMessagesState || !chatMessagesState.messages || chatMessagesState.messages.length === 0) {
-      console.log(`[ChatStore] 聊天 ${chatId} 还没有消息数据，先加载消息`)
-      try {
-        await get().loadChatMessages(chatId, true)
-      } catch (error) {
-        console.error(`[ChatStore] 加载消息失败:`, error)
-        return
-      }
+    // 如果聊天用户信息中没有最新消息ID，再从消息缓存中获取
+    if (!latestMessageId) {
+      console.log(`[ChatStore] 聊天用户信息中没有最新消息ID，从消息缓存中获取`)
       
-      const updatedState = get()
-      const updatedChatMessagesState = updatedState.chatMessagesMap[chatId]
-      if (!updatedChatMessagesState || !updatedChatMessagesState.messages || updatedChatMessagesState.messages.length === 0) {
-        console.warn(`[ChatStore] 加载消息后仍然没有消息数据，无法标记已读`)
-        return
+      const chatMessagesState = state.chatMessagesMap[chatId]
+      
+      // 如果还没有消息数据，先加载消息
+      if (!chatMessagesState || !chatMessagesState.messages || chatMessagesState.messages.length === 0) {
+        console.log(`[ChatStore] 聊天 ${chatId} 还没有消息数据，先加载消息`)
+        try {
+          await get().loadChatMessages(chatId, true)
+        } catch (error) {
+          console.error(`[ChatStore] 加载消息失败:`, error)
+          return
+        }
+        
+        const updatedState = get()
+        const updatedChatMessagesState = updatedState.chatMessagesMap[chatId]
+        if (!updatedChatMessagesState || !updatedChatMessagesState.messages || updatedChatMessagesState.messages.length === 0) {
+          console.warn(`[ChatStore] 加载消息后仍然没有消息数据，无法标记已读`)
+          return
+        }
+        
+        latestMessageId = updatedChatMessagesState.newestMessageId || updatedChatMessagesState.messages[updatedChatMessagesState.messages.length - 1]?.id
+      } else {
+        latestMessageId = chatMessagesState.newestMessageId || chatMessagesState.messages[chatMessagesState.messages.length - 1]?.id
       }
+    } else {
+      console.log(`[ChatStore] 从聊天用户信息中获取到最新消息ID: ${latestMessageId}`)
     }
-
-    // 获取最新消息ID
-    const latestChatMessagesState = get().chatMessagesMap[chatId]
-    const latestMessageId = latestChatMessagesState.newestMessageId || latestChatMessagesState.messages[latestChatMessagesState.messages.length - 1]?.id
     
     if (!latestMessageId) {
       console.warn(`[ChatStore] 无法获取聊天 ${chatId} 的最新消息ID，无法标记已读`)
@@ -480,11 +519,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // 设置状态变更回调
       chatService.setStatusChangeCallback((retryInfo: RetryInfo) => {
         console.log('[ChatStore] 连接状态更新:', retryInfo)
+        
+        // 获取之前的连接状态
+        const prevStatus = get().connectionStatus
+        
+        // 更新状态
         set({ 
           retryInfo,
           connectionStatus: retryInfo.status,
           connectionError: retryInfo.error || null
         })
+        
+        // 如果连接断开（从已连接变为其他状态），标记所有发送中的消息为失败
+        if (prevStatus === ConnectionStatus.CONNECTED && 
+            retryInfo.status !== ConnectionStatus.CONNECTED) {
+          console.log('[ChatStore] 连接断开，标记所有发送中的消息为失败')
+          get().markAllSendingMessagesAsFailed()
+        }
       })
       
       // 连接WebSocket
@@ -529,37 +580,91 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       sendStatus: 'sending'
     })
 
-    // 发送消息的内部函数，支持重试
+    // 发送消息的内部函数，支持重试和超时
     const trySendMessage = async (attempt: number = 1): Promise<void> => {
       try {
-        if (!get().isConnected()) {
+        // 检查连接状态
+        const currentStatus = get().connectionStatus
+        const isConnected = get().isConnected()
+        
+        if (!isConnected) {
+          // 如果状态是失败或断开连接，直接标记为失败，不进行重试
+          if (currentStatus === ConnectionStatus.FAILED || currentStatus === ConnectionStatus.DISCONNECTED) {
+            throw new Error('连接已失败，无法发送消息')
+          }
+          // 如果正在重试中，也不发送消息，避免重复发送
+          if (currentStatus === ConnectionStatus.RETRYING) {
+            throw new Error('连接重试中，请稍后再试')
+          }
+          
           throw new Error('WebSocket未连接')
         }
         
-        // 发送消息，包含 clientMsgId
-        await chatService.sendMessage({
+        // 创建发送超时Promise
+        const sendTimeout = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('发送消息超时'))
+          }, 10000) // 10秒超时
+        })
+        
+        // 创建发送Promise
+        const sendPromise = chatService.sendMessage({
           chatId,
           content,
           messageType: 'TEXT',
           clientMsgId
         })
         
-        // 发送成功，等待回执来更新状态
-        console.log(`[ChatStore] 消息已发送，等待回执，clientMsgId: ${clientMsgId}`)
+        // 使用Promise.race来实现超时
+        await Promise.race([sendPromise, sendTimeout])
+        
+        // 设置回执超时：如果15秒内没有收到回执，也认为发送失败
+        setTimeout(() => {
+          const state = get()
+          const chatMessages = state.chatMessagesMap[chatId]
+          if (chatMessages) {
+            const message = chatMessages.messages.find(msg => msg.clientMsgId === clientMsgId)
+            if (message && message.sendStatus === 'sending') {
+              get().updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
+            }
+          }
+        }, 15000) // 15秒回执超时
         
       } catch (error) {
-        console.error(`[ChatStore] 发送消息失败，第${attempt}次尝试:`, error)
+        console.error(`发送消息失败，第${attempt}次尝试:`, error)
         
-        if (attempt < 3) {
-          // 还有重试机会，继续尝试
-          console.log(`[ChatStore] 准备进行第${attempt + 1}次重试...`)
-          // 短暂延迟后重试
+        // 检查是否是致命错误（不应重试的错误）
+        const isFatalError = error instanceof Error && (
+          error.message.includes('连接已失败，无法发送消息') ||
+          error.message.includes('连接重试中，请稍后再试')
+        )
+        
+        // 如果是致命错误，直接标记为失败，不重试
+        if (isFatalError) {
+          get().updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
+          return
+        }
+        
+        // 检查是否是网络相关错误
+        const isNetworkError = error instanceof Error && (
+          error.message.includes('WebSocket未连接') ||
+          error.message.includes('发送消息超时') ||
+          error.message.includes('网络') ||
+          error.message.includes('连接')
+        )
+        
+        if (attempt < 3 && isNetworkError) {
+          // 网络错误且还有重试机会，延迟后重试
           setTimeout(() => {
             trySendMessage(attempt + 1)
-          }, 1000 * attempt) // 递增延迟：1秒、2秒
+          }, 2000 * attempt) // 递增延迟：2秒、4秒
+        } else if (attempt < 3) {
+          // 非网络错误，立即重试
+          setTimeout(() => {
+            trySendMessage(attempt + 1)
+          }, 500) // 短暂延迟
         } else {
           // 3次都失败了，标记为失败
-          console.error('[ChatStore] 消息发送失败，已重试3次')
           get().updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
         }
       }
@@ -614,6 +719,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // 判断当前聊天详情是否打开
     const isChatDetailOpen = state.currentChatId === chatId
     
+    // 将MessageDTO转换为Message对象
+    const newMessage: Message = convertMessageDTOToMessage(messageDTO)
+    
     // 如果聊天详情打开，则向消息列表中添加消息
     if (isChatDetailOpen) {
       const currentChatState = state.chatMessagesMap[chatId] || {
@@ -622,9 +730,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         hasMore: true,
         hasMoreOlder: false
       }
-      
-      // 将MessageDTO转换为Message对象
-      const newMessage: Message = convertMessageDTOToMessage(messageDTO)
       
       set({
         chatMessagesMap: {
@@ -638,12 +743,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       })
 
       // 聊天详情页打开时，自动标记新消息为已读
-      console.log(`[ChatStore] 聊天详情页打开，自动标记新消息为已读，messageId: ${newMessage.id}`)
       setTimeout(() => {
         get().markChatAsRead(chatId, true).catch(error => { // force = true
           console.error(`[ChatStore] 自动标记新消息已读失败:`, error)
         })
       }, 200) // 稍微延迟，确保消息已添加到界面
+    } else {
+      // 聊天详情页未打开时，只更新现有缓存中的 newestMessageId
+      // 不创建新的空缓存条目，节省内存
+      const currentChatState = state.chatMessagesMap[chatId]
+      if (currentChatState) {
+        set({
+          chatMessagesMap: {
+            ...state.chatMessagesMap,
+            [chatId]: {
+              ...currentChatState,
+              newestMessageId: newMessage.id
+            }
+          }
+        })
+      }
+      // 注意：如果没有现有缓存，不创建新条目，依赖 ChatUser.lastMessageId
     }
 
     // 更新聊天列表中的最后消息，并将收到消息的聊天移到顶部
@@ -660,7 +780,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         ...chatUser,
         lastMessage: messageDTO.content,
         lastMessageTime: new Date(messageDTO.sentTime),
-        unreadCount: shouldIncreaseUnread ? chatUser.unreadCount + 1 : chatUser.unreadCount
+        unreadCount: shouldIncreaseUnread ? chatUser.unreadCount + 1 : chatUser.unreadCount,
+        lastMessageId: newMessage.id // 更新最新消息ID
       }
       
       // 创建新的聊天列表：将更新后的聊天项放到第一位，其他保持顺序
@@ -730,11 +851,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // 设置状态变更回调
       chatService.setStatusChangeCallback((retryInfo: RetryInfo) => {
         console.log('📡 [ChatStore] 重连状态更新:', retryInfo)
+        
+        // 获取之前的连接状态
+        const prevStatus = get().connectionStatus
+        
+        // 更新状态
         set({ 
           retryInfo,
           connectionStatus: retryInfo.status,
           connectionError: retryInfo.error || null
         })
+        
+        // 如果连接断开（从已连接变为其他状态），标记所有发送中的消息为失败
+        if (prevStatus === ConnectionStatus.CONNECTED && 
+            retryInfo.status !== ConnectionStatus.CONNECTED) {
+          console.log('📡 [ChatStore] 重连时连接断开，标记所有发送中的消息为失败')
+          get().markAllSendingMessagesAsFailed()
+        }
       })
       
       console.log('🔗 [ChatStore] 调用 chatService.reconnect()')
@@ -796,6 +929,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       case ConnectionStatus.DISCONNECTED:
       default:
         return '未连接'
+    }
+  },
+
+  // 添加新方法
+  markAllSendingMessagesAsFailed: () => {
+    const state = get()
+    const chatMessagesMap = state.chatMessagesMap
+    
+    for (const chatId in chatMessagesMap) {
+      const chatMessages = chatMessagesMap[chatId]
+      
+      for (const message of chatMessages.messages) {
+        if (message.sendStatus === 'sending') {
+          get().updateMessageSendStatus(chatId, message.id, 'failed')
+        }
+      }
     }
   }
 })) 

@@ -2,7 +2,6 @@ package lemoon.can.milkyway.controller.chat;
 
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.controller.Result;
-import lemoon.can.milkyway.facade.dto.MessageContentDTO;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.param.MessageSendParam;
 import lemoon.can.milkyway.facade.service.command.MessageService;
@@ -46,9 +45,19 @@ public class ChatWebSocketController {
                     Result.success(messageDTO));
         } catch (Exception e) {
             log.error("消息发送失败", e);
+            
+            // 创建一个包含基本信息的失败回执用MessageDTO
+            MessageDTO failedMessageDTO = new MessageDTO();
+            failedMessageDTO.setChatId(param.getChatId());
+            failedMessageDTO.setClientMsgId(param.getClientMsgId());
+            failedMessageDTO.setContent(param.getContent());
+            
+            // 创建失败回执并手动设置data
+            Result<MessageDTO> failedResult = Result.fail(ErrorCode.SYSTEM_ERROR, "消息发送失败");
+            failedResult.setData(failedMessageDTO);
+            
             // 处理异常，发送错误消息
-            messagingTemplate.convertAndSendToUser(param.getSenderUserId(), "/queue/receipts",
-                    Result.fail(ErrorCode.SYSTEM_ERROR,"消息发送失败"));
+            messagingTemplate.convertAndSendToUser(param.getSenderUserId(), "/queue/receipts", failedResult);
         }
     }
 }

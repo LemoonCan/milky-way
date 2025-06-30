@@ -36,7 +36,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const { getChatMessages, addMessage, sendMessageViaWebSocket, isConnected, loadMoreOlderMessages, chatMessagesMap, updateMessageSendStatus } = useChatStore()
+  const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -175,18 +175,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     if (!inputValue.trim() || !currentUser) return
 
     try {
-      if (isConnected()) {
-        // 使用WebSocket发送消息
-        await sendMessageViaWebSocket(currentUser.id, inputValue.trim())
-      } else {
-        // 回退到本地添加消息（当WebSocket未连接时）
-        addMessage(currentUser.id, {
-          content: inputValue.trim(),
-          sender: 'me',
-          timestamp: new Date(),
-          type: 'text',
-        })
-      }
+      // 始终使用WebSocket发送消息，让失败处理逻辑统一在 sendMessageViaWebSocket 中处理
+      await sendMessageViaWebSocket(currentUser.id, inputValue.trim())
       setInputValue('')
     } catch (error) {
       console.error('发送消息失败:', error)
@@ -202,45 +192,38 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     const targetMessage = messages.find(msg => msg.id === messageId)
     if (!targetMessage) return
 
-    // 设置状态为发送中
-    updateMessageSendStatus(currentUser.id, messageId, 'sending')
+    // 为重试消息生成新的 clientMsgId
+    const retryClientMsgId = `retry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    
+    // 更新消息的 clientMsgId 并设置状态为发送中
+    updateMessageByClientId(currentUser.id, targetMessage.clientMsgId || targetMessage.id, {
+      clientMsgId: retryClientMsgId,
+      sendStatus: 'sending'
+    })
 
-    // 重试发送逻辑，与sendMessageViaWebSocket保持一致
-    const retryMessage = async (attempt: number = 1): Promise<void> => {
-      try {
-        if (!isConnected()) {
-          throw new Error('WebSocket未连接')
+    // 使用统一的发送逻辑进行重试
+    try {
+      await chatService.sendMessage({
+        chatId: currentUser.id,
+        content: targetMessage.content,
+        messageType: 'TEXT',
+        clientMsgId: retryClientMsgId
+      })
+
+      // 设置回执超时：如果15秒内没有收到回执，标记为失败
+      setTimeout(() => {
+        const currentMessages = getChatMessages(currentUser.id)
+        const retryMessage = currentMessages.find(msg => msg.clientMsgId === retryClientMsgId)
+        if (retryMessage && retryMessage.sendStatus === 'sending') {
+          updateMessageByClientId(currentUser.id, retryClientMsgId, { sendStatus: 'failed' })
         }
-        
-        // 使用chatService直接发送，避免创建新消息
-        await chatService.sendMessage({
-          chatId: currentUser.id,
-          content: targetMessage.content,
-          messageType: 'TEXT'
-        })
-        
-        // 重发成功，更新状态（保持显示成功图标）
-        updateMessageSendStatus(currentUser.id, messageId, 'sent')
-        
-      } catch (error) {
-        console.error(`重发消息失败，第${attempt}次尝试:`, error)
-        
-        if (attempt < 3) {
-          // 还有重试机会，继续尝试
-          console.log(`准备进行第${attempt + 1}次重试...`)
-          setTimeout(() => {
-            retryMessage(attempt + 1)
-          }, 1000 * attempt)
-        } else {
-          // 3次都失败了，标记为失败
-          console.error('重发消息失败，已重试3次')
-          updateMessageSendStatus(currentUser.id, messageId, 'failed')
-        }
-      }
+      }, 15000)
+
+    } catch (error) {
+      console.error('重发消息失败:', error)
+      // 重试失败，标记为失败状态
+      updateMessageByClientId(currentUser.id, retryClientMsgId, { sendStatus: 'failed' })
     }
-
-    // 开始重试
-    await retryMessage()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
