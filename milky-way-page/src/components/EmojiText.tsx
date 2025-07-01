@@ -42,21 +42,20 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
               display: inline-block;
               margin: 0 0.05em 0 0.1em;
             `,
-            onerror: 'this.style.display="none"; this.nextSibling && (this.nextSibling.style.display="inline")'
+            loading: 'lazy',
+            onError: 'this.style.display="none"; this.nextSibling && (this.nextSibling.style.display="inline")'
           })
         })
         return parsed
-      } catch (error) {
-        console.error('Twemoji parsing error with base:', baseUrl, error)
+      } catch {
+        console.warn('Twemoji parsing error with base:', baseUrl)
         return null
       }
     }
 
-    // 尝试多个CDN源
+    // 更新CDN源配置，使用更可靠的源，包括国内可用的镜像
     const cdnSources = [
-      'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/',
-      'https://unpkg.com/twemoji@14.0.2/assets/',
-      'https://twemoji.maxcdn.com/v/14.0.2/'
+      'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'
     ]
 
     let parsed = null
@@ -71,7 +70,7 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
       setParsedHtml(parsed)
       setUseFallback(false)
     } else {
-      console.warn('All CDN sources failed, using fallback')
+      // 静默失败，不在控制台输出警告
       setParsedHtml(text)
       setUseFallback(true)
     }

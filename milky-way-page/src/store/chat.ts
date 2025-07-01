@@ -665,6 +665,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
   handleWebSocketMessage: (messageDTO: MessageDTO) => {
     console.log('[ChatStore] 处理WebSocket消息:', messageDTO)
+    
+    // 群聊广播消息过滤：只处理非当前用户发送的消息
+    // 避免自己发送的消息重复显示（群聊会广播给所有成员包括发送者）
+    if (isMessageFromMe(messageDTO)) {
+      console.log('[ChatStore] 跳过自己发送的广播消息，避免重复显示')
+      return
+    }
+    
     get().addRealTimeMessage(messageDTO.chatId, messageDTO)
   },
 

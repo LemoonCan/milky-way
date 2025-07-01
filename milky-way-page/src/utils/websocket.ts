@@ -520,11 +520,12 @@ export class WebSocketClient {
     
     try {
       const subscription = this.client.subscribe(
-        `/topic/chat/${chatId}`,
+        `/topic/groupChat/${chatId}`,
         (message: IMessage) => {
           try {
-            const messageData: WebSocketMessage = JSON.parse(message.body)
-            this.handleMessage(messageData)
+            // 修复: 群聊消息应该解析为MessageDTO类型，与单聊保持一致
+            const messageData: MessageDTO = JSON.parse(message.body)
+            this.handleMessageDTO(messageData)
           } catch (error) {
             console.error('解析群聊消息失败:', error)
           }
