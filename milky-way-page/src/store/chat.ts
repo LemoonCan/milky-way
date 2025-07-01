@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import { chatService, type ChatInfoDTO, type Slices, type MessageDTO, type SimpleUserDTO } from '../services/chat'
+import { chatService, type ChatInfoDTO, type Slices, type MessageDTO } from '../services/chat'
 import { ConnectionStatus, type RetryInfo } from '../utils/websocket'
+import { useUserStore } from './user'
 
 // 工具函数：比较消息ID，选择最新的
 const getNewestMessageId = (id1?: string, id2?: string): string | undefined => {
@@ -18,14 +19,9 @@ const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
   return !!(chatState?.messages && chatState.messages.length > 0)
 }
 
-export interface Message {
-  id: string
-  clientMsgId?: string // 客户端消息ID，用于回执匹配
-  content: string
-  sender: 'me' | 'other'
-  senderInfo?: SimpleUserDTO
-  timestamp: Date
-  type: 'text' | 'image' | 'file'
+// 移除 Message 接口，直接使用 MessageDTO
+// 添加前端特有的扩展字段
+export interface MessageWithStatus extends MessageDTO {
   sendStatus?: 'sending' | 'sent' | 'failed' // 添加发送状态
 }
 
@@ -40,9 +36,9 @@ export interface ChatUser {
   lastMessageId?: string // 添加最新消息ID
 }
 
-// 添加聊天消息状态接口
+// 修改聊天消息状态接口
 export interface ChatMessagesState {
-  messages: Message[]
+  messages: MessageWithStatus[]
   isLoading: boolean
   hasMore: boolean
   hasMoreOlder: boolean
@@ -54,7 +50,6 @@ export interface ChatMessagesState {
 export interface ChatStore {
   currentChatId: string | null
   chatUsers: ChatUser[]
-  // 修改messages类型为包含更多状态信息
   chatMessagesMap: Record<string, ChatMessagesState>
   connectionStatus: ConnectionStatus
   connectionError: string | null
@@ -63,14 +58,13 @@ export interface ChatStore {
   lastChatId?: string
   retryInfo: RetryInfo
   setCurrentChat: (chatId: string) => Promise<void>
-  // 更新方法签名
   loadChatMessages: (chatId: string, refresh?: boolean) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
-  addMessage: (chatId: string, message: Omit<Message, 'id'> & { id?: string }) => void
+  addMessage: (chatId: string, message: Omit<MessageWithStatus, 'id'> & { id?: string }) => void
   updateMessageSendStatus: (chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed') => void
-  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<Message>) => void
+  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<MessageWithStatus>) => void
   clearMessageSendStatus: (chatId: string, messageId: string) => void
-  getChatMessages: (chatId: string) => Message[]
+  getChatMessages: (chatId: string) => MessageWithStatus[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
   initializeChatService: () => Promise<void>
   sendMessageViaWebSocket: (chatId: string, content: string) => Promise<void>
@@ -82,13 +76,11 @@ export interface ChatStore {
   loadMoreChats: () => Promise<void>
   resetConnection: () => Promise<void>
   updateRetryInfo: (retryInfo: RetryInfo) => void
-  // 新增便利方法
   isConnected: () => boolean
   isConnecting: () => boolean
   isRetrying: () => boolean
   isFailed: () => boolean
   getConnectionDisplayText: () => string
-  // 添加新方法
   markAllSendingMessagesAsFailed: () => void
 }
 
@@ -97,34 +89,19 @@ const mockUsers: ChatUser[] = []
 
 // Mock messages are now loaded from API
 
-// 转换后端 MessageDTO 到前端 Message 格式
-const convertMessageDTOToMessage = (messageDTO: MessageDTO): Message => {
-  // 直接使用后端返回的senderType，不再需要比较用户ID
+// 移除转换函数，添加工具函数用于组件中的判断
+export const isMessageFromMe = (message: MessageDTO | MessageWithStatus): boolean => {
+  const currentUserStore = useUserStore.getState()
+  const currentUserId = currentUserStore.currentUser?.id
   
-  // 安全地处理时间转换
-  let timestamp: Date
-  try {
-    timestamp = new Date(messageDTO.sentTime)
-    if (isNaN(timestamp.getTime())) {
-      console.warn('无效的时间格式:', messageDTO.sentTime, '使用当前时间')
-      timestamp = new Date()
-    }
-  } catch (error) {
-    console.error('时间转换失败:', error, '使用当前时间')
-    timestamp = new Date()
+  if (currentUserId && message.sender.id) {
+    return message.sender.id === currentUserId
+  } else if ('clientMsgId' in message && message.clientMsgId) {
+    // 备用判断：有clientMsgId的通常是自己发送的消息
+    return true
   }
-
-  return {
-    id: messageDTO.id,
-    clientMsgId: messageDTO.clientMsgId,
-    content: messageDTO.content,
-    sender: messageDTO.senderType, // 直接使用后端返回的senderType
-    senderInfo: messageDTO.sender,
-    timestamp,
-    type: messageDTO.type === 'IMAGE' ? 'image' : 
-          messageDTO.type === 'FILE' ? 'file' : 'text',
-    sendStatus: messageDTO.senderType === 'me' ? 'sent' : undefined // 我发送的消息显示成功状态
-  }
+  
+  return false
 }
 
 // 转换后端 ChatInfoDTO 到前端 ChatUser 格式
@@ -236,7 +213,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         // 不传before和after，默认获取最新消息
       })
       
-      const messages = result.items.map(dto => convertMessageDTOToMessage(dto))
+      const messages = result.items.map(dto => dto as MessageWithStatus)
       
       // 计算最新消息ID：优先使用已存在的 newestMessageId（可能是通过WebSocket更新的）
       const loadedNewestId = messages.length > 0 ? messages[messages.length - 1].id : undefined
@@ -300,17 +277,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         pageSize: 20
       })
       
-      const olderMessages = result.items.map(dto => convertMessageDTOToMessage(dto))
+      const messages = result.items.map(dto => dto as MessageWithStatus)
       
       set({
         chatMessagesMap: {
           ...get().chatMessagesMap,
           [chatId]: {
             ...currentChatState,
-            messages: [...olderMessages, ...currentChatState.messages], // 旧消息放在前面
+            messages: [...messages, ...currentChatState.messages], // 旧消息放在前面
             isLoading: false,
             hasMoreOlder: result.hasNext,
-            oldestMessageId: olderMessages.length > 0 ? olderMessages[0].id : currentChatState.oldestMessageId,
+            oldestMessageId: messages.length > 0 ? messages[0].id : currentChatState.oldestMessageId,
           }
         }
       })
@@ -331,7 +308,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   
-  addMessage: (chatId: string, message: Omit<Message, 'id'> & { id?: string }) => {
+  addMessage: (chatId: string, message: Omit<MessageWithStatus, 'id'> & { id?: string }) => {
     const state = get()
     const currentChatState = state.chatMessagesMap[chatId] || {
       messages: [],
@@ -377,7 +354,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     })
   },
 
-  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<Message>) => {
+  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<MessageWithStatus>) => {
     const state = get()
     const chatMessages = state.chatMessagesMap[chatId]
     
@@ -573,10 +550,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     get().addMessage(chatId, {
       id: tempMessageId,
       clientMsgId,
+      chatId,
+      sender: useUserStore.getState().currentUser ? {
+        id: useUserStore.getState().currentUser!.id,
+        openId: useUserStore.getState().currentUser!.openId,
+        nickName: useUserStore.getState().currentUser!.nickName,
+        avatar: useUserStore.getState().currentUser?.avatar
+      } : {
+        id: 'unknown',
+        openId: 'unknown',
+        nickName: '我',
+        avatar: undefined
+      },
       content,
-      sender: 'me',
-      timestamp: new Date(),
-      type: 'text',
+      type: 'TEXT',
+      sentTime: new Date().toISOString(),
+      read: false,
       sendStatus: 'sending'
     })
 
@@ -720,7 +709,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const isChatDetailOpen = state.currentChatId === chatId
     
     // 将MessageDTO转换为Message对象
-    const newMessage: Message = convertMessageDTOToMessage(messageDTO)
+    const newMessage: MessageWithStatus = messageDTO as MessageWithStatus
     
     // 如果聊天详情打开，则向消息列表中添加消息
     if (isChatDetailOpen) {

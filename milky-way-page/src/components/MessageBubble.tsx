@@ -2,12 +2,13 @@ import React from 'react'
 import { Avatar } from './Avatar'
 import { EmojiText } from './EmojiText'
 import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
-import type { Message } from '@/store/chat'
+import type { MessageWithStatus } from '@/store/chat'
+import { isMessageFromMe } from '@/store/chat'
 import { useUserStore } from '@/store/user'
 import styles from '../css/MessageBubble.module.css'
 
 interface MessageBubbleProps {
-  message: Message
+  message: MessageWithStatus
   onAvatarClick?: (isFromMe: boolean, element: HTMLElement) => void
   onRetryMessage?: (messageId: string) => void // 重发消息回调
 }
@@ -19,14 +20,14 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const { currentUser } = useUserStore()
   
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('zh-CN', {
+  const formatTime = (sentTime: string) => {
+    return new Date(sentTime).toLocaleTimeString('zh-CN', {
       hour: '2-digit',
       minute: '2-digit',
     })
   }
 
-  const isFromMe = message.sender === 'me'
+  const isFromMe = isMessageFromMe(message)
 
   // 根据消息类型获取头像信息
   const getAvatarInfo = () => {
@@ -37,8 +38,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       }
     } else {
       return {
-        userId: message.senderInfo?.id || 'other-user',
-        avatarUrl: message.senderInfo?.avatar
+        userId: message.sender.id,
+        avatarUrl: message.sender.avatar
       }
     }
   }
@@ -108,7 +109,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         </div>
         <div className={styles.messageTimeContainer}>
           <span className={styles.messageTime}>
-            {formatTime(message.timestamp)}
+            {formatTime(message.sentTime)}
           </span>
           {renderSendStatus()}
         </div>

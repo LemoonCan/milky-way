@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.facade.dto;
 
-import lemoon.can.milkyway.common.enums.MessageSenderType;
 import lemoon.can.milkyway.common.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,11 +24,6 @@ public class MessageInfoDTO {
      * 聊天室ID
      */
     private String chatId;
-
-    /**
-     * 发送者类型
-     */
-    private MessageSenderType senderType;
 
     /**
      * 发送者信息

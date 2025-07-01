@@ -28,6 +28,10 @@ public class ChatInfoDTO implements Serializable {
      */
     private String avatar;
     /**
+     * 最新消息ID
+     */
+    private String lastMessageId;
+    /**
      * 最新消息
      */
     private String lastMessage;

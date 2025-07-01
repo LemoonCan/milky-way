@@ -46,8 +46,9 @@
         u_friend.avatar
         END AS avatar,
 
+        lm.id AS lastMessageId,
         -- 最后一条消息内容（来自预处理子查询 lm）
-        COALESCE(lm.content, '') AS lastMessage,
+        lm.content AS lastMessage,
 
         -- 最后一条消息时间
         lm.sent_time AS lastMessageTime,
@@ -91,10 +92,10 @@
         SELECT m1.id, m1.chat_id, m1.content, m1.sent_time
         FROM message m1
         INNER JOIN (
-        SELECT chat_id, MAX(sent_time) AS max_time
+        SELECT MAX(id) as max_id, chat_id
         FROM message
         GROUP BY chat_id
-        ) m2 ON m1.chat_id = m2.chat_id AND m1.sent_time = m2.max_time
+        ) m2 ON m1.chat_id = m2.chat_id AND m1.id = m2.max_id
         ) lm ON lm.chat_id = c.id
 
         -- 未读消息数和最小未读消息ID子查询

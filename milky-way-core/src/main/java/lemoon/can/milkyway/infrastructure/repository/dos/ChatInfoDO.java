@@ -28,6 +28,10 @@ public class ChatInfoDO {
      */
     private String avatar;
     /**
+     * 最新消息ID
+     */
+    private Long lastMessageId;
+    /**
      * 最新消息
      */
     private String lastMessage;

@@ -87,7 +87,7 @@ function ChatApp() {
       console.warn('获取用户信息失败:', error)
       // 用户信息获取失败不影响应用正常使用
     })
-  }, []) // 移除依赖，只在组件挂载时执行一次
+  }, [fetchUserInfo]) // 添加fetchUserInfo依赖，但由于useUserStore的稳定性，实际上不会重复调用
 
   // 用户登录后初始化WebSocket连接 - 改进逻辑
   useEffect(() => {

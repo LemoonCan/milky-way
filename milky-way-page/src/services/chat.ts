@@ -33,7 +33,6 @@ export interface MessageDTO {
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
-  senderType: 'me' | 'other'  // 添加senderType字段
   type: 'TEXT' | 'IMAGE' | 'FILE'
   content: string
   sentTime: string

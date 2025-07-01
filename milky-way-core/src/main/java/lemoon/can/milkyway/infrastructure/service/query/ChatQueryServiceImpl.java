@@ -55,12 +55,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
         // 解码游标为实际的聊天室ID
         Long decodedLastId = null;
         if (StringUtils.hasText(lastId)) {
-            try {
-                decodedLastId = secureId.simpleDecode(lastId, secureId.getChatSalt());
-            } catch (Exception e) {
-                // 游标解码失败，从头开始查询
-                decodedLastId = null;
-            }
+            decodedLastId = secureId.simpleDecode(lastId, secureId.getChatSalt());
         }
 
         // 查询数据，多查一条用于判断是否还有更多数据
@@ -96,7 +91,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
                 messageDos.remove((messageDos.size() - 1));
             }
             messageDTOS = messageDos.stream()
-                    .map(item -> messageConverter2.toMessageInfoDTO(item, param.getOperatorUserId()))
+                    .map(messageConverter2::toMessageInfoDTO)
                     .toList();
         } else {
             //向前滚动
@@ -110,7 +105,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
             }
 
             for (int i = messageDos.size() - 1; i >= 0; i--) {
-                messageDTOS.add(messageConverter2.toMessageInfoDTO(messageDos.get(i), param.getOperatorUserId()));
+                messageDTOS.add(messageConverter2.toMessageInfoDTO(messageDos.get(i)));
             }
         }
 
