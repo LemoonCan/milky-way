@@ -13,13 +13,16 @@
 }
 
 /* 搜索栏样式 */
+.searchSection {
+  padding: 0 20px 16px;
+  background-color: var(--milky-chat-list-bg);
+  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
+}
+
 .searchContainer {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
-  background-color: var(--milky-chat-list-bg);
-  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
 }
 
 .searchInputWrapper {

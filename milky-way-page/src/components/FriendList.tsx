@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Search, UserPlus, ChevronDown, ChevronRight, UserCheck } from 'lucide-react'
 import { FriendListItem } from './FriendListItem'
 import { FriendApplicationItem } from './FriendApplicationItem'
+import { TitleBar } from './TitleBar'
 import { useFriendStore } from '../store/friend'
 import type { Friend, FriendApplication } from '../types/api'
 import styles from '../css/FriendList.module.css'
@@ -129,25 +130,30 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
 
   return (
     <div className={styles.friendList}>
+      {/* 头部区域 */}
+      <TitleBar title="好友" />
+      
       {/* 搜索栏 */}
-      <div className={styles.searchContainer}>
-        <div className={styles.searchInputWrapper}>
-          <Search size={20} className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="搜索好友"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
+      <div className={styles.searchSection}>
+        <div className={styles.searchContainer}>
+          <div className={styles.searchInputWrapper}>
+            <Search size={20} className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="搜索好友"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+          <button 
+            className={styles.addFriendButton}
+            onClick={onAddFriend}
+            title="添加好友"
+          >
+            <UserPlus size={20} />
+          </button>
         </div>
-        <button 
-          className={styles.addFriendButton}
-          onClick={onAddFriend}
-          title="添加好友"
-        >
-          <UserPlus size={20} />
-        </button>
       </div>
 
       <div className={styles.listContainer} ref={listContainerRef}>
