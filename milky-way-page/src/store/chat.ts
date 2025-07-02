@@ -19,6 +19,20 @@ const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
   return !!(chatState?.messages && chatState.messages.length > 0)
 }
 
+// 工具函数：检查是否有新消息需要加载
+const hasNewMessagesToLoad = (chatState?: ChatMessagesState, chatUser?: ChatUser): boolean => {
+  if (!chatState || !chatUser || !chatUser.lastMessageId) {
+    return false
+  }
+  
+  // 如果聊天缓存中的最新消息ID与聊天列表中的最新消息ID不一致，说明有新消息
+  const cachedNewestId = chatState.newestMessageId
+  const actualNewestId = chatUser.lastMessageId
+  
+  // 如果缓存中没有最新消息ID，或者与实际最新消息ID不同，需要重新加载
+  return !cachedNewestId || cachedNewestId !== actualNewestId
+}
+
 // 移除 Message 接口，直接使用 MessageDTO
 // 添加前端特有的扩展字段
 export interface MessageWithStatus extends MessageDTO {
@@ -34,6 +48,7 @@ export interface ChatUser {
   unreadCount: number
   online: boolean
   lastMessageId?: string // 添加最新消息ID
+  chatType: 'SINGLE' | 'GROUP' // 添加聊天类型字段
 }
 
 // 修改聊天消息状态接口
@@ -134,7 +149,8 @@ const convertChatInfoToUser = (chatInfo: ChatInfoDTO): ChatUser => {
     lastMessage: chatInfo.lastMessage,
     lastMessageTime,
     unreadCount: chatInfo.unreadCount,
-    online: chatInfo.online
+    online: chatInfo.online,
+    chatType: chatInfo.chatType
   }
 }
 
@@ -161,11 +177,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const chatUser = state.chatUsers.find(user => user.id === chatId)
     console.log(`[ChatStore] 找到聊天用户:`, chatUser ? `${chatUser.name}, 未读数量: ${chatUser.unreadCount}` : '未找到')
     
-    // 当切换聊天时，如果该聊天还没有加载过消息，则加载最新消息
     const existingChatState = state.chatMessagesMap[chatId]
     
-    if (!hasChatMessages(existingChatState)) {
-      console.log(`[ChatStore] 聊天 ${chatId} 没有消息数据，开始加载消息`)
+    // 检查是否需要加载消息
+    const needsLoading = !hasChatMessages(existingChatState) || hasNewMessagesToLoad(existingChatState, chatUser)
+    
+    if (needsLoading) {
+      const reason = !hasChatMessages(existingChatState) ? '没有消息数据' : '检测到新消息'
+      console.log(`[ChatStore] 聊天 ${chatId} ${reason}，开始加载消息`)
       try {
         await get().loadChatMessages(chatId, true)
         console.log(`[ChatStore] 聊天 ${chatId} 消息加载完成`)
@@ -719,15 +738,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // 将MessageDTO转换为Message对象
     const newMessage: MessageWithStatus = messageDTO as MessageWithStatus
     
-    // 如果聊天详情打开，则向消息列表中添加消息
-    if (isChatDetailOpen) {
-      const currentChatState = state.chatMessagesMap[chatId] || {
-        messages: [],
-        isLoading: false,
-        hasMore: true,
-        hasMoreOlder: false
-      }
-      
+    // 只有在已经存在消息缓存时才添加消息
+    // 对于从未初始化的聊天，直接依赖后端接口查询更准确
+    const currentChatState = state.chatMessagesMap[chatId]
+    
+    if (currentChatState) {
+      // 已存在缓存，添加新消息
       set({
         chatMessagesMap: {
           ...state.chatMessagesMap,
@@ -739,28 +755,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       })
 
-      // 聊天详情页打开时，自动标记新消息为已读
-      setTimeout(() => {
-        get().markChatAsRead(chatId, true).catch(error => { // force = true
-          console.error(`[ChatStore] 自动标记新消息已读失败:`, error)
-        })
-      }, 200) // 稍微延迟，确保消息已添加到界面
-    } else {
-      // 聊天详情页未打开时，只更新现有缓存中的 newestMessageId
-      // 不创建新的空缓存条目，节省内存
-      const currentChatState = state.chatMessagesMap[chatId]
-      if (currentChatState) {
-        set({
-          chatMessagesMap: {
-            ...state.chatMessagesMap,
-            [chatId]: {
-              ...currentChatState,
-              newestMessageId: newMessage.id
-            }
-          }
-        })
+      // 只有聊天详情页打开时，才自动标记新消息为已读
+      if (isChatDetailOpen) {
+        setTimeout(() => {
+          get().markChatAsRead(chatId, true).catch(error => { // force = true
+            console.error(`[ChatStore] 自动标记新消息已读失败:`, error)
+          })
+        }, 200) // 稍微延迟，确保消息已添加到界面
       }
-      // 注意：如果没有现有缓存，不创建新条目，依赖 ChatUser.lastMessageId
+    } else {
+      // 没有现有缓存，不创建新缓存，依赖后端接口和 ChatUser.lastMessageId
+      console.log(`[ChatStore] 聊天 ${chatId} 没有消息缓存，跳过添加实时消息，将在打开时从服务器加载`)
     }
 
     // 更新聊天列表中的最后消息，并将收到消息的聊天移到顶部

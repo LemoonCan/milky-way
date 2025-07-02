@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 /**
  * @author lemoon
@@ -67,5 +68,9 @@ public class FriendApplication {
 
     public void handle(FriendApplyStatus status) {
         this.status = status;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("JVM 默认时区: " + ZoneId.systemDefault());
     }
 }

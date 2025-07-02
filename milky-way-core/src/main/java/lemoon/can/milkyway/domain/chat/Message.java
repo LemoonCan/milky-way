@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lemoon.can.milkyway.common.enums.MessageType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -50,6 +51,7 @@ public class Message {
     /**
      * 消息发送时间
      */
+    @CreationTimestamp
     private LocalDateTime sentTime;
 
     public Message(Long chatId, String senderId, MessageType type, String content) {
@@ -57,6 +59,5 @@ public class Message {
         this.senderId = senderId;
         this.content = content;
         this.type = type;
-        this.sentTime = LocalDateTime.now();
     }
 }

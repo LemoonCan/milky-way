@@ -61,7 +61,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           avatarUrl={user.avatar}
           className={styles.avatar}
         />
-        {user.online && (
+        {user.online && user.chatType === 'SINGLE' && (
           <div className={styles.onlineIndicator}></div>
         )}
         {user.unreadCount > 0 && (

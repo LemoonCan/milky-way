@@ -52,6 +52,8 @@
   color: var(--milky-text-light);
   margin: 0;
   line-height: 14px;
+  margin-left: 8px; /* 添加左边距，与标题保持间距 */
+  font-weight: normal; /* 确保状态文字不加粗 */
 }
 
 .chatHeaderActions {

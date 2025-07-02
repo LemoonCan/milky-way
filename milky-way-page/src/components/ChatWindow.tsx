@@ -36,18 +36,74 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const previousUserIdRef = useRef<string | null>(null)
   const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
 
-  const scrollToBottom = () => {
+  const scrollToBottomImmediate = () => {
+    // 立即滚动到底部，不使用动画
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+    }
+  }
+
+  const scrollToBottomSmooth = () => {
+    // 平滑滚动到底部
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // 监听当前用户切换，立即滚动到底部
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (currentUser && currentUser.id !== previousUserIdRef.current) {
+      // 用户切换了聊天对象，立即滚动到底部
+      previousUserIdRef.current = currentUser.id
+      
+      // 使用多重保障确保滚动生效
+      const forceScrollToBottom = () => {
+        scrollToBottomImmediate()
+        // 双重保障，确保滚动生效
+        requestAnimationFrame(() => {
+          scrollToBottomImmediate()
+        })
+      }
+
+      // 立即执行一次
+      forceScrollToBottom()
+      
+      // 也设置一个短暂延迟，以防消息还在加载
+      setTimeout(forceScrollToBottom, 100)
+    }
+  }, [currentUser?.id])
+
+  // 监听消息变化，对于同一个聊天的新消息使用平滑滚动
+  useEffect(() => {
+    if (currentUser && currentUser.id === previousUserIdRef.current && messages.length > 0) {
+      // 同一个聊天中的消息更新，使用平滑滚动
+      scrollToBottomSmooth()
+    }
+  }, [messages, currentUser?.id])
+
+  // 监听消息初次加载完成，确保滚动到底部
+  useEffect(() => {
+    if (currentUser && messages.length > 0 && chatState && !chatState.isLoading) {
+      // 消息加载完成后，确保滚动到底部
+      const ensureScrollToBottom = () => {
+        scrollToBottomImmediate()
+        // 额外保障
+        requestAnimationFrame(() => {
+          scrollToBottomImmediate()
+        })
+      }
+
+      // 立即执行
+      ensureScrollToBottom()
+      
+      // 稍微延迟执行，确保DOM完全渲染
+      setTimeout(ensureScrollToBottom, 50)
+    }
+  }, [currentUser?.id, messages.length, chatState?.isLoading])
 
   // 监听滚动事件，实现上拉加载更多历史消息
   useEffect(() => {
@@ -265,10 +321,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           <div className={styles.chatHeaderInfo}>
             <h2 className={styles.chatHeaderName}>
               {currentUser.name}
+              {currentUser.chatType === 'SINGLE' && (
+                <span className={styles.chatHeaderStatus}>
+                  ({currentUser.online ? '在线' : '离线'})
+                </span>
+              )}
             </h2>
-            <p className={styles.chatHeaderStatus}>
-              {currentUser.online ? '在线' : '离线'}
-            </p>
           </div>
         </div>
         
