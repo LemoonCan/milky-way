@@ -60,6 +60,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  position: relative;
 }
 
 /* 网络状态指示器样式 */
@@ -100,6 +101,71 @@
 
 .chatHeaderBtn:hover {
   background-color: var(--milky-chat-bg);
+}
+
+/* 更多操作菜单样式 */
+.moreActionsMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--milky-border);
+  min-width: 140px;
+  z-index: 1000;
+  margin-top: 4px;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+.moreActionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  color: var(--milky-text);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 0;
+}
+
+.moreActionItem:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.moreActionItem:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.moreActionItem:hover {
+  background-color: rgba(232, 234, 237, 0.1);
+}
+
+.moreActionItem.dangerAction {
+  color: #ff4444;
+}
+
+.moreActionItem.dangerAction:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+  color: #ff6666;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 消息区域样式 */

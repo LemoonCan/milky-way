@@ -1,0 +1,359 @@
+/* CreateGroupChatDialog 组件样式模块 */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog {
+  background: white;
+  border-radius: 12px;
+  width: 520px;
+  max-width: 90vw;
+  max-height: 85vh;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease-out;
+}
+
+.header {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--milky-text);
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--milky-text-light);
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background-color: rgba(232, 234, 237, 0.3);
+}
+
+.content {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+}
+
+/* 搜索框样式 */
+.searchContainer {
+  margin-bottom: 16px;
+}
+
+.searchInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--milky-text-light);
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.searchInput:focus {
+  border-color: var(--milky-primary);
+  box-shadow: 0 0 0 2px rgba(252, 214, 108, 0.15);
+}
+
+/* 已选择的好友区域 */
+.selectedSection {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: rgba(252, 214, 108, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(252, 214, 108, 0.3);
+}
+
+.selectedLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  margin-bottom: 12px;
+}
+
+.selectedFriends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectedFriend {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 20px;
+  padding: 4px 8px 4px 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.selectedFriend:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.selectedFriendName {
+  font-size: 14px;
+  color: var(--milky-text);
+  margin: 0 8px;
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.removeFriendButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--milky-text-light);
+  padding: 2px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.removeFriendButton:hover {
+  background-color: rgba(232, 234, 237, 0.3);
+  color: var(--milky-text);
+}
+
+/* 好友列表区域 */
+.friendsSection {
+  margin-bottom: 16px;
+}
+
+.friendsLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  margin-bottom: 12px;
+}
+
+.friendsList {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid rgba(232, 234, 237, 0.3);
+  border-radius: 8px;
+}
+
+.friendItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.2);
+}
+
+.friendItem:last-child {
+  border-bottom: none;
+}
+
+.friendItem:hover {
+  background-color: rgba(232, 234, 237, 0.1);
+}
+
+.friendItem.selected {
+  background-color: rgba(252, 214, 108, 0.1);
+  border-left: 3px solid var(--milky-primary);
+}
+
+.friendInfo {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.friendName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  margin-bottom: 2px;
+}
+
+.friendSignature {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  line-height: 1.3;
+}
+
+.checkIcon {
+  color: var(--milky-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.emptyState {
+  text-align: center;
+  color: var(--milky-text-light);
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+/* 群聊名称输入区域 */
+.groupNameSection {
+  margin-bottom: 16px;
+}
+
+.groupNameLabel {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  margin-bottom: 8px;
+}
+
+.groupNameInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+
+.groupNameInput:focus {
+  border-color: var(--milky-primary);
+  box-shadow: 0 0 0 2px rgba(252, 214, 108, 0.15);
+}
+
+.groupNameCount {
+  text-align: right;
+  font-size: 12px;
+  color: var(--milky-text-light);
+  margin-top: 4px;
+}
+
+/* 底部按钮区域 */
+.footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(232, 234, 237, 0.3);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  color: var(--milky-text-light);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  border-color: rgba(232, 234, 237, 0.8);
+  background-color: rgba(232, 234, 237, 0.1);
+}
+
+.createButton {
+  background: var(--milky-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  min-width: 80px;
+  justify-content: center;
+}
+
+.createButton:hover:not(:disabled) {
+  background: var(--milky-primary-hover);
+}
+
+.createButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 加载动画 */
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 

@@ -7,6 +7,10 @@ package lemoon.can.milkyway.common.enums;
  */
 public enum MessageType {
     /**
+     * 系统消息
+     */
+    SYSTEM,
+    /**
      * 文字
      */
     TEXT,

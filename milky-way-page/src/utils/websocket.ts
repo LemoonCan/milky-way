@@ -5,7 +5,7 @@ import type { MessageDTO } from '../types/api'
 
 export interface WebSocketMessage {
   chatId: string
-  messageType: 'TEXT' | 'IMAGE' | 'FILE'
+  messageType: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
   content: string
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   senderUserId?: string

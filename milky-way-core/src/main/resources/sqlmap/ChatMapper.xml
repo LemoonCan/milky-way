@@ -57,7 +57,7 @@
         COALESCE(unread.unreadCount, 0) AS unreadCount,
 
         -- 最小未读消息ID
-        COALESCE(unread.minUnreadMessageId, NULL) AS minUnreadMessageId,
+        unread.minUnreadMessageId AS minUnreadMessageId,
 
         -- 在线状态：仅对 SINGLE 会话展示，GROUP 永远为 false
         CASE

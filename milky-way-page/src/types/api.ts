@@ -181,7 +181,7 @@ export interface MessageDTO {
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
-  type: 'TEXT' | 'IMAGE' | 'FILE'
+  type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
   content: string
   sentTime: string
   read: boolean

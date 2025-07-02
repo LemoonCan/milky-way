@@ -83,6 +83,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
   }
 
+  // 系统消息特殊处理
+  if (message.type === 'SYSTEM') {
+    return (
+      <div className={styles.systemMessageContainer}>
+        <div className={styles.systemMessage}>
+          <EmojiText text={message.content} size="0.9em" />
+        </div>
+        <div className={styles.systemMessageTime}>
+          {formatTime(message.sentTime)}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={`${styles.messageContainer} ${isFromMe ? styles.messageContainerFromMe : styles.messageContainerFromOther}`}>
       {!isFromMe && (

@@ -94,6 +94,8 @@ public class FriendServiceImpl implements FriendService {
         chatCreateParam.setMembers(List.of(
                 friendApplication.getFromUserId(),
                 friendApplication.getToUserId()));
+        chatCreateParam.setOperateUserId(param.getUserId());
+        chatCreateParam.setDefaultMessage("我们是好友啦🍒🍓");
         chatService.createChat(chatCreateParam);
     }
 

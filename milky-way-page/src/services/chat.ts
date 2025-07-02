@@ -33,7 +33,7 @@ export interface MessageDTO {
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
-  type: 'TEXT' | 'IMAGE' | 'FILE'
+  type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
   content: string
   sentTime: string
   read: boolean
@@ -67,7 +67,7 @@ export interface ChatMessagesQueryParam {
 export interface SendMessageRequest {
   chatId: string
   content: string
-  messageType?: 'TEXT' | 'IMAGE' | 'FILE'
+  messageType?: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
   clientMsgId?: string // 客户端消息ID，用于回执匹配
 }
 
@@ -75,6 +75,22 @@ export interface SendMessageRequest {
 export interface MessageReadRequest {
   chatId: string
   messageId: string
+}
+
+// 创建群聊请求参数
+export interface CreateGroupChatRequest {
+  chatType: 'SINGLE' | 'GROUP'
+  title: string
+  members: string[]
+}
+
+// 聊天DTO返回类型
+export interface ChatDTO {
+  id: string
+  chatType: 'SINGLE' | 'GROUP'
+  title: string
+  avatar?: string
+  memberCount?: number
 }
 
 export class ChatService {
@@ -299,6 +315,27 @@ export class ChatService {
   }
 
   /**
+   * 解散聊天室
+   * @param chatId 聊天室ID
+   */
+  async deleteChat(chatId: string): Promise<void> {
+    try {
+      const response = await http.delete<ApiResponse<void>>(`/chats/${chatId}`)
+      
+      if (response.data.success !== false) {
+        console.log('解散聊天室成功:', chatId)
+        // 取消订阅该聊天室的消息
+        this.unsubscribeFromGroupChat(chatId)
+      } else {
+        throw new Error(response.data.msg || '解散聊天室失败')
+      }
+    } catch (error) {
+      console.error('[ChatService] 解散聊天室失败:', error)
+      throw error
+    }
+  }
+
+  /**
    * 添加消息处理器
    */
   addMessageHandler(handler: (message: WebSocketMessage) => void): void {
@@ -338,6 +375,25 @@ export class ChatService {
    */
   removeReceiptHandler(handler: (receipt: import('../utils/websocket').MessageReceipt) => void): void {
     webSocketClient.removeReceiptHandler(handler)
+  }
+
+  /**
+   * 创建群聊
+   */
+  async createGroupChat(request: CreateGroupChatRequest): Promise<ChatDTO> {
+    try {
+      const response = await http.post<ApiResponse<ChatDTO>>('/chats', request)
+      
+      if (response.data.success !== false && response.data.data) {
+        console.log('[ChatService] 创建群聊成功:', response.data.data)
+        return response.data.data
+      } else {
+        throw new Error(response.data.msg || '创建群聊失败')
+      }
+    } catch (error) {
+      console.error('[ChatService] 创建群聊失败:', error)
+      throw error
+    }
   }
 }
 

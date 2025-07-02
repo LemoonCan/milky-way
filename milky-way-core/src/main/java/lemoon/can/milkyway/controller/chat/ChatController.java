@@ -30,6 +30,9 @@ public class ChatController {
     @PostMapping
     @Operation(summary = "创建聊天室")
     public ResponseEntity<Result<ChatDTO>> createChat(@RequestBody @Valid ChatCreateParam param) {
+        param.setOperateUserId(UserInfoHolder.id());
+        param.getMembers().add(param.getOperateUserId());
+        param.setDefaultMessage(String.format("%s聊天室已成立，一起玩耍吧🍎", param.getTitle()));
         ChatDTO chatDTO = chatService.createChat(param);
         return ResponseEntity.ok(Result.success(chatDTO));
     }

@@ -3,7 +3,8 @@ import { MessageBubble } from './MessageBubble'
 import { Avatar } from './Avatar'
 import { ProfileModal } from './ProfileModal'
 import { EmojiPicker } from './EmojiPicker'
-import { Smile, Paperclip, Send } from 'lucide-react'
+import { ConfirmDialog } from './ui/confirm-dialog'
+import { Smile, Paperclip, Send, Trash2 } from 'lucide-react'
 import { useChatStore } from '@/store/chat'
 import { useUserStore } from '../store/user'
 import { chatService } from '../services/chat'
@@ -33,11 +34,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [emojiButtonElement, setEmojiButtonElement] = useState<HTMLElement | null>(null)
+  const [showMoreActions, setShowMoreActions] = useState(false)
+  const [showDeleteChatDialog, setShowDeleteChatDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const moreActionsRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previousUserIdRef = useRef<string | null>(null)
-  const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId } = useChatStore()
+  const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId, removeChatUser } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -298,6 +303,53 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     }
   }
 
+  // 处理更多操作按钮点击
+  const handleMoreActionsClick = () => {
+    setShowMoreActions(!showMoreActions)
+  }
+
+  // 处理解散群聊
+  const handleDeleteChat = () => {
+    setShowMoreActions(false)
+    setShowDeleteChatDialog(true)
+  }
+
+  // 确认解散群聊
+  const confirmDeleteChat = async () => {
+    if (!currentUser) return
+
+    setIsDeleting(true)
+    try {
+      await chatService.deleteChat(currentUser.id)
+      // 解散成功后，从聊天列表中移除该群聊
+      removeChatUser(currentUser.id)
+      setShowDeleteChatDialog(false)
+      console.log('群聊解散成功')
+    } catch (error) {
+      console.error('解散群聊失败:', error)
+      // 这里可以添加错误提示
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  // 点击外部关闭菜单
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreActionsRef.current && !moreActionsRef.current.contains(event.target as Node)) {
+        setShowMoreActions(false)
+      }
+    }
+
+    if (showMoreActions) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showMoreActions])
+
   if (!currentUser) {
     return (
       <div className={styles.chatWindow}>
@@ -330,14 +382,30 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           </div>
         </div>
         
-        <div className={styles.chatHeaderActions}>
-          <div className={styles.chatHeaderBtn}>
+        <div className={styles.chatHeaderActions} ref={moreActionsRef}>
+          <div 
+            className={styles.chatHeaderBtn}
+            onClick={handleMoreActionsClick}
+          >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--milky-text-light)" strokeWidth="2">
               <circle cx="12" cy="12" r="1"/>
               <circle cx="19" cy="12" r="1"/>
               <circle cx="5" cy="12" r="1"/>
             </svg>
           </div>
+          
+          {/* 更多操作下拉菜单 */}
+          {showMoreActions && currentUser?.chatType === 'GROUP' && (
+            <div className={styles.moreActionsMenu}>
+              <button
+                onClick={handleDeleteChat}
+                className={`${styles.moreActionItem} ${styles.dangerAction}`}
+              >
+                <Trash2 size={16} />
+                解散群聊
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -445,6 +513,17 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         onClose={handleCloseEmojiPicker}
         onEmojiSelect={handleEmojiSelect}
         triggerElement={emojiButtonElement}
+      />
+
+      {/* 解散群聊确认弹框 */}
+      <ConfirmDialog
+        isOpen={showDeleteChatDialog}
+        title="解散群聊"
+        message={`确定要解散群聊 "${currentUser?.name}" 吗？解散后所有成员将无法再在此群聊中发送消息。`}
+        confirmText={isDeleting ? "解散中..." : "解散群聊"}
+        cancelText="取消"
+        onConfirm={confirmDeleteChat}
+        onCancel={() => setShowDeleteChatDialog(false)}
       />
     </div>
   )

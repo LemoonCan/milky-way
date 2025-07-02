@@ -36,6 +36,7 @@ public class FriendApplication {
     /**
      * 申请渠道
      */
+    @Enumerated(EnumType.STRING)
     private FriendApplyChannel applyChannel;
     /**
      * 申请信息

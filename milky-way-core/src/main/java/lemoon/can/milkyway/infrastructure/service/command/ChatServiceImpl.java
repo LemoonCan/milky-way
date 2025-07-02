@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
 import lemoon.can.milkyway.common.enums.ChatType;
+import lemoon.can.milkyway.common.enums.MessageType;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
@@ -42,7 +43,6 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public ChatDTO createChat(ChatCreateParam param) {
         //TODO 请求幂等
-
         List<ChatMember> members = param.getMembers()
                 .stream()
                 .map(ChatMember::new)
@@ -58,15 +58,21 @@ public class ChatServiceImpl implements ChatService {
         ChatDTO chatDTO = new ChatDTO();
         chatDTO.setId(secureId.simpleEncode(chatId, secureId.getChatSalt()));
         chatDTO.setTitle(chat.getTitle());
+
+        Message message = new Message(chatId, param.getOperateUserId(),
+                MessageType.SYSTEM, param.getDefaultMessage());
+        messageRepository.save(message);
         return chatDTO;
     }
 
     @Override
     @Transactional
     public void deleteChat(ChatDeleteParam param) {
-        //权限校验
+        //TODO 权限校验
         Long chatId = secureId.simpleDecode(param.getChatId(), secureId.getChatSalt());
         chatRepository.delete(chatId);
+
+        chatMemberMapper.deleteByChatId(chatId);
     }
 
     @Override
@@ -126,16 +132,16 @@ public class ChatServiceImpl implements ChatService {
     public void read(MessageReadParam param) {
         //检查聊天室是否存在
         Long chatId = secureIdConverterHelper.decodeChatId(param.getChatId());
-        if(!chatMapper.existsById(chatId)){
+        if (!chatMapper.existsById(chatId)) {
             throw new BusinessException(ErrorCode.INVALID_PARAM, "非法参数");
         }
         //检查消息是否存在
         Long messageId = secureIdConverterHelper.decodeMessageId(param.getMessageId());
-        if(!messageRepository.existsByIdAndChatId(messageId, chatId)){
+        if (!messageRepository.existsByIdAndChatId(messageId, chatId)) {
             throw new BusinessException(ErrorCode.INVALID_PARAM, "非法参数");
         }
 
-        MessageReadCursorId id = new MessageReadCursorId(param.getUserId(),chatId );
+        MessageReadCursorId id = new MessageReadCursorId(param.getUserId(), chatId);
         if (messageReadCursorRepository.existsById(id)) {
             // 已存在，更新
             MessageReadCursor cursor = messageReadCursorRepository.findById(id).get();

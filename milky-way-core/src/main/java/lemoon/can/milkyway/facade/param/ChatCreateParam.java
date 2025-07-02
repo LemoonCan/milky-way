@@ -24,4 +24,13 @@ public class ChatCreateParam implements Serializable {
      * 聊天室成员
      */
     private List<String> members;
+    /**
+     * 操作人ID
+     */
+    private String operateUserId;
+
+    /**
+     * 默认消息
+     */
+    private String defaultMessage;
 }

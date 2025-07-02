@@ -142,7 +142,14 @@
 }
 
 .searchContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchInputWrapper {
   position: relative;
+  flex: 1;
 }
 
 .searchIcon {
@@ -172,6 +179,30 @@
   background-color: #ffffff;
   box-shadow: 0 0 0 2px rgba(252, 214, 108, 0.15), inset 0 1px 3px rgba(0, 0, 0, 0.03);
   border-color: var(--milky-primary);
+}
+
+.addGroupButton {
+  background: var(--milky-primary);
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.addGroupButton:hover {
+  background: var(--milky-primary-hover);
+  transform: scale(1.05);
+}
+
+.addGroupButton:active {
+  transform: scale(0.95);
 }
 
 .listContainer {

@@ -81,6 +81,7 @@ export interface ChatStore {
   clearMessageSendStatus: (chatId: string, messageId: string) => void
   getChatMessages: (chatId: string) => MessageWithStatus[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
+  removeChatUser: (chatId: string) => void
   initializeChatService: () => Promise<void>
   sendMessageViaWebSocket: (chatId: string, content: string) => Promise<void>
   handleWebSocketMessage: (messageDTO: MessageDTO) => void
@@ -506,6 +507,26 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.error(`[ChatStore] 标记聊天 ${chatId} 消息已读失败:`, error)
       // 标记失败时不更新本地状态
     }
+  },
+
+  removeChatUser: (chatId: string) => {
+    const state = get()
+    const updatedChatUsers = state.chatUsers.filter(user => user.id !== chatId)
+    
+    // 如果被删除的聊天是当前聊天，清空当前聊天ID
+    const currentChatId = state.currentChatId === chatId ? null : state.currentChatId
+    
+    // 同时清理该聊天的消息缓存
+    const updatedChatMessagesMap = { ...state.chatMessagesMap }
+    delete updatedChatMessagesMap[chatId]
+    
+    set({
+      chatUsers: updatedChatUsers,
+      currentChatId,
+      chatMessagesMap: updatedChatMessagesMap
+    })
+    
+    console.log(`[ChatStore] 已从聊天列表中移除聊天 ${chatId}`)
   },
 
   initializeChatService: async () => {

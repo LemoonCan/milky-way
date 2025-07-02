@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { ChatListItem } from './ChatListItem'
 import { TitleBar } from './TitleBar'
-import { Search } from 'lucide-react'
+import { CreateGroupChatDialog } from './CreateGroupChatDialog'
+import { Search, SmilePlus } from 'lucide-react'
 import { useChatStore, type ChatUser } from '@/store/chat'
 import styles from '../css/ChatList.module.css'
 
@@ -12,6 +13,7 @@ interface ChatListProps {
 
 export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId }) => {
   const [searchQuery, setSearchQuery] = useState('')
+  const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false)
   const { 
     chatUsers, 
     isLoading, 
@@ -29,6 +31,23 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
 
     return () => clearTimeout(timer)
   }, []) // 移除 loadChatList 依赖，只在组件挂载时执行一次
+
+  // 处理创建群聊
+  const handleCreateGroup = () => {
+    setShowCreateGroupDialog(true)
+  }
+
+  const handleCloseCreateGroupDialog = () => {
+    setShowCreateGroupDialog(false)
+  }
+
+  // 创建群聊成功后的处理
+  const handleGroupCreated = (chatId: string) => {
+    // 刷新聊天列表
+    loadChatList(true)
+    // 选中新创建的群聊
+    onSelectChat(chatId)
+  }
 
   const filteredUsers = chatUsers.filter((user: ChatUser) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -54,14 +73,23 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
       {/* 搜索框 */}
       <div className={styles.searchSection}>
         <div className={styles.searchContainer}>
-          <Search className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="搜索"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={styles.searchInput}
-          />
+          <div className={styles.searchInputWrapper}>
+            <Search className={styles.searchIcon} />
+            <input
+              type="text"
+              placeholder="搜索"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+          <button 
+            className={styles.addGroupButton}
+            onClick={handleCreateGroup}
+            title="发起群聊"
+          >
+            <SmilePlus size={20} />
+          </button>
         </div>
       </div>
 
@@ -98,6 +126,13 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
           </div>
         )}
       </div>
+
+      {/* 创建群聊对话框 */}
+      <CreateGroupChatDialog
+        open={showCreateGroupDialog}
+        onClose={handleCloseCreateGroupDialog}
+        onSuccess={handleGroupCreated}
+      />
     </div>
   )
 } 
