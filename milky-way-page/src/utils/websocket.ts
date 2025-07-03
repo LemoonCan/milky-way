@@ -623,19 +623,7 @@ export class WebSocketClient {
     this.receiptHandlers.delete(handler)
   }
 
-  /**
-   * 处理接收到的消息
-   */
-  private handleMessage(message: WebSocketMessage): void {
-    console.log('[WebSocket] 收到消息:', message)
-    this.messageHandlers.forEach(handler => {
-      try {
-        handler(message)
-      } catch (error) {
-        console.error('[WebSocket] 处理消息时出错:', error)
-      }
-    })
-  }
+
 
   /**
    * 处理接收到的MessageDTO

@@ -24,8 +24,9 @@ public interface MomentService {
      * 点赞
      * @param momentId 动态ID
      * @param userId 用户ID
+     * @return 点赞的用户ID
      */
-    void like(String momentId, String userId);
+    String like(String momentId, String userId);
 
     /**
      * 取消点赞
@@ -38,5 +39,5 @@ public interface MomentService {
      * 评论
      * @param param 评论参数
      */
-    void comment(CommentParam param);
+    Long comment(CommentParam param);
 }

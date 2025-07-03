@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Avatar } from './Avatar'
 import { EmojiText } from './EmojiText'
 import { MessageCircle, Phone, Video } from 'lucide-react'
@@ -39,80 +40,88 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   // 计算弹框位置
   const getModalPosition = () => {
-    if (!triggerElement) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
+    if (!triggerElement) {
+      return { 
+        top: '50%', 
+        left: '50%', 
+        transform: 'translate(-50%, -50%)',
+        position: 'fixed' as const,
+        zIndex: 99999
+      }
+    }
     
     const rect = triggerElement.getBoundingClientRect()
     const modalWidth = 320
     const modalHeight = showActions ? 280 : 220
     
-    // 弹框出现在头像右侧，垂直居中对齐
+    console.log('Debug info:', {
+      triggerElement,
+      rect,
+      windowSize: { width: window.innerWidth, height: window.innerHeight }
+    })
+    
+    // 弹框默认出现在触发元素右侧，垂直居中对齐
     let top = rect.top + rect.height / 2 - modalHeight / 2
-    let left = rect.right + 8 // 稍微靠近一些
+    let left = rect.right + 8
+    
+    console.log('Calculated position:', { top, left, modalWidth, modalHeight })
     
     // 检查右侧空间是否足够
-    const rightSpace = window.innerWidth - rect.right
-    const leftSpace = rect.left
-    
-    if (rightSpace < modalWidth + 20) {
-      // 右侧空间不足，尝试放左侧
-      if (leftSpace >= modalWidth + 20) {
-        left = rect.left - modalWidth - 8
-      } else {
-        // 左右都不够，放在下方
-        left = Math.max(10, Math.min(
-          rect.left + rect.width / 2 - modalWidth / 2,
-          window.innerWidth - modalWidth - 10
-        ))
-        top = rect.bottom + 8
-      }
+    if (left + modalWidth > window.innerWidth - 10) {
+      // 右侧空间不足，放在左侧
+      left = rect.left - modalWidth - 8
     }
     
-    // 垂直位置调整
+    // 如果左侧也不够，强制调整到能容纳的位置
+    if (left < 10) {
+      left = 10
+    }
+    
+    // 垂直位置调整，确保不超出屏幕
     if (top < 10) {
       top = 10
     } else if (top + modalHeight > window.innerHeight - 10) {
-      top = Math.max(10, window.innerHeight - modalHeight - 10)
+      top = window.innerHeight - modalHeight - 10
     }
     
     return { 
       top: `${Math.round(top)}px`, 
       left: `${Math.round(left)}px`,
-      position: 'fixed' as const
+      position: 'fixed' as const,
+      zIndex: 99999
     }
   }
 
-  // 点击外部关闭弹框
+  // ESC键关闭弹框
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      
-      // 如果点击的是触发元素，不关闭弹框
-      if (triggerElement && triggerElement.contains(target)) {
-        return
-      }
-      
-      // 如果点击的是弹框外部，关闭弹框
-      if (modalRef.current && !modalRef.current.contains(target)) {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
         onClose()
       }
     }
 
     if (isVisible) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscapeKey)
+      return () => document.removeEventListener('keydown', handleEscapeKey)
     }
-  }, [isVisible, onClose, triggerElement])
+  }, [isVisible, onClose])
 
   if (!isVisible) return null
 
   const modalPosition = getModalPosition()
 
-  return (
-    <div className={styles.overlay}>
+  const modalContent = (
+    <>
+      {/* 透明背景，用于点击外部关闭 */}
+      <div 
+        className={styles.overlay}
+        onClick={onClose}
+      />
       <div
         ref={modalRef}
         className={styles.modal}
         style={modalPosition}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* 头像和基本信息区域 */}
         <div className={styles.basicInfo}>
@@ -177,6 +186,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </>
   )
+
+  return createPortal(modalContent, document.body)
 } 

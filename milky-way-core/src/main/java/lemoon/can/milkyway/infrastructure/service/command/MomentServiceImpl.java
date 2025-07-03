@@ -16,9 +16,8 @@ import lemoon.can.milkyway.infrastructure.repository.MomentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @author lemoon
@@ -52,12 +51,13 @@ public class MomentServiceImpl implements MomentService {
 
     @Transactional
     @Override
-    public void like(String momentId, String userId) {
+    public String like(String momentId, String userId) {
         Long realMomentId = secureId.simpleDecode(momentId, secureId.getMomentSalt());
         Moment moment = momentRepository.findById(realMomentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "内容不存在"));
-        if (likeRepository.findById(new LikeId(realMomentId, userId)).isPresent()) {
-            return;
+        Optional<Like> likeOptional = likeRepository.findById(new LikeId(realMomentId, userId));
+        if (likeOptional.isPresent()) {
+            return likeOptional.get().getLikeUserId();
         }
 
         moment.addLike();
@@ -65,6 +65,7 @@ public class MomentServiceImpl implements MomentService {
 
         Like like = new Like(realMomentId, userId);
         likeRepository.save(like);
+        return userId;
     }
 
     @Transactional
@@ -83,11 +84,13 @@ public class MomentServiceImpl implements MomentService {
 
     @Transactional
     @Override
-    public void comment(CommentParam param) {
+    public Long comment(CommentParam param) {
         Long realMomentId = secureId.simpleDecode(param.getMomentId(), secureId.getMomentSalt());
         Comment comment = new Comment(realMomentId, param.getCommentUserId(), param.getContent());
         comment.setParentCommentId(param.getParentCommentId());
 
         commentRepository.save(comment);
+
+        return comment.getId();
     }
 }

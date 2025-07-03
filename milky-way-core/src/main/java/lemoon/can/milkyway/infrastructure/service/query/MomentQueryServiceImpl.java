@@ -7,11 +7,13 @@ import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.service.query.MomentQueryService;
 import lemoon.can.milkyway.infrastructure.converter.CommentConverter;
 import lemoon.can.milkyway.infrastructure.repository.dos.CommentDO;
+import lemoon.can.milkyway.infrastructure.repository.dos.MomentDO;
 import lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.LikeMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -30,9 +32,13 @@ public class MomentQueryServiceImpl implements MomentQueryService {
 
     @Override
     public Slices<MomentDTO> listFriendMoments(String userId, String lastId, int pageSize) {
-        Long realLastId = secureId.simpleDecode(lastId, secureId.getMomentSalt());
-        List<MomentDTO> moments = momentMapper.listFriendMoments(userId, realLastId, pageSize + 1)
-                .stream()
+        Long realLastId = null;
+        if (StringUtils.hasLength(lastId)) {
+            realLastId = secureId.simpleDecode(lastId, secureId.getMomentSalt());
+        }
+        List<MomentDO> momentDos = momentMapper.listFriendMoments(userId, realLastId, pageSize + 1);
+
+        List<MomentDTO> moments = momentDos.stream()
                 .map(item -> {
                     MomentDTO dto = new MomentDTO();
                     dto.setId(secureId.simpleEncode(item.getId(), secureId.getMomentSalt()));

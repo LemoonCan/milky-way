@@ -6,6 +6,7 @@ import { ChatWindow } from './components/ChatWindow'
 import { SettingsPage } from './components/SettingsPage'
 import { ProfilePage } from './components/ProfilePage'
 import { FriendPage } from './components/FriendPage'
+import { MomentsPage as MomentsPageComponent } from './components/MomentsPage'
 
 import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
@@ -32,23 +33,7 @@ const MessagesPage = ({
   </div>
 )
 
-const MomentsPage = () => (
-  <div className={`${chatWindowStyles.chatWindowBase} ${styles.emptyState}`}>
-    <div className={styles.emptyStateInner}>
-      <div className={styles.emptyStateContent}>
-        <div className={styles.emptyStateIcon}>
-          <span style={{ fontSize: '24px' }}>📷</span>
-        </div>
-        <h3 className={styles.emptyStateTitle}>
-          朋友圈功能
-        </h3>
-        <p className={styles.emptyStateDesc}>
-          朋友圈功能正在开发中...
-        </p>
-      </div>
-    </div>
-  </div>
-)
+
 
 const SettingsPageWrapper = ({ 
   showProfile, 
@@ -148,7 +133,7 @@ function ChatApp() {
           />
         } />
         <Route path="/friends" element={<FriendPage />} />
-        <Route path="/moments" element={<MomentsPage />} />
+        <Route path="/moments" element={<MomentsPageComponent />} />
         <Route path="/settings" element={
           <SettingsPageWrapper 
             showProfile={showProfile}

@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -45,6 +46,7 @@ public class Comment {
     /**
      * 创建时间
      */
+    @CreationTimestamp
     private LocalDateTime createTime;
 
     public Comment(Long momentId, String commentUserId, String content) {

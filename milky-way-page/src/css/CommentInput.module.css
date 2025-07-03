@@ -1,0 +1,145 @@
+.commentInput {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  margin-top: 8px;
+  position: relative;
+}
+
+.inputContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.textarea {
+  flex: 1;
+  min-height: 36px;
+  max-height: 120px;
+  resize: none;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 8px 12px;
+  border-radius: 18px;
+  background: rgba(248, 250, 252, 0.8);
+  color: #1a1a1a;
+  font-family: inherit;
+}
+
+.textarea::placeholder {
+  color: #9ca3af;
+}
+
+.textarea:focus {
+  background: rgba(248, 250, 252, 1);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.emojiButton,
+.closeButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #6b7280;
+  background: rgba(107, 114, 128, 0.08);
+  border: 1px solid rgba(107, 114, 128, 0.15);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.emojiButton:hover,
+.closeButton:hover {
+  color: white;
+  background: var(--milky-primary);
+  border-color: var(--milky-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.emojiButton:active,
+.closeButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.sendButton {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: var(--milky-primary);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--milky-primary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.sendButton:hover:not(:disabled) {
+  background: var(--milky-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.sendButton:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.sendButton:disabled {
+  background: #d1d5db;
+  color: #9ca3af;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.loadingSpinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .commentInput {
+    margin-top: 6px;
+    padding: 6px;
+  }
+  
+  .textarea {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  .emojiButton,
+  .closeButton {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .sendButton {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+} 

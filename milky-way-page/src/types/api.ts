@@ -218,4 +218,80 @@ export interface MessageReceipt {
   code: string
   msg: string
   data?: MessageDTO
+}
+
+// 朋友圈相关类型
+
+// 朋友圈动态内容类型
+export enum MomentContentType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+  TEXT_IMAGE = 'TEXT_IMAGE'
+}
+
+// 朋友圈动态DTO - 根据实际后端返回数据结构调整
+export interface MomentDTO {
+  id: string
+  user: SimpleUserDTO
+  contentType?: MomentContentType
+  text?: string
+  medias?: string[]
+  location?: string
+  likeCounts?: number // 可选：不再在前端使用显示
+  commentCounts?: number // 可选：不再在前端使用显示
+  creatTime: string
+  likeUsers?: SimpleUserDTO[]
+  comments?: CommentDTO[]
+}
+
+// 点赞内容DTO
+export interface LikeContentDTO {
+  id: string
+  likeUserId: string
+  likeUser: SimpleUserDTO
+  createTime: string
+}
+
+// 评论内容DTO
+export interface CommentContentDTO {
+  id: string
+  commentUserId: string
+  commentUser: SimpleUserDTO
+  content: string
+  parentCommentId?: string
+  parentCommentUser?: SimpleUserDTO
+  createTime: string
+}
+
+// 评论DTO - 根据实际后端返回数据结构调整
+export interface CommentDTO {
+  id: number
+  parentCommentId?: number | null
+  user: SimpleUserDTO
+  content: string
+  createTime: string
+  replies?: CommentDTO[]
+}
+
+// 发布动态参数 - 根据后端PublishParam调整
+export interface PublishParam {
+  text?: string
+  contentType: MomentContentType
+  medias?: string[]
+  location?: string
+  publishUserId?: string
+}
+
+// 评论参数
+export interface CommentParam {
+  momentId: string
+  content: string
+  parentCommentId?: string
+  commentUserId?: string
+}
+
+// 朋友圈动态查询参数
+export interface MomentsQueryParams {
+  lastId?: string
+  pageSize: number
 } 

@@ -5,6 +5,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -25,6 +26,7 @@ public class Like {
     /**
      * 创建时间
      */
+    @CreationTimestamp
     private LocalDateTime createTime;
 
     public Like(Long momentId, String likeUserId) {

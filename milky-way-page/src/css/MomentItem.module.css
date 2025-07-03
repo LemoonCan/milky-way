@@ -1,0 +1,500 @@
+.momentItem {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.momentItem:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* 头部信息 */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  flex-shrink: 0;
+}
+
+.userInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.username {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.time {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.actions {
+  display: flex;
+  gap: 4px;
+}
+
+.actionButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* 内容 */
+.content {
+  margin-bottom: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1a1a1a;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* 图片网格 */
+.imageGrid {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 12px;
+  width: fit-content;
+}
+
+/* 微信朋友圈图片排列规则 */
+/* 1张图片：1列 */
+.grid1 {
+  grid-template-columns: 1fr;
+  max-width: 240px;
+}
+
+/* 2张图片：2列1行 */
+.grid2 {
+  grid-template-columns: repeat(2, 120px);
+}
+
+/* 3张图片：3列1行 */
+.grid3 {
+  grid-template-columns: repeat(3, 110px);
+}
+
+/* 4张图片：2列2行 */
+.grid4 {
+  grid-template-columns: repeat(2, 150px);
+  grid-template-rows: repeat(2, 150px);
+}
+
+/* 5张图片：3列2行，第二行2张 */
+.grid5 {
+  grid-template-columns: repeat(3, 110px);
+  grid-template-rows: repeat(2, 110px);
+}
+
+/* 6张图片：3列2行 */
+.grid6 {
+  grid-template-columns: repeat(3, 110px);
+  grid-template-rows: repeat(2, 110px);
+}
+
+/* 7张图片：3列3行，第三行1张 */
+.grid7 {
+  grid-template-columns: repeat(3, 110px);
+  grid-template-rows: repeat(3, 110px);
+}
+
+/* 8张图片：3列3行，第三行2张 */
+.grid8 {
+  grid-template-columns: repeat(3, 110px);
+  grid-template-rows: repeat(3, 110px);
+}
+
+/* 9张图片：3列3行 */
+.grid9 {
+  grid-template-columns: repeat(3, 110px);
+  grid-template-rows: repeat(3, 110px);
+}
+
+.imageItem {
+  position: relative;
+  overflow: hidden;
+  background: #f3f4f6;
+  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+}
+
+/* 单张图片时保持原始比例 */
+.grid1 .imageItem {
+  aspect-ratio: auto;
+  max-height: 300px;
+}
+
+/* 其他情况保持正方形 */
+.grid2 .imageItem,
+.grid3 .imageItem,
+.grid4 .imageItem,
+.grid5 .imageItem,
+.grid6 .imageItem,
+.grid7 .imageItem,
+.grid8 .imageItem,
+.grid9 .imageItem {
+  aspect-ratio: 1;
+}
+
+.momentImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.momentImage:hover {
+  transform: scale(1.02);
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderShimmer {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.moreImagesOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.moreImagesOverlay:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+/* 互动按钮 */
+.interactions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.interactionButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  height: auto;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #8b8b8b;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+}
+
+.interactionButton:hover {
+  background: var(--milky-primary);
+  color: white;
+  border-color: var(--milky-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.interactionButton:not(.liked):hover svg {
+  color: white !important;
+  stroke: white !important;
+}
+
+.interactionButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.interactionButton.liked {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: none;
+}
+
+.interactionButton.liked:hover {
+  background: var(--milky-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.interactionButton.liked:hover svg {
+  color: #ef4444 !important;
+  stroke: #ef4444 !important;
+}
+
+.interactionButton.liked:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* 加载状态 */
+.loadingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #6b7280;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 横屏/宽屏优化 - 图片单行显示 */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .grid2 {
+    grid-template-columns: repeat(2, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid3 {
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid4 {
+    grid-template-columns: repeat(4, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid5 {
+    grid-template-columns: repeat(5, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid6 {
+    grid-template-columns: repeat(6, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid7 {
+    grid-template-columns: repeat(7, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid8 {
+    grid-template-columns: repeat(8, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  .grid9 {
+    grid-template-columns: repeat(9, 100px);
+    grid-template-rows: 100px;
+  }
+  
+  /* 横屏模式下图片项保持正方形 */
+  .grid2 .imageItem,
+  .grid3 .imageItem,
+  .grid4 .imageItem,
+  .grid5 .imageItem,
+  .grid6 .imageItem,
+  .grid7 .imageItem,
+  .grid8 .imageItem,
+  .grid9 .imageItem {
+    aspect-ratio: 1;
+  }
+}
+
+/* 更宽屏幕的优化 */
+@media (min-width: 1440px) {
+  .grid2 {
+    grid-template-columns: repeat(2, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid3 {
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid4 {
+    grid-template-columns: repeat(4, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid5 {
+    grid-template-columns: repeat(5, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid6 {
+    grid-template-columns: repeat(6, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid7 {
+    grid-template-columns: repeat(7, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid8 {
+    grid-template-columns: repeat(8, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  .grid9 {
+    grid-template-columns: repeat(9, 120px);
+    grid-template-rows: 120px;
+  }
+  
+  /* 更宽屏幕下图片项保持正方形 */
+  .grid2 .imageItem,
+  .grid3 .imageItem,
+  .grid4 .imageItem,
+  .grid5 .imageItem,
+  .grid6 .imageItem,
+  .grid7 .imageItem,
+  .grid8 .imageItem,
+  .grid9 .imageItem {
+    aspect-ratio: 1;
+  }
+}
+
+/* 平板竖屏 */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+  .momentItem {
+    padding: 16px;
+  }
+  
+  .imageGrid {
+    margin-bottom: 16px;
+  }
+}
+
+/* 移动端响应式设计 */
+@media (max-width: 768px) {
+  .momentItem {
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .header {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .content {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  
+  .imageGrid {
+    margin-bottom: 8px;
+  }
+  
+  /* 移动端图片网格调整 */
+  .grid1 {
+    max-width: 200px;
+  }
+  
+  .grid2 {
+    grid-template-columns: repeat(2, 100px);
+  }
+  
+  .grid3 {
+    grid-template-columns: repeat(3, 65px);
+  }
+  
+  .grid4 {
+    grid-template-columns: repeat(2, 100px);
+    grid-template-rows: repeat(2, 100px);
+  }
+  
+  .grid5 {
+    grid-template-columns: repeat(3, 65px);
+    grid-template-rows: repeat(2, 65px);
+  }
+  
+  .grid6 {
+    grid-template-columns: repeat(3, 65px);
+    grid-template-rows: repeat(2, 65px);
+  }
+  
+  .grid7 {
+    grid-template-columns: repeat(3, 65px);
+    grid-template-rows: repeat(3, 65px);
+  }
+  
+  .grid8 {
+    grid-template-columns: repeat(3, 65px);
+    grid-template-rows: repeat(3, 65px);
+  }
+  
+  .grid9 {
+    grid-template-columns: repeat(3, 65px);
+    grid-template-rows: repeat(3, 65px);
+  }
+  
+  .grid1 .imageItem {
+    max-height: 250px;
+  }
+  
+  .interactions {
+    gap: 12px;
+  }
+  
+  .interactionButton {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
