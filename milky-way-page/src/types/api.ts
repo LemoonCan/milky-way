@@ -270,6 +270,7 @@ export interface CommentDTO {
   user: SimpleUserDTO
   content: string
   createTime: string
+  replyUser?: SimpleUserDTO
   replies?: CommentDTO[]
 }
 

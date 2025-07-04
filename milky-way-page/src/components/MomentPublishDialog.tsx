@@ -21,9 +21,9 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [emojiButtonElement, setEmojiButtonElement] = useState<HTMLElement | null>(null)
   
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const emojiButtonRef = useRef<HTMLButtonElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const { publishMoment, publishLoading, publishError } = useMomentStore()
@@ -227,10 +227,12 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
             </Button>
             
             <Button
-              ref={emojiButtonRef}
               variant="ghost"
               size="icon"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              onClick={(e) => {
+                setEmojiButtonElement(e.currentTarget)
+                setShowEmojiPicker(!showEmojiPicker)
+              }}
               disabled={publishLoading}
               className={styles.toolButton}
             >
@@ -272,7 +274,7 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
           isVisible={showEmojiPicker}
           onClose={() => setShowEmojiPicker(false)}
           onEmojiSelect={handleEmojiSelect}
-          triggerElement={emojiButtonRef.current}
+          triggerElement={emojiButtonElement}
         />
       </div>
     </div>

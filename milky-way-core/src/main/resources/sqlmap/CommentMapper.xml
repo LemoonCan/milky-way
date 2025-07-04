@@ -57,4 +57,19 @@
             <result property="avatar" column="user_avatar"/>
         </association>
     </resultMap>
+
+    <select id="simpleSelectComments" resultMap="CommentMap">
+        SELECT
+            c.id,
+            c.content,
+            c.create_time,
+            u.id as user_id,
+            u.nick_name as user_nick_name,
+            u.avatar as user_avatar,
+            c.parent_comment_id
+        FROM comment c
+        JOIN users u ON c.comment_user_id = u.id
+        WHERE c.moment_id = #{momentId}
+        ORDER BY c.id
+    </select>
 </mapper> 

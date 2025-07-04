@@ -3,11 +3,13 @@ import { Send, Smile, X } from 'lucide-react'
 import { Button } from './ui/button'
 import { EmojiPicker } from './EmojiPicker'
 import { useMomentStore } from '../store/moment'
+import type { SimpleUserDTO } from '../types/api'
 import styles from '../css/CommentInput.module.css'
 
 interface CommentInputProps {
   momentId: string
   parentCommentId?: string
+  replyToUser?: SimpleUserDTO  // 被回复的用户信息
   placeholder?: string
   onClose: () => void
   onComment: () => void
@@ -16,14 +18,15 @@ interface CommentInputProps {
 export const CommentInput: React.FC<CommentInputProps> = ({
   momentId,
   parentCommentId,
+  replyToUser,
   placeholder = '写评论...',
   onClose,
   onComment
 }) => {
   const [content, setContent] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [emojiButtonElement, setEmojiButtonElement] = useState<HTMLElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const emojiButtonRef = useRef<HTMLButtonElement>(null)
   
   const { commentMoment, operationLoading } = useMomentStore()
   const isCommenting = operationLoading[`comment_${momentId}`]
@@ -92,6 +95,14 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     adjustTextareaHeight()
   }
 
+  // 获取显示的placeholder
+  const getDisplayPlaceholder = () => {
+    if (replyToUser) {
+      return `回复 ${replyToUser.nickName} ...`
+    }
+    return placeholder
+  }
+
   return (
     <div className={styles.commentInput}>
       <div className={styles.inputContainer}>
@@ -100,7 +111,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           value={content}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={getDisplayPlaceholder()}
           className={styles.textarea}
           rows={1}
           disabled={isCommenting}
@@ -108,10 +119,12 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         
         <div className={styles.actions}>
           <Button
-            ref={emojiButtonRef}
             variant="ghost"
             size="icon"
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            onClick={(e) => {
+              setEmojiButtonElement(e.currentTarget)
+              setShowEmojiPicker(!showEmojiPicker)
+            }}
             className={styles.emojiButton}
             disabled={isCommenting}
           >
@@ -148,7 +161,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         isVisible={showEmojiPicker}
         onClose={() => setShowEmojiPicker(false)}
         onEmojiSelect={handleEmojiSelect}
-        triggerElement={emojiButtonRef.current}
+        triggerElement={emojiButtonElement}
       />
     </div>
   )

@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from './button'
 import { AlertTriangle } from 'lucide-react'
 import styles from './confirm-dialog.module.css'
@@ -11,6 +12,7 @@ interface ConfirmDialogProps {
   cancelText?: string
   onConfirm: () => void
   onCancel: () => void
+  previewContent?: React.ReactNode
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -20,11 +22,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmText = '确定',
   cancelText = '取消',
   onConfirm,
-  onCancel
+  onCancel,
+  previewContent
 }) => {
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.dialog} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
@@ -35,6 +38,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </div>
         
         <div className={styles.content}>
+          {previewContent && (
+            <div className={styles.previewContent}>
+              {previewContent}
+            </div>
+          )}
           <p className={styles.message}>{message}</p>
         </div>
         
@@ -54,6 +62,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 } 

@@ -20,7 +20,8 @@
     <!-- 主查询 -->
     <!-- <![CDATA[ ... ]]> XML特殊标记，表示：这段内容是原样文本，不要解析里面的任何字符 -->
     <select id="listFriendMoments" resultMap="MomentMap">
-        SELECT m.id,
+        SELECT
+        m.id,
         u.id AS user_id,
         u.nick_name AS user_nick_name,
         u.avatar AS user_avatar,
@@ -31,15 +32,22 @@
         m.like_counts,
         m.comment_counts,
         m.create_time
-        FROM friend f
-        JOIN moment m ON f.friend_id = m.publish_user_id
+        FROM moment m
+        JOIN users u ON u.id = m.publish_user_id
+        WHERE (
+        m.publish_user_id = #{userId}
+        OR EXISTS (
+        SELECT 1 FROM friend f
+        WHERE f.user_id = #{userId}
+        AND f.friend_id = m.publish_user_id
+        )
+        )
         <if test="lastId != null">
             AND m.id &lt; #{lastId}
         </if>
-        JOIN users u ON u.id = m.publish_user_id
-        WHERE f.user_id = #{userId}
         ORDER BY m.id DESC
         LIMIT #{pageSize}
+
     </select>
 
 </mapper>

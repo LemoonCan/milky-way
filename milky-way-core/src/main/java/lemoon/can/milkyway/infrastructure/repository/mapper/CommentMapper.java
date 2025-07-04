@@ -20,4 +20,12 @@ public interface CommentMapper {
      * @return 评论信息列表
      */
     List<CommentDO> selectComments(@Param("momentId") Long momentId);
+
+    /**
+     * 查询动态的评论信息(简单升序)
+     *
+     * @param momentId 动态ID
+     * @return 评论信息列表
+     */
+    List<CommentDO> simpleSelectComments(@Param("momentId") Long momentId);
 } 

@@ -28,6 +28,14 @@ export const CommentList: React.FC<CommentListProps> = ({
     setShowProfileModal(true)
   }
 
+  const handleReplyUserClick = (replyUser: CommentDTO['replyUser'], element: HTMLElement) => {
+    if (replyUser) {
+      setSelectedUser(replyUser)
+      setTriggerElement(element)
+      setShowProfileModal(true)
+    }
+  }
+
   // 格式化时间
   const formatTime = (timeString: string) => {
     const now = new Date()
@@ -53,16 +61,9 @@ export const CommentList: React.FC<CommentListProps> = ({
     onReply?.(commentId)
   }
 
-  // 决定显示哪些评论
-  const displayComments = showAllComments ? comments : comments.slice(0, 1).map(comment => ({
-    ...comment,
-    replies: [] // 默认状态下不显示子级评论
-  }))
-  
-  // 计算是否有更多内容（包括更多评论或第一条评论的回复）
+  // 决定显示的评论数量
+  const displayComments = showAllComments ? comments : comments.slice(0, 1)
   const hasMoreComments = comments.length > 1
-  const firstCommentHasReplies = comments.length > 0 && comments[0].replies && comments[0].replies.length > 0
-  const hasMoreContent = hasMoreComments || firstCommentHasReplies
 
   return (
     <div className={styles.commentList}>
@@ -84,6 +85,16 @@ export const CommentList: React.FC<CommentListProps> = ({
                 {comment.user.nickName}
               </div>
               <div className={styles.content}>
+                {comment.replyUser && (
+                  <span className={styles.replyPrefix}>
+                    回复 <button 
+                      className={styles.replyUserButton}
+                      onClick={(e) => handleReplyUserClick(comment.replyUser, e.currentTarget)}
+                    >
+                      {comment.replyUser.nickName}
+                    </button>：
+                  </span>
+                )}
                 <EmojiText text={comment.content} />
               </div>
             </div>
@@ -99,51 +110,11 @@ export const CommentList: React.FC<CommentListProps> = ({
               </button>
             </div>
           </div>
-          {/* 渲染回复 */}
-          {comment.replies && comment.replies.length > 0 && (
-            <div className={styles.repliesContainer}>
-              {comment.replies.map((reply) => (
-                <div key={reply.id} className={styles.replyItem}>
-                  <div className={styles.commentContent}>
-                    <div 
-                      className={styles.commentAvatar}
-                      onClick={(e) => handleUserClick(reply.user, e.currentTarget)}
-                    >
-                      <Avatar
-                        size={28}
-                        userId={reply.user.id}
-                        avatarUrl={reply.user.avatar}
-                      />
-                    </div>
-                    <div className={styles.commentText}>
-                      <div className={styles.username}>
-                        {reply.user.nickName}
-                      </div>
-                      <div className={styles.content}>
-                        <EmojiText text={reply.content} />
-                      </div>
-                    </div>
-                    <div className={styles.commentMeta}>
-                      <span className={styles.time}>
-                        {formatTime(reply.createTime)}
-                      </span>
-                      <button 
-                        className={styles.replyButton}
-                        onClick={() => handleReply(reply.id.toString())}
-                      >
-                        回复
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       ))}
 
       {/* 更多评论按钮 */}
-      {hasMoreContent && !showAllComments && (
+      {hasMoreComments && !showAllComments && (
         <div className={styles.moreCommentsContainer}>
           <button 
             className={styles.moreCommentsButton}
@@ -155,7 +126,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       )}
 
       {/* 收起评论按钮 */}
-      {hasMoreContent && showAllComments && (
+      {hasMoreComments && showAllComments && (
         <div className={styles.moreCommentsContainer}>
           <button 
             className={styles.moreCommentsButton}

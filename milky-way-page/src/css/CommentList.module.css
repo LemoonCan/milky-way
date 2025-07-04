@@ -49,6 +49,31 @@
   word-break: break-word;
 }
 
+.replyPrefix {
+  color: #6b7280;
+  font-size: 12px;
+  margin-right: 4px;
+}
+
+.replyUserButton {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0 2px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.replyUserButton:hover {
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 1px 3px;
+}
+
 .commentMeta {
   display: flex;
   flex-direction: column;

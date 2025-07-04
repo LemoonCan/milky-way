@@ -8,9 +8,10 @@ import { LikeList } from './LikeList'
 import { CommentList } from './CommentList'
 import { CommentInput } from './CommentInput'
 import { ProfileModal } from './ProfileModal'
+import { ConfirmDialog } from './ui/confirm-dialog'
 import { useMomentStore } from '../store/moment'
 import { useUserStore } from '../store/user'
-import type { MomentDTO } from '../types/api'
+import type { MomentDTO, SimpleUserDTO } from '../types/api'
 import styles from '../css/MomentItem.module.css'
 
 interface MomentItemProps {
@@ -21,7 +22,9 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
   const [showCommentInput, setShowCommentInput] = useState(false)
   const [showAllImages, setShowAllImages] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [parentCommentId, setParentCommentId] = useState<string | undefined>(undefined)
+  const [replyToUser, setReplyToUser] = useState<SimpleUserDTO | undefined>(undefined)
   const avatarRef = useRef<HTMLDivElement>(null)
   
   const { likeMoment, unlikeMoment, deleteMoment, operationLoading } = useMomentStore()
@@ -51,12 +54,16 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
   }
 
   // 处理删除
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (isDeleting) return
-    
-    if (window.confirm('确定要删除这条动态吗？')) {
-      await deleteMoment(moment.id)
-    }
+    setShowDeleteDialog(true)
+  }
+
+  // 确认删除
+  const confirmDelete = async () => {
+    if (isDeleting) return
+    await deleteMoment(moment.id)
+    setShowDeleteDialog(false)
   }
 
   // 格式化时间
@@ -215,6 +222,15 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
           momentId={moment.id}
           onReply={(commentId?: string) => {
             setParentCommentId(commentId)
+            // 找到被回复的评论用户
+            if (commentId) {
+              const replyComment = moment.comments?.find(comment => comment.id === Number(commentId))
+              if (replyComment) {
+                setReplyToUser(replyComment.user)
+              }
+            } else {
+              setReplyToUser(undefined)
+            }
             setShowCommentInput(true)
           }}
         />
@@ -225,12 +241,15 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
         <CommentInput
           momentId={moment.id}
           parentCommentId={parentCommentId}
+          replyToUser={replyToUser}
           onClose={() => {
             setParentCommentId(undefined)
+            setReplyToUser(undefined)
             setShowCommentInput(false)
           }}
           onComment={() => {
             setParentCommentId(undefined)
+            setReplyToUser(undefined)
             setShowCommentInput(false)
           }}
         />
@@ -247,6 +266,67 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
         onClose={() => setShowProfileModal(false)}
         triggerElement={avatarRef.current}
         showActions={false}
+      />
+
+      {/* 删除动态确认弹框 */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="删除动态"
+        message="确定要删除这条动态吗？删除后将无法恢复。"
+        confirmText="删除动态"
+        cancelText="取消"
+        onConfirm={confirmDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+        previewContent={
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <Avatar
+              size={36}
+              userId={moment.user.id}
+              avatarUrl={moment.user.avatar}
+            />
+            <div style={{ flex: 1 }}>
+              <div style={{ 
+                fontSize: '14px', 
+                fontWeight: 600, 
+                color: '#1a1a1a',
+                marginBottom: '4px' 
+              }}>
+                {moment.user.nickName}
+              </div>
+              <div style={{ 
+                fontSize: '12px', 
+                color: '#6b7280',
+                marginBottom: '8px' 
+              }}>
+                {formatTime(moment.creatTime)}
+              </div>
+              {moment.text && (
+                <div style={{ 
+                  fontSize: '13px', 
+                  color: '#374151',
+                  lineHeight: '1.4',
+                  maxHeight: '60px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical'
+                }}>
+                  <EmojiText text={moment.text} />
+                </div>
+              )}
+              {moment.medias && moment.medias.length > 0 && (
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: '#6b7280',
+                  marginTop: '4px' 
+                }}>
+                  📷 {moment.medias.length}张图片
+                </div>
+              )}
+            </div>
+          </div>
+        }
       />
     </div>
   )

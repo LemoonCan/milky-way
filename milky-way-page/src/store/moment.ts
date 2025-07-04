@@ -6,7 +6,8 @@ import type {
   MomentDTO, 
   PublishParam, 
   CommentParam, 
-  MomentsQueryParams
+  MomentsQueryParams,
+  SimpleUserDTO
 } from '../types/api'
 import { MomentContentType } from '../types/api'
 
@@ -24,6 +25,10 @@ interface MomentStore {
   
   // 操作状态
   operationLoading: { [key: string]: boolean }
+  
+  // 防重复请求
+  initialized: boolean
+  lastFetchTime: number | null
   
   // 方法
   fetchMoments: (params?: MomentsQueryParams) => Promise<void>
@@ -58,15 +63,32 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
   publishError: null,
   
   operationLoading: {},
+  
+  // 防重复请求
+  initialized: false,
+  lastFetchTime: null,
 
   // 获取朋友圈动态
   fetchMoments: async (params?: MomentsQueryParams) => {
+    const state = get()
+    const now = Date.now()
+    
+    // 如果已经初始化且在短时间内调用，跳过请求（防止 StrictMode 重复调用）
+    if (state.initialized && state.lastFetchTime && (now - state.lastFetchTime) < 1000) {
+      return
+    }
+    
+    // 如果正在加载中，避免重复请求
+    if (state.loading) {
+      return
+    }
+    
     set({ loading: true, error: null })
     
     try {
       const queryParams = {
         lastId: params?.lastId || '',
-        pageSize: params?.pageSize || 20
+        pageSize: params?.pageSize || 5
       }
       
       const response = await momentService.getFriendMoments(queryParams)
@@ -76,18 +98,24 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
           moments: response.data.items,
           hasNext: response.data.hasNext,
           lastId: response.data.lastId,
-          loading: false
+          loading: false,
+          initialized: true,
+          lastFetchTime: now
         })
       } else {
         set({
           error: response.msg || '获取动态失败',
-          loading: false
+          loading: false,
+          initialized: true,
+          lastFetchTime: now
         })
       }
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : '获取动态失败',
-        loading: false
+        loading: false,
+        initialized: true,
+        lastFetchTime: now
       })
     }
   },
@@ -131,6 +159,8 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
 
   // 刷新动态
   refreshMoments: async () => {
+    // 重置状态，允许重新请求
+    set({ initialized: false, lastFetchTime: null })
     const { fetchMoments } = get()
     await fetchMoments()
   },
@@ -353,7 +383,18 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
             },
             content,
             createTime: new Date().toISOString(),
-            replies: []
+            replyUser: undefined as SimpleUserDTO | undefined  // 使用SimpleUserDTO类型
+          }
+          
+          // 如果是回复评论，需要设置replyUser
+          if (parentCommentId) {
+            const parentComment = state.moments
+              .find(moment => moment.id === momentId)
+              ?.comments?.find(comment => comment.id === Number(parentCommentId))
+            
+            if (parentComment) {
+              newComment.replyUser = parentComment.user
+            }
           }
           
           set({
@@ -361,15 +402,7 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
               moment.id === momentId 
                 ? { 
                     ...moment, 
-                    comments: parentCommentId 
-                      ? // 如果是回复评论，添加到对应父评论的replies中
-                        (moment.comments || []).map(comment => 
-                          comment.id === Number(parentCommentId)
-                            ? { ...comment, replies: [...(comment.replies || []), newComment] }
-                            : comment
-                        )
-                      : // 如果是顶级评论，添加到comments数组中
-                        [...(moment.comments || []), newComment]
+                    comments: [...(moment.comments || []), newComment]
                   }
                 : moment
             ),

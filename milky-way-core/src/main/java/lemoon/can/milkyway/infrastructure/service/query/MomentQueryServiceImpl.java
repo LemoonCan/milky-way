@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lemoon
@@ -58,12 +59,12 @@ public class MomentQueryServiceImpl implements MomentQueryService {
                     dto.setLikeUsers(likeMapper.selectLikeUsers(item.getId()));
 
                     // 查询评论信息
-                    List<CommentDO> comments = commentMapper.selectComments(item.getId());
-                    dto.setComments(commentConverter.buildTree(comments));
+                    List<CommentDO> comments = commentMapper.simpleSelectComments(item.getId());
+                    dto.setComments(commentConverter.buildSimpleArray(comments));
 
                     return dto;
                 })
-                .toList();
+                .collect(Collectors.toList());
 
         boolean hasNext = moments.size() > pageSize;
         if (hasNext) {

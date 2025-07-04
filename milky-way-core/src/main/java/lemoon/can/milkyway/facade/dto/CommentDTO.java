@@ -37,6 +37,11 @@ public class CommentDTO {
      * 评论时间
      */
     private String createTime;
+
+    /**
+     * 回复的用户
+     */
+    private SimpleUserDTO replyUser;
     
     /**
      * 回复列表

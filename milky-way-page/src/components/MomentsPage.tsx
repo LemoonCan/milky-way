@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { RefreshCw, Bell, Edit3, MoreHorizontal } from 'lucide-react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
+import { RefreshCw, Bell, Edit3 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Avatar } from './Avatar'
 import { MomentItem } from './MomentItem'
@@ -11,6 +11,7 @@ import styles from '../css/MomentsPage.module.css'
 export const MomentsPage: React.FC = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const momentsListRef = useRef<HTMLDivElement>(null)
   
   const { 
     moments, 
@@ -29,7 +30,28 @@ export const MomentsPage: React.FC = () => {
   useEffect(() => {
     fetchUserInfo()
     fetchMoments()
-  }, [fetchMoments, fetchUserInfo])
+  }, [])
+
+  // 无限滚动处理
+  const handleScroll = useCallback(() => {
+    const scrollContainer = momentsListRef.current
+    if (!scrollContainer || loading || !hasNext) return
+
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainer
+    // 当滚动到底部附近时（距离底部100px）触发加载
+    if (scrollTop + clientHeight >= scrollHeight - 100) {
+      loadMoreMoments()
+    }
+  }, [loading, hasNext, loadMoreMoments])
+
+  // 监听滚动事件
+  useEffect(() => {
+    const scrollContainer = momentsListRef.current
+    if (!scrollContainer) return
+
+    scrollContainer.addEventListener('scroll', handleScroll)
+    return () => scrollContainer.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
 
   // 刷新动态
   const handleRefresh = async () => {
@@ -38,13 +60,6 @@ export const MomentsPage: React.FC = () => {
       await refreshMoments()
     } finally {
       setIsRefreshing(false)
-    }
-  }
-
-  // 加载更多
-  const handleLoadMore = () => {
-    if (hasNext && !loading) {
-      loadMoreMoments()
     }
   }
 
@@ -101,7 +116,7 @@ export const MomentsPage: React.FC = () => {
       </div>
 
       {/* 动态列表 */}
-      <div className={styles.momentsList}>
+      <div className={styles.momentsList} ref={momentsListRef}>
         <div className={styles.momentsListInner}>
           {/* 动态条目 */}
           {moments.map((moment) => (
@@ -116,17 +131,11 @@ export const MomentsPage: React.FC = () => {
             </div>
           )}
 
-          {/* 加载更多按钮 */}
-          {hasNext && moments.length > 0 && (
+          {/* 加载更多状态 */}
+          {loading && moments.length > 0 && (
             <div className={styles.loadMore}>
-              <Button
-                variant="outline"
-                onClick={handleLoadMore}
-                disabled={loading}
-                className={styles.loadMoreButton}
-              >
-                {loading ? '加载中...' : '加载更多'}
-              </Button>
+              <div className={styles.loadingSpinner} />
+              <span>加载中...</span>
             </div>
           )}
 

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { EmojiText } from './EmojiText'
+import { Portal } from './Portal'
 import styles from '../css/EmojiPicker.module.css'
 
 interface EmojiPickerProps {
@@ -118,15 +119,28 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
 
   // 计算弹框位置
   const getPickerPosition = () => {
-    if (!triggerElement) return { bottom: '60px', left: '10px' }
+    if (!triggerElement) {
+      return { top: '60px', left: '10px' }
+    }
     
     const rect = triggerElement.getBoundingClientRect()
     const pickerWidth = 320
     const pickerHeight = 400
     
-    // 默认显示在按钮上方
-    let bottom = window.innerHeight - rect.top + 8
-    let left = rect.left
+
+    
+    // 计算按钮中心点，水平居中对齐
+    const buttonCenterX = rect.left + rect.width / 2
+    
+    // 默认显示在按钮上方，水平居中对齐
+    let top = rect.top - pickerHeight - 8
+    let left = buttonCenterX - pickerWidth / 2
+    
+    // 检查上方空间是否足够
+    if (top < 10) {
+      // 上方空间不足，显示在按钮下方
+      top = rect.bottom + 8
+    }
     
     // 检查右侧空间
     if (left + pickerWidth > window.innerWidth - 10) {
@@ -138,14 +152,14 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
       left = 10
     }
     
-    // 检查上方空间
-    if (rect.top < pickerHeight + 20) {
-      // 上方空间不足，显示在按钮下方
-      bottom = window.innerHeight - rect.bottom - 8
+    // 如果下方也没有足够空间，则固定在屏幕中央
+    if (top + pickerHeight > window.innerHeight - 10) {
+      top = (window.innerHeight - pickerHeight) / 2
+      left = (window.innerWidth - pickerWidth) / 2
     }
     
     return { 
-      bottom: `${bottom}px`, 
+      top: `${top}px`, 
       left: `${left}px`,
       position: 'fixed' as const
     }
@@ -205,7 +219,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     : Object.keys(EMOJI_CATEGORIES).filter(key => key !== 'recent')
 
   return (
-    <div className={styles.overlay}>
+    <Portal>
       <div
         ref={pickerRef}
         className={styles.picker}
@@ -251,7 +265,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
           </span>
         </div>
       </div>
-    </div>
+    </Portal>
   )
 }
 

@@ -55,12 +55,18 @@
   height: 32px;
   border-radius: 6px;
   opacity: 0.7;
+  color: #8b8b8b;
+  background: #f5f5f5;
+  border: none;
   transition: all 0.2s ease;
 }
 
 .actionButton:hover {
-  opacity: 1;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--milky-primary);
+  color: white;
+  border-color: var(--milky-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
 
 /* 内容 */
