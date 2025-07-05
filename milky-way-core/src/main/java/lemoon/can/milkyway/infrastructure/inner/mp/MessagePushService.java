@@ -1,8 +1,10 @@
 package lemoon.can.milkyway.infrastructure.inner.mp;
 
+import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.friend.FriendApplication;
 import lemoon.can.milkyway.domain.share.Comment;
 import lemoon.can.milkyway.domain.share.Like;
+import lemoon.can.milkyway.domain.share.Moment;
 
 /**
  * @author lemoon
@@ -14,6 +16,12 @@ public interface MessagePushService {
      * @param friendApplication 好友申请对象
      */
     void friendApplyMsg(FriendApplication friendApplication);
+
+    /**
+     * 动态消息
+     * @param moment
+     */
+    void momentMsg(Moment moment);
 
     /**
      * 点赞消息

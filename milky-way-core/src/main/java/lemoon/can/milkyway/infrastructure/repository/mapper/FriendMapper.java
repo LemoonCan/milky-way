@@ -27,4 +27,7 @@ public interface FriendMapper {
 
     @Select("select count(1) from friend where user_id = #{userId}")
     int countFriends(String userId);
+
+    @Select("select friend_id from friend where user_id = #{userId}")
+    List<String> selectFriendIds(String userId);
 }

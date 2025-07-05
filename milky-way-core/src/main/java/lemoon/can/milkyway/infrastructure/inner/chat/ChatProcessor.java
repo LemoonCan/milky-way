@@ -9,4 +9,15 @@ import lemoon.can.milkyway.facade.dto.MessageDTO;
  */
 public interface ChatProcessor {
     void pushMessage(Chat chat, MessageDTO message);
+    /**
+     * 聊天室创建
+     * @param chatId 群聊ID
+     */
+    default void chatCreateMsg(Long chatId, String operatorUserId){}
+
+    /**
+     * 聊天室解散
+     * @param chatId 群聊ID
+     */
+    default void chatDeleteMsg(Long chatId, String operatorUserId){}
 }

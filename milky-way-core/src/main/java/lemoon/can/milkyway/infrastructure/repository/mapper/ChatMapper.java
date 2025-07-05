@@ -44,4 +44,11 @@ public interface ChatMapper {
     List<ChatInfoDO> findChatsByUserId(@Param("userId") String userId,
                                        @Param("lastId") Long lastId,
                                        @Param("pageSize") int pageSize);
+
+    /**
+     * 根据ID查询聊天信息
+     * @param id
+     * @return 聊天信息
+     */
+    ChatInfoDO selectChatInfoById(Long id);
 }

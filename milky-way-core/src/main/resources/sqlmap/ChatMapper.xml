@@ -126,4 +126,16 @@
         -- 分页大小限制
         LIMIT #{pageSize}
     </select>
+
+    <select id="selectChatInfoById" resultMap="lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO">
+        select c.id,
+               c.type as chat_type,
+               c.title,
+               m.id as last_message_id,
+               m.content as last_message,
+               m.sent_time as last_message_time
+        from chat c
+        join message m on c.id = m.chat_id
+        where c.id = #{id}
+    </select>
 </mapper>

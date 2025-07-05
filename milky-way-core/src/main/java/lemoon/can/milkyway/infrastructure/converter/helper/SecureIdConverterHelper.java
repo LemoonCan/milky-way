@@ -49,4 +49,17 @@ public class SecureIdConverterHelper {
     public Long decodeMessageId(String encodedId) {
         return secureId.simpleDecode(encodedId, secureId.getMessageSalt());
     }
+
+    @Named("encodeMomentId")
+    public String encodeMomentId(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return secureId.simpleEncode(id, secureId.getMomentSalt());
+    }
+
+    @Named("decodeMomentId")
+    public Long decodeMomentId(String encodedId) {
+        return secureId.simpleDecode(encodedId, secureId.getMomentSalt());
+    }
 }

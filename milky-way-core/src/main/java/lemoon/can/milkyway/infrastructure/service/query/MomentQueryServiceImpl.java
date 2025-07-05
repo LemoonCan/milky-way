@@ -6,6 +6,7 @@ import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.service.query.MomentQueryService;
 import lemoon.can.milkyway.infrastructure.converter.CommentConverter;
+import lemoon.can.milkyway.infrastructure.converter.MomentConverter;
 import lemoon.can.milkyway.infrastructure.repository.dos.CommentDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.MomentDO;
 import lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper;
@@ -30,6 +31,7 @@ public class MomentQueryServiceImpl implements MomentQueryService {
     private final CommentMapper commentMapper;
     private final SecureId secureId;
     private final CommentConverter commentConverter;
+    private final MomentConverter momentConverter;
 
     @Override
     public Slices<MomentDTO> listFriendMoments(String userId, String lastId, int pageSize) {
@@ -41,19 +43,12 @@ public class MomentQueryServiceImpl implements MomentQueryService {
 
         List<MomentDTO> moments = momentDos.stream()
                 .map(item -> {
-                    MomentDTO dto = new MomentDTO();
-                    dto.setId(secureId.simpleEncode(item.getId(), secureId.getMomentSalt()));
+                    MomentDTO dto = momentConverter.toMomentDTO(item);
                     SimpleUserDTO userDTO = new SimpleUserDTO();
                     userDTO.setId(item.getUserId());
                     userDTO.setNickName(item.getUserNickName());
                     userDTO.setAvatar(item.getUserAvatar());
                     dto.setUser(userDTO);
-                    dto.setText(item.getText());
-                    dto.setMedias(item.getMedias());
-                    dto.setLocation(item.getLocation());
-                    dto.setLikeCounts(item.getLikeCounts());
-                    dto.setCommentCounts(item.getCommentCounts());
-                    dto.setCreatTime(item.getCreateTime());
 
                     // 查询点赞用户信息
                     dto.setLikeUsers(likeMapper.selectLikeUsers(item.getId()));

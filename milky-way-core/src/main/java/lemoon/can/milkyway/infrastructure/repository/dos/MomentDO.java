@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.repository.dos;
 
+import lemoon.can.milkyway.common.enums.MomentContentType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ public class MomentDO {
     private String userId;
     private String userNickName;
     private String userAvatar;
-    private String contentType;
+    private MomentContentType contentType;
     private String text;
     private List<String> medias;
     private String location;

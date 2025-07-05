@@ -1,12 +1,15 @@
 package lemoon.can.milkyway.infrastructure.inner.mp;
 
+import lemoon.can.milkyway.common.enums.MessageNotifyType;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.friend.FriendApplication;
 import lemoon.can.milkyway.domain.share.Comment;
 import lemoon.can.milkyway.domain.share.Like;
-import lemoon.can.milkyway.facade.dto.CommentContentDTO;
-import lemoon.can.milkyway.facade.dto.FriendApplicationContentDTO;
-import lemoon.can.milkyway.facade.dto.LikeContentDTO;
+import lemoon.can.milkyway.domain.share.Moment;
+import lemoon.can.milkyway.facade.dto.*;
+import lemoon.can.milkyway.infrastructure.converter.MomentConverter;
+import lemoon.can.milkyway.infrastructure.inner.MessageDestination;
+import lemoon.can.milkyway.infrastructure.repository.mapper.FriendMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * @author lemoon
@@ -26,44 +30,73 @@ public class MessagePushServiceImpl implements MessagePushService {
     private final UserMapper userMapper;
     private final SecureId secureId;
     private final MomentMapper momentMapper;
+    private final MomentConverter momentConverter;
+    private final FriendMapper friendMapper;
 
     @Override
     public void friendApplyMsg(FriendApplication friendApplication) {
         //点对点
-        FriendApplicationContentDTO payload = new FriendApplicationContentDTO();
-        payload.setId(secureId.simpleEncode(friendApplication.getId(), secureId.getFriendApplicationSalt()));
-        payload.setStatus(friendApplication.getStatus());
-        payload.setApplyMsg(friendApplication.getApplyMsg());
-        payload.setFromUser(userMapper.selectSimpleById(friendApplication.getFromUserId()));
-        payload.setCreateTime(friendApplication.getCreateTime().format(
+        MessageNotifyDTO<FriendApplicationContentDTO> payload = new MessageNotifyDTO<>();
+        FriendApplicationContentDTO content = new FriendApplicationContentDTO();
+        content.setId(secureId.simpleEncode(friendApplication.getId(), secureId.getFriendApplicationSalt()));
+        content.setStatus(friendApplication.getStatus());
+        content.setApplyMsg(friendApplication.getApplyMsg());
+        content.setFromUser(userMapper.selectSimpleById(friendApplication.getFromUserId()));
+        content.setCreateTime(friendApplication.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        payload.setNotifyType(MessageNotifyType.FRIEND_APPLY);
+        payload.setContent(content);
+
         messagingTemplate.convertAndSendToUser(friendApplication.getToUserId(),
-                "/queue/friendApplications", payload);
+                MessageDestination.NOTIFY_DEST, payload);
+    }
+
+    @Override
+    public void momentMsg(Moment moment) {
+        MessageNotifyDTO<MomentDTO> payload = new MessageNotifyDTO<>();
+        payload.setNotifyType(MessageNotifyType.MOMENT_CREATE);
+        MomentDTO momentDTO = momentConverter.toMomentDTO(moment);
+        SimpleUserDTO user = userMapper.selectSimpleById(moment.getPublishUserId());
+        momentDTO.setUser(user);
+        momentDTO.setLikeUsers(List.of());
+        momentDTO.setComments(List.of());
+        payload.setContent(momentDTO);
+
+        List<String> friends = friendMapper.selectFriendIds(moment.getPublishUserId());
+        for (String friendId : friends) {
+            messagingTemplate.convertAndSendToUser(friendId, MessageDestination.NOTIFY_DEST, payload);
+        }
     }
 
     @Override
     public void likeMsg(Like like) {
         //点对点
         String user = momentMapper.selectPublishUserIdById(like.getMomentId());
-        LikeContentDTO payload = new LikeContentDTO();
-        payload.setMomentId(secureId.simpleEncode(like.getMomentId(), secureId.getMomentSalt()));
-        payload.setLikeUser(userMapper.selectSimpleById(like.getLikeUserId()));
-        payload.setCreateTime(like.getCreateTime().format(
+        MessageNotifyDTO<LikeDTO> payload = new MessageNotifyDTO<>();
+        LikeDTO content = new LikeDTO();
+        content.setMomentId(secureId.simpleEncode(like.getMomentId(), secureId.getMomentSalt()));
+        content.setLikeUser(userMapper.selectSimpleById(like.getLikeUserId()));
+        content.setCreateTime(like.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        messagingTemplate.convertAndSendToUser(user,
-                "/queue/momentLikes", payload);
+        payload.setNotifyType(MessageNotifyType.LIKE);
+        payload.setContent(content);
+
+        messagingTemplate.convertAndSendToUser(user, MessageDestination.NOTIFY_DEST, payload);
     }
 
     @Override
     public void commentMsg(Comment comment) {
         //点对点
         String user = momentMapper.selectPublishUserIdById(comment.getMomentId());
-        CommentContentDTO payload = new CommentContentDTO();
-        payload.setMomentId(secureId.simpleEncode(comment.getMomentId(), secureId.getMomentSalt()));
-        payload.setContent(comment.getContent());
-        payload.setCreateTime(comment.getCreateTime().format(
+        MessageNotifyDTO<CommentContentDTO> payload = new MessageNotifyDTO<>();
+        CommentContentDTO content = new CommentContentDTO();
+        content.setMomentId(secureId.simpleEncode(comment.getMomentId(), secureId.getMomentSalt()));
+        content.setContent(comment.getContent());
+        content.setCreateTime(comment.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        messagingTemplate.convertAndSendToUser(user,
-                "/queue/momentComments", payload);
+        payload.setNotifyType(MessageNotifyType.COMMENT);
+        payload.setContent(content);
+
+        messagingTemplate.convertAndSendToUser(user, MessageDestination.NOTIFY_DEST, payload);
     }
 }
