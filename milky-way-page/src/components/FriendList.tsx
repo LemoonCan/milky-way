@@ -60,12 +60,16 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
 
   // 显示所有好友申请，不只是待处理的
   const displayApplications = useMemo(() => {
+    console.log(`[FriendList] 好友申请列表更新，长度: ${friendApplications?.length || 0}`)
+    console.log(`[FriendList] 申请列表内容:`, friendApplications?.map(app => ({ id: app.id, nickName: app.fromUser.nickName, status: app.status })) || [])
     return friendApplications || []
   }, [friendApplications])
 
   // 统计待处理的申请数量
   const pendingCount = useMemo(() => {
-    return friendApplications.filter(app => app.status === 'APPLYING').length
+    const count = friendApplications.filter(app => app.status === 'APPLYING').length
+    console.log(`[FriendList] 待处理申请数量: ${count}`)
+    return count
   }, [friendApplications])
 
   // 处理滚动事件，实现无限滚动加载

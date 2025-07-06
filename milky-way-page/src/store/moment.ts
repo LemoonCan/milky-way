@@ -7,7 +7,8 @@ import type {
   PublishParam, 
   CommentParam, 
   MomentsQueryParams,
-  SimpleUserDTO
+  SimpleUserDTO,
+  CommentDTO
 } from '../types/api'
 import { MomentContentType } from '../types/api'
 
@@ -45,6 +46,11 @@ interface MomentStore {
   
   // 评论相关
   commentMoment: (momentId: string, content: string, parentCommentId?: string) => Promise<boolean>
+  
+  // 新增：本地更新方法（用于通知）
+  addLikeLocally: (momentId: string, likeUser: SimpleUserDTO) => void
+  addCommentLocally: (momentId: string, comment: CommentDTO) => void
+  removeLikeLocally: (likeUserId: string) => void
   
   // 清理方法
   clearError: () => void
@@ -424,6 +430,45 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
       })
       return false
     }
+  },
+
+  // 新增：本地更新方法（用于通知）
+  addLikeLocally: (momentId: string, likeUser: SimpleUserDTO) => {
+    const state = get()
+    set({
+      moments: state.moments.map(moment => 
+        moment.id === momentId 
+          ? { 
+              ...moment, 
+              likeUsers: [...(moment.likeUsers || []), likeUser]
+            }
+          : moment
+      )
+    })
+  },
+
+  addCommentLocally: (momentId: string, comment: CommentDTO) => {
+    const state = get()
+    set({
+      moments: state.moments.map(moment => 
+        moment.id === momentId 
+          ? { 
+              ...moment, 
+              comments: [...(moment.comments || []), comment]
+            }
+          : moment
+      )
+    })
+  },
+
+  removeLikeLocally: (likeUserId: string) => {
+    const state = get()
+    set({
+      moments: state.moments.map(moment => ({
+        ...moment,
+        likeUsers: moment.likeUsers?.filter(user => user.id !== likeUserId)
+      }))
+    })
   },
 
   // 清理错误

@@ -82,6 +82,7 @@ export interface ChatStore {
   getChatMessages: (chatId: string) => MessageWithStatus[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
   removeChatUser: (chatId: string) => void
+  addChatLocally: (chatInfo: ChatInfoDTO) => void
   initializeChatService: () => Promise<void>
   sendMessageViaWebSocket: (chatId: string, content: string) => Promise<void>
   handleWebSocketMessage: (messageDTO: MessageDTO) => void
@@ -527,6 +528,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     })
     
     console.log(`[ChatStore] 已从聊天列表中移除聊天 ${chatId}`)
+  },
+
+  addChatLocally: (chatInfo: ChatInfoDTO) => {
+    const state = get()
+    
+    // 检查是否已存在该聊天
+    const existingChatIndex = state.chatUsers.findIndex(user => user.id === chatInfo.id)
+    
+    if (existingChatIndex >= 0) {
+      // 如果已存在，更新聊天信息
+      const updatedChatUsers = [...state.chatUsers]
+      updatedChatUsers[existingChatIndex] = convertChatInfoToUser(chatInfo)
+      set({ chatUsers: updatedChatUsers })
+      console.log(`[ChatStore] 已更新聊天信息 ${chatInfo.id}`)
+    } else {
+      // 如果不存在，添加到聊天列表的最前面
+      const newChatUser = convertChatInfoToUser(chatInfo)
+      const updatedChatUsers = [newChatUser, ...state.chatUsers]
+      set({ chatUsers: updatedChatUsers })
+      console.log(`[ChatStore] 已本地添加新聊天 ${chatInfo.id}`)
+    }
   },
 
   initializeChatService: async () => {

@@ -22,13 +22,25 @@ public enum MessageNotifyType {
      */
     MOMENT_CREATE,
     /**
+     * 删除动态
+     */
+    MOMENT_DELETE,
+    /**
      * 点赞
      */
     LIKE,
+    /**
+     * 取消点赞
+     */
+    UNLIKE,
 
     /**
      * 评论
      */
     COMMENT,
+    /**
+     * 删除评论
+     */
+    COMMENT_DELETE,
     ;
 }

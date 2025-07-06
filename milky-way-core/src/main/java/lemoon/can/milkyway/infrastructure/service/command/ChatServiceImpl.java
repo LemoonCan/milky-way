@@ -10,6 +10,7 @@ import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.param.*;
 import lemoon.can.milkyway.facade.service.command.ChatService;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
+import lemoon.can.milkyway.infrastructure.inner.chat.ChatProcessorManager;
 import lemoon.can.milkyway.infrastructure.repository.ChatRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageReadCursorRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageRepository;
@@ -20,6 +21,8 @@ import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMemberMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +41,7 @@ public class ChatServiceImpl implements ChatService {
     private final SecureIdConverterHelper secureIdConverterHelper;
     private final MessageReadCursorRepository messageReadCursorRepository;
     private final MessageRepository messageRepository;
+    private final ChatProcessorManager chatProcessorManager;
 
     @Transactional
     @Override
@@ -62,6 +66,13 @@ public class ChatServiceImpl implements ChatService {
         Message message = new Message(chatId, param.getOperateUserId(),
                 MessageType.SYSTEM, param.getDefaultMessage());
         messageRepository.save(message);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                chatProcessorManager.pushChatCreatedMsg(chatId, param.getOperateUserId(), param.getChatType());
+            }
+        });
         return chatDTO;
     }
 
@@ -70,9 +81,18 @@ public class ChatServiceImpl implements ChatService {
     public void deleteChat(ChatDeleteParam param) {
         //TODO 权限校验
         Long chatId = secureId.simpleDecode(param.getChatId(), secureId.getChatSalt());
+        ChatType chatType = chatMapper.selectTypeById(chatId);
+        List<String> memberUserIds = chatMemberMapper.selectMemberUserIdsByChatId(chatId);
         chatRepository.delete(chatId);
 
         chatMemberMapper.deleteByChatId(chatId);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                chatProcessorManager.pushChatDeletedMsg(chatId, param.getOperateUserId(), chatType, memberUserIds);
+            }
+        });
     }
 
     @Override

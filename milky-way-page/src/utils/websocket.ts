@@ -1,7 +1,7 @@
 import { Client, StompConfig } from '@stomp/stompjs'
 import type { IMessage, StompSubscription } from '@stomp/stompjs'
 import { tokenManager } from '../lib/http'
-import type { MessageDTO } from '../types/api'
+import type { MessageDTO, MessageNotifyDTO } from '../types/api'
 
 export interface WebSocketMessage {
   chatId: string
@@ -23,6 +23,11 @@ export interface MessageHandler {
 // 消息回执处理器接口
 export interface MessageReceiptHandler {
   (receipt: MessageReceipt): void
+}
+
+// 通知处理器接口
+export interface NotificationHandler {
+  (notification: MessageNotifyDTO<unknown>): void
 }
 
 // 消息回执类型
@@ -61,6 +66,7 @@ export class WebSocketClient {
   private messageHandlers: Set<MessageHandler> = new Set()
   private messageDTOHandlers: Set<MessageDTOHandler> = new Set()
   private receiptHandlers: Set<MessageReceiptHandler> = new Set()
+  private notificationHandlers: Set<NotificationHandler> = new Set()
   
   // 简化状态管理
   private status: ConnectionStatus = ConnectionStatus.DISCONNECTED
@@ -167,6 +173,8 @@ export class WebSocketClient {
     this.updateStatus(ConnectionStatus.CONNECTED)
     this.clearRetryTimeout()
     
+    console.log('🎉 [WebSocket] 连接成功建立，开始订阅各种消息队列')
+    
     // 重新启动连接状态检查
     this.stopConnectionCheck()
     this.startConnectionCheck()
@@ -174,7 +182,10 @@ export class WebSocketClient {
     // 订阅消息
     this.subscribeToPersonalMessages()
     this.subscribeToMessageReceipts()
+    this.subscribeToNotifications()
     this.subscribeToGroupChats()
+    
+    console.log('✅ [WebSocket] 所有订阅完成，连接已就绪')
   }
 
   /**
@@ -478,6 +489,38 @@ export class WebSocketClient {
   }
 
   /**
+   * 订阅通知队列
+   */
+  private subscribeToNotifications() {
+    if (!this.client || !this.isConnected()) return
+
+    const subscriptionId = `notifications-${Date.now()}`
+    
+    try {
+      const subscription = this.client.subscribe(
+        '/user/queue/notifications',
+        (message: IMessage) => {
+          try {
+            const notificationData: MessageNotifyDTO<unknown> = JSON.parse(message.body)
+            this.handleNotification(notificationData)
+          } catch (error) {
+            console.error('解析通知消息失败:', error)
+          }
+        },
+        {
+          id: subscriptionId,
+          ack: 'auto'
+        }
+      )
+
+      this.subscriptions.set('notifications', subscription)
+      console.log('[WebSocket] 已订阅通知队列')
+    } catch (error) {
+      console.error('[WebSocket] 订阅通知队列失败:', error)
+    }
+  }
+
+  /**
    * 订阅群聊频道
    */
   private async subscribeToGroupChats() {
@@ -623,7 +666,19 @@ export class WebSocketClient {
     this.receiptHandlers.delete(handler)
   }
 
+  /**
+   * 添加通知处理器
+   */
+  public addNotificationHandler(handler: NotificationHandler): void {
+    this.notificationHandlers.add(handler)
+  }
 
+  /**
+   * 移除通知处理器
+   */
+  public removeNotificationHandler(handler: NotificationHandler): void {
+    this.notificationHandlers.delete(handler)
+  }
 
   /**
    * 处理接收到的MessageDTO
@@ -649,6 +704,20 @@ export class WebSocketClient {
         handler(receipt)
       } catch (error) {
         console.error('[WebSocket] 处理消息回执时出错:', error)
+      }
+    })
+  }
+
+  /**
+   * 处理接收到的通知
+   */
+  private handleNotification(notification: MessageNotifyDTO<unknown>): void {
+    console.log('[WebSocket] 收到通知:', notification)
+    this.notificationHandlers.forEach(handler => {
+      try {
+        handler(notification)
+      } catch (error) {
+        console.error('[WebSocket] 处理通知时出错:', error)
       }
     })
   }

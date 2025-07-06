@@ -266,6 +266,7 @@ export interface CommentContentDTO {
 // 评论DTO - 根据实际后端返回数据结构调整
 export interface CommentDTO {
   id: number
+  momentId?: string  // 添加 momentId 字段（用于通知）
   parentCommentId?: number | null
   user: SimpleUserDTO
   content: string
@@ -295,4 +296,74 @@ export interface CommentParam {
 export interface MomentsQueryParams {
   lastId?: string
   pageSize: number
+}
+
+// 通知相关类型定义
+export enum MessageNotifyType {
+  FRIEND_APPLY = 'FRIEND_APPLY',
+  CHAT_CREATE = 'CHAT_CREATE',
+  CHAT_DELETE = 'CHAT_DELETE',
+  MOMENT_CREATE = 'MOMENT_CREATE',
+  MOMENT_DELETE = 'MOMENT_DELETE',
+  LIKE = 'LIKE',
+  UNLIKE = 'UNLIKE',
+  COMMENT = 'COMMENT',
+  COMMENT_DELETE = 'COMMENT_DELETE'
+}
+
+export interface MessageNotifyDTO<T> {
+  notifyType: MessageNotifyType
+  content: T
+}
+
+// 群聊信息DTO
+export interface ChatInfoDTO {
+  id: string
+  chatType: 'SINGLE' | 'GROUP'
+  title: string
+  avatar: string
+  lastMessageId?: string
+  lastMessage?: string
+  lastMessageTime?: string
+  unreadCount: number
+  minUnreadMessageId?: string
+  online: boolean
+}
+
+// 好友申请DTO
+export interface FriendApplicationDTO {
+  id: string
+  fromUser: SimpleUserDTO
+  toUser: SimpleUserDTO
+  applyChannel?: string
+  applyMsg?: string
+  status: 'APPLYING' | 'ACCEPTED' | 'REJECTED'
+  createTime: string
+}
+
+// 点赞DTO
+export interface LikeDTO {
+  momentId: string
+  likeUser: SimpleUserDTO
+  createTime: string
+}
+
+// 通知项类型
+export interface NotificationItem {
+  id: string
+  type: MessageNotifyType
+  content: unknown
+  timestamp: string
+  read: boolean
+  title: string
+  message: string
+  avatar?: string
+}
+
+// 通知统计
+export interface NotificationStats {
+  total: number
+  unread: number
+  likeCount: number
+  commentCount: number
 } 

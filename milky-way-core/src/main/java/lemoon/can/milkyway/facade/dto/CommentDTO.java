@@ -19,6 +19,11 @@ public class CommentDTO {
     private Long id;
 
     /**
+     * 评论的动态ID
+     */
+    private String momentId;
+
+    /**
      * 父级评论ID
      */
     private Long parentCommentId;

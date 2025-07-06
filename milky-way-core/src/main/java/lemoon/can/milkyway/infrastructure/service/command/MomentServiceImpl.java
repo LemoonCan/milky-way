@@ -7,15 +7,19 @@ import lemoon.can.milkyway.domain.share.Comment;
 import lemoon.can.milkyway.domain.share.Like;
 import lemoon.can.milkyway.domain.share.LikeId;
 import lemoon.can.milkyway.domain.share.Moment;
+import lemoon.can.milkyway.facade.dto.UnlikeDTO;
 import lemoon.can.milkyway.facade.param.CommentParam;
 import lemoon.can.milkyway.facade.param.PublishParam;
 import lemoon.can.milkyway.facade.service.command.MomentService;
+import lemoon.can.milkyway.infrastructure.inner.mp.MessagePushService;
 import lemoon.can.milkyway.infrastructure.repository.CommentRepository;
 import lemoon.can.milkyway.infrastructure.repository.LikeRepository;
 import lemoon.can.milkyway.infrastructure.repository.MomentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Optional;
 
@@ -30,6 +34,7 @@ public class MomentServiceImpl implements MomentService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private final SecureId secureId;
+    private final MessagePushService messagePushService;
 
     @Transactional
     @Override
@@ -37,6 +42,14 @@ public class MomentServiceImpl implements MomentService {
         Moment moment = new Moment(param.getContentType(), param.getText(), param.getMedias(), param.getPublishUserId());
         moment.setLocation(param.getLocation());
         momentRepository.save(moment);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagePushService.momentCreateMsg(moment);
+            }
+        });
+
         return secureId.simpleEncode(moment.getId(), secureId.getMomentSalt());
     }
 
@@ -65,6 +78,13 @@ public class MomentServiceImpl implements MomentService {
 
         Like like = new Like(realMomentId, userId);
         likeRepository.save(like);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagePushService.likeMsg(like);
+            }
+        });
         return userId;
     }
 
@@ -72,14 +92,27 @@ public class MomentServiceImpl implements MomentService {
     @Override
     public void unlike(String momentId, String userId) {
         Long realMomentId = secureId.simpleDecode(momentId, secureId.getMomentSalt());
+
         Moment moment = momentRepository.findById(realMomentId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "内容不存在"));
+        String publishUserId = moment.getPublishUserId();
         if (likeRepository.findById(new LikeId(realMomentId, userId)).isEmpty()) {
             return;
         }
         moment.removeLike();
         momentRepository.save(moment);
         likeRepository.deleteById(new LikeId(realMomentId, userId));
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                UnlikeDTO unlikeDTO = new UnlikeDTO();
+                unlikeDTO.setMomentId(momentId);
+                unlikeDTO.setUnlikeUserId(userId);
+                unlikeDTO.setPublishUserId(publishUserId);
+                messagePushService.unlikeMsg(unlikeDTO);
+            }
+        });
     }
 
     @Transactional
@@ -91,6 +124,12 @@ public class MomentServiceImpl implements MomentService {
 
         commentRepository.save(comment);
 
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagePushService.commentMsg(comment);
+            }
+        });
         return comment.getId();
     }
 }

@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { RefreshCw, Bell, Edit3 } from 'lucide-react'
+import { RefreshCw, Edit3 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Avatar } from './Avatar'
 import { MomentItem } from './MomentItem'
 import { MomentPublishDialog } from './MomentPublishDialog'
+import NotificationButton from './NotificationButton'
+import NotificationPanel from './NotificationPanel'
 import { useMomentStore } from '../store/moment'
 import { useUserStore } from '../store/user'
+import { useNotificationStore } from '../store/notification'
 import styles from '../css/MomentsPage.module.css'
 
 export const MomentsPage: React.FC = () => {
@@ -25,6 +28,18 @@ export const MomentsPage: React.FC = () => {
   } = useMomentStore()
   
   const { currentUser, fetchUserInfo } = useUserStore()
+  
+  const { 
+    isNotificationPanelOpen, 
+    toggleNotificationPanel, 
+    closeNotificationPanel,
+    getMomentStats,
+    getMomentNotifications
+  } = useNotificationStore()
+  
+  // 获取朋友圈专用的通知统计和通知列表
+  const momentStats = getMomentStats()
+  const momentNotifications = getMomentNotifications()
 
   // 初始化加载
   useEffect(() => {
@@ -80,13 +95,11 @@ export const MomentsPage: React.FC = () => {
               <RefreshCw size={20} />
             </Button>
             
-            <Button
-              variant="ghost"
-              size="icon"
+            <NotificationButton
               className={styles.iconButton}
-            >
-              <Bell size={20} />
-            </Button>
+              onClick={toggleNotificationPanel}
+              customStats={momentStats}
+            />
             
             <Button
               variant="ghost"
@@ -168,6 +181,15 @@ export const MomentsPage: React.FC = () => {
       <MomentPublishDialog
         open={showPublishDialog}
         onClose={() => setShowPublishDialog(false)}
+      />
+
+      {/* 通知面板 - 朋友圈专用 */}
+      <NotificationPanel
+        isOpen={isNotificationPanelOpen}
+        onClose={closeNotificationPanel}
+        customNotifications={momentNotifications}
+        customStats={momentStats}
+        title="朋友圈通知"
       />
 
       {/* 错误提示 */}

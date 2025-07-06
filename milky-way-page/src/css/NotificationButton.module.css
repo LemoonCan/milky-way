@@ -1,0 +1,85 @@
+/* 通知按钮样式 */
+.button {
+    color: white;
+    background: var(--milky-primary);
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.button:hover {
+    transform: scale(1.1);
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.iconContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.button:hover .iconContainer {
+    transform: scale(1.1);
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ff4757;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .button {
+    padding: 6px;
+  }
+  
+  .iconContainer svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .badge {
+    font-size: 9px;
+    padding: 1px 4px;
+    min-width: 14px;
+    height: 14px;
+  }
+} 

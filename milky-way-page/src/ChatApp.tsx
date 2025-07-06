@@ -11,6 +11,7 @@ import { MomentsPage as MomentsPageComponent } from './components/MomentsPage'
 import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
 import { useAuthStore } from './store/auth'
+import { useWebSocketNotifications } from './hooks/useWebSocketNotifications'
 import styles from './css/App.module.css'
 import chatWindowStyles from './css/ChatWindow.module.css'
 
@@ -65,6 +66,9 @@ function ChatApp() {
   const { isAuthenticated } = useAuthStore()
   const location = useLocation()
   const navigate = useNavigate()
+
+  // 初始化WebSocket通知系统
+  useWebSocketNotifications()
 
   // 应用启动时获取用户信息 - 只执行一次
   useEffect(() => {

@@ -32,5 +32,6 @@ public class Like {
     public Like(Long momentId, String likeUserId) {
         this.momentId = momentId;
         this.likeUserId = likeUserId;
+        this.createTime = LocalDateTime.now();
     }
 }

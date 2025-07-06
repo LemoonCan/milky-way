@@ -46,7 +46,7 @@ public class GroupChatProcessor implements ChatProcessor {
     }
 
     @Override
-    public void chatCreateMsg(Long chatId, String operatorUserId) {
+    public void pushChatCreateMsg(Long chatId, String operatorUserId) {
         ChatInfoDO chatInfoDO = chatMapper.selectChatInfoById(chatId);
         ChatInfoDTO chatInfoDTO = chatConverter.toDto(chatInfoDO);
         MessageNotifyDTO<ChatInfoDTO> payload = new MessageNotifyDTO<>();
@@ -62,15 +62,14 @@ public class GroupChatProcessor implements ChatProcessor {
     }
 
     @Override
-    public void chatDeleteMsg(Long chatId, String operatorUserId) {
+    public void pushChatDeleteMsg(Long chatId, String operatorUserId, List<String> memberUserIds) {
         MessageNotifyDTO<String> payload = new MessageNotifyDTO<>();
         payload.setNotifyType(MessageNotifyType.CHAT_DELETE);
         payload.setContent(secureIdConverterHelper.encodeChatId(chatId));
 
-        List<ChatMemberDO> chatMemberDOS = chatMemberMapper.selectByChatId(chatId);
-        for (ChatMemberDO chatMemberDO : chatMemberDOS) {
-            if (!chatMemberDO.getUserId().equals(operatorUserId)) {
-                messagingTemplate.convertAndSendToUser(chatMemberDO.getUserId(), MessageDestination.NOTIFY_DEST, payload);
+        for (String member : memberUserIds) {
+            if (!member.equals(operatorUserId)) {
+                messagingTemplate.convertAndSendToUser(member, MessageDestination.NOTIFY_DEST, payload);
             }
         }
     }

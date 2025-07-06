@@ -127,7 +127,7 @@
         LIMIT #{pageSize}
     </select>
 
-    <select id="selectChatInfoById" resultMap="lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO">
+    <select id="selectChatInfoById" resultType="lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO">
         select c.id,
                c.type as chat_type,
                c.title,

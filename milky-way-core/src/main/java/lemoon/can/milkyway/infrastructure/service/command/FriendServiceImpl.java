@@ -15,11 +15,14 @@ import lemoon.can.milkyway.facade.param.FriendApplyParam;
 import lemoon.can.milkyway.facade.param.FriendOperateParam;
 import lemoon.can.milkyway.facade.service.command.ChatService;
 import lemoon.can.milkyway.facade.service.command.FriendService;
+import lemoon.can.milkyway.infrastructure.inner.mp.MessagePushService;
 import lemoon.can.milkyway.infrastructure.repository.FriendApplicationRepository;
 import lemoon.can.milkyway.infrastructure.repository.FriendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 
@@ -34,6 +37,7 @@ public class FriendServiceImpl implements FriendService {
     private final FriendRepository friendRepository;
     private final SecureId secureId;
     private final ChatService chatService;
+    private final MessagePushService messagePushService;
 
     @Override
     @Transactional
@@ -57,7 +61,13 @@ public class FriendServiceImpl implements FriendService {
         ));
         friendApplicationRepository.save(friendApplication);
 
-        //TODO 1.推送给申请的好友通知
+        //推送给申请的好友通知
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagePushService.friendApplyMsg(friendApplication);
+            }
+        });
     }
 
     @Override
@@ -103,6 +113,7 @@ public class FriendServiceImpl implements FriendService {
     public void deleteFriend(FriendOperateParam param) {
         friendRepository.deleteById(new FriendId(param.getFromUserId(), param.getToUserId()));
         friendRepository.deleteById(new FriendId(param.getToUserId(), param.getFromUserId()));
+        
     }
 
     @Override

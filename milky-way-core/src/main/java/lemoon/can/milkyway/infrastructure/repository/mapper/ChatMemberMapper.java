@@ -22,6 +22,9 @@ public interface ChatMemberMapper {
     @Select("SELECT * FROM chat_member WHERE chat_id = #{chatId}")
     List<ChatMemberDO> selectByChatId(Long chatId);
 
+    @Select("select user_id from chat_member where chat_id = #{chatId}")
+    List<String> selectMemberUserIdsByChatId(Long chatId);
+
     @Delete("DELETE FROM chat_member WHERE chat_id = #{chatId}")
     int deleteByChatId(Long chatId);
 

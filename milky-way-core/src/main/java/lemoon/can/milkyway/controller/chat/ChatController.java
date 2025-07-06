@@ -42,6 +42,7 @@ public class ChatController {
     public ResponseEntity<Result<Void>> deleteChat(@PathVariable @Valid String chatId) {
         ChatDeleteParam chatDeleteParam = new ChatDeleteParam();
         chatDeleteParam.setChatId(chatId);
+        chatDeleteParam.setOperateUserId(UserInfoHolder.id());
         chatService.deleteChat(chatDeleteParam);
         return ResponseEntity.ok(Result.success());
     }

@@ -15,6 +15,7 @@ import lemoon.can.milkyway.infrastructure.repository.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -36,8 +37,8 @@ public class MessagePushServiceImpl implements MessagePushService {
     @Override
     public void friendApplyMsg(FriendApplication friendApplication) {
         //点对点
-        MessageNotifyDTO<FriendApplicationContentDTO> payload = new MessageNotifyDTO<>();
-        FriendApplicationContentDTO content = new FriendApplicationContentDTO();
+        MessageNotifyDTO<FriendApplicationDTO> payload = new MessageNotifyDTO<>();
+        FriendApplicationDTO content = new FriendApplicationDTO();
         content.setId(secureId.simpleEncode(friendApplication.getId(), secureId.getFriendApplicationSalt()));
         content.setStatus(friendApplication.getStatus());
         content.setApplyMsg(friendApplication.getApplyMsg());
@@ -52,7 +53,7 @@ public class MessagePushServiceImpl implements MessagePushService {
     }
 
     @Override
-    public void momentMsg(Moment moment) {
+    public void momentCreateMsg(Moment moment) {
         MessageNotifyDTO<MomentDTO> payload = new MessageNotifyDTO<>();
         payload.setNotifyType(MessageNotifyType.MOMENT_CREATE);
         MomentDTO momentDTO = momentConverter.toMomentDTO(moment);
@@ -63,6 +64,17 @@ public class MessagePushServiceImpl implements MessagePushService {
         payload.setContent(momentDTO);
 
         List<String> friends = friendMapper.selectFriendIds(moment.getPublishUserId());
+        for (String friendId : friends) {
+            messagingTemplate.convertAndSendToUser(friendId, MessageDestination.NOTIFY_DEST, payload);
+        }
+    }
+
+    @Override
+    public void momentDeleteMsg(String momentId, String publishUserId) {
+        MessageNotifyDTO<String> payload = new MessageNotifyDTO<>();
+        payload.setNotifyType(MessageNotifyType.MOMENT_DELETE);
+        payload.setContent(momentId);
+        List<String> friends = friendMapper.selectFriendIds(publishUserId);
         for (String friendId : friends) {
             messagingTemplate.convertAndSendToUser(friendId, MessageDestination.NOTIFY_DEST, payload);
         }
@@ -85,18 +97,43 @@ public class MessagePushServiceImpl implements MessagePushService {
     }
 
     @Override
+    public void unlikeMsg(UnlikeDTO unlikeDTO) {
+        MessageNotifyDTO<UnlikeDTO> payload = new MessageNotifyDTO<>();
+        payload.setNotifyType(MessageNotifyType.UNLIKE);
+        payload.setContent(unlikeDTO);
+        messagingTemplate.convertAndSendToUser(unlikeDTO.getPublishUserId(), MessageDestination.NOTIFY_DEST, payload);
+    }
+
+    @Override
     public void commentMsg(Comment comment) {
         //点对点
         String user = momentMapper.selectPublishUserIdById(comment.getMomentId());
-        MessageNotifyDTO<CommentContentDTO> payload = new MessageNotifyDTO<>();
-        CommentContentDTO content = new CommentContentDTO();
+        MessageNotifyDTO<CommentDTO> payload = new MessageNotifyDTO<>();
+        CommentDTO content = new CommentDTO();
+        content.setId(comment.getId());
         content.setMomentId(secureId.simpleEncode(comment.getMomentId(), secureId.getMomentSalt()));
+        content.setParentCommentId(comment.getParentCommentId());
+        content.setUser(userMapper.selectSimpleById(comment.getCommentUserId()));
         content.setContent(comment.getContent());
         content.setCreateTime(comment.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        if(comment.getParentCommentId()!= null) {
+            // TODO 回复评论
+//            SimpleUserDTO replyUser = userMapper.selectSimpleById(comment.getParentCommentId());
+
+        }
+
         payload.setNotifyType(MessageNotifyType.COMMENT);
         payload.setContent(content);
 
         messagingTemplate.convertAndSendToUser(user, MessageDestination.NOTIFY_DEST, payload);
+    }
+
+    @Override
+    public void deleteCommentMsg(Long commentId, String publishUserId) {
+        MessageNotifyDTO<Long> payload = new MessageNotifyDTO<>();
+        payload.setNotifyType(MessageNotifyType.COMMENT_DELETE);
+        payload.setContent(commentId);
+        messagingTemplate.convertAndSendToUser(publishUserId, MessageDestination.NOTIFY_DEST, payload);
     }
 }
