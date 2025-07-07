@@ -9,10 +9,11 @@ import type {
   FriendApplicationDTO,
   FriendApplication,
   ChatInfoDTO as NotificationChatInfoDTO,
-  // 移除不再使用的类型
-  // MomentDTO,
+  // 重新导入需要的类型
   LikeDTO,
-  CommentDTO
+  CommentDTO,
+  UnlikeDTO,
+  MomentDTO
 } from '../types/api'
 import type { ChatInfoDTO as ChatServiceChatInfoDTO } from '../services/chat'
 
@@ -87,8 +88,8 @@ export const useWebSocketNotifications = () => {
   // 获取各个store的刷新方法
   const { addFriendApplicationLocally } = useFriendStore()
   const { addChatLocally, removeChatUser } = useChatStore()
-  const { refreshMoments, addLikeLocally, addCommentLocally } = useMomentStore()
-  // 移除暂时不用的 currentUser 和 removeLikeLocally
+  const { refreshMoments, addLikeLocally, addCommentLocally, removeLikeLocally, addMomentLocally, removeMomentLocally } = useMomentStore()
+  // 所有本地更新方法都已导入
 
   // 通知处理器
   const handleNotification = (notification: MessageNotifyDTO<unknown>) => {
@@ -140,16 +141,17 @@ export const useWebSocketNotifications = () => {
       case 'MOMENT_CREATE':
         // 动态发布通知
         if (content && typeof content === 'object' && 'user' in content) {
-          // 只处理业务逻辑，不再重复添加通知
-          refreshMoments()
+          // 使用本地更新而不是重新请求接口
+          const momentData = content as MomentDTO
+          addMomentLocally(momentData)
         }
         break
 
       case 'MOMENT_DELETE':
         // 动态删除通知
         if (typeof content === 'string') {
-          // 只处理业务逻辑，不再重复添加通知
-          refreshMoments()
+          // 使用本地更新而不是重新请求接口
+          removeMomentLocally(content)
         }
         break
 
@@ -164,9 +166,10 @@ export const useWebSocketNotifications = () => {
 
       case 'UNLIKE':
         // 取消点赞通知
-        if (typeof content === 'string') {
-          // 只处理业务逻辑，不再重复添加通知
-          // 暂时不处理取消点赞逻辑
+        if (content && typeof content === 'object' && 'momentId' in content && 'userId' in content) {
+          // 使用本地更新而不是重新请求接口
+          const unlikeData = content as UnlikeDTO
+          removeLikeLocally(unlikeData.momentId, unlikeData.userId)
         }
         break
 
@@ -225,7 +228,10 @@ export const useWebSocketNotifications = () => {
     removeChatUser,
     refreshMoments,
     addLikeLocally,
-    addCommentLocally
+    addCommentLocally,
+    removeLikeLocally,
+    addMomentLocally,
+    removeMomentLocally
   ])
 
   // 返回全局WebSocket客户端实例

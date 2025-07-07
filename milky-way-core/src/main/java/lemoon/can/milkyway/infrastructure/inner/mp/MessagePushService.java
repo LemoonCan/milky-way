@@ -52,11 +52,4 @@ public interface MessagePushService {
      * @param comment 评论对象
      */
     void commentMsg(Comment comment);
-
-    /**
-     * 删除评论消息
-     *
-     * @param commentId 评论ID
-     */
-    void deleteCommentMsg(Long commentId, String publishUserId);
 }

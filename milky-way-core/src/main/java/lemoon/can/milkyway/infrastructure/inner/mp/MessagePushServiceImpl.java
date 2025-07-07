@@ -9,13 +9,13 @@ import lemoon.can.milkyway.domain.share.Moment;
 import lemoon.can.milkyway.facade.dto.*;
 import lemoon.can.milkyway.infrastructure.converter.MomentConverter;
 import lemoon.can.milkyway.infrastructure.inner.MessageDestination;
+import lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.FriendMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,6 +33,7 @@ public class MessagePushServiceImpl implements MessagePushService {
     private final MomentMapper momentMapper;
     private final MomentConverter momentConverter;
     private final FriendMapper friendMapper;
+    private final CommentMapper commentMapper;
 
     @Override
     public void friendApplyMsg(FriendApplication friendApplication) {
@@ -83,7 +84,7 @@ public class MessagePushServiceImpl implements MessagePushService {
     @Override
     public void likeMsg(Like like) {
         //点对点
-        String user = momentMapper.selectPublishUserIdById(like.getMomentId());
+        String momentPublishUserId = momentMapper.selectPublishUserIdById(like.getMomentId());
         MessageNotifyDTO<LikeDTO> payload = new MessageNotifyDTO<>();
         LikeDTO content = new LikeDTO();
         content.setMomentId(secureId.simpleEncode(like.getMomentId(), secureId.getMomentSalt()));
@@ -93,7 +94,10 @@ public class MessagePushServiceImpl implements MessagePushService {
         payload.setNotifyType(MessageNotifyType.LIKE);
         payload.setContent(content);
 
-        messagingTemplate.convertAndSendToUser(user, MessageDestination.NOTIFY_DEST, payload);
+        if( !like.getLikeUserId().equals(momentPublishUserId)) {
+            //如果点赞用户不是动态发布者，则发送给动态发布者
+            messagingTemplate.convertAndSendToUser(momentPublishUserId, MessageDestination.NOTIFY_DEST, payload);
+        }
     }
 
     @Override
@@ -101,15 +105,20 @@ public class MessagePushServiceImpl implements MessagePushService {
         MessageNotifyDTO<UnlikeDTO> payload = new MessageNotifyDTO<>();
         payload.setNotifyType(MessageNotifyType.UNLIKE);
         payload.setContent(unlikeDTO);
-        messagingTemplate.convertAndSendToUser(unlikeDTO.getPublishUserId(), MessageDestination.NOTIFY_DEST, payload);
+        if(!unlikeDTO.getUserId().equals(unlikeDTO.getPublishUserId())) {
+            //如果取消点赞用户不是动态发布者，则发送给动态发布者
+            messagingTemplate.convertAndSendToUser(unlikeDTO.getPublishUserId(), MessageDestination.NOTIFY_DEST, payload);
+        }
     }
 
     @Override
     public void commentMsg(Comment comment) {
         //点对点
-        String user = momentMapper.selectPublishUserIdById(comment.getMomentId());
+        String momentPublishUserId = momentMapper.selectPublishUserIdById(comment.getMomentId());
         MessageNotifyDTO<CommentDTO> payload = new MessageNotifyDTO<>();
+        payload.setNotifyType(MessageNotifyType.COMMENT);
         CommentDTO content = new CommentDTO();
+        payload.setContent(content);
         content.setId(comment.getId());
         content.setMomentId(secureId.simpleEncode(comment.getMomentId(), secureId.getMomentSalt()));
         content.setParentCommentId(comment.getParentCommentId());
@@ -117,23 +126,14 @@ public class MessagePushServiceImpl implements MessagePushService {
         content.setContent(comment.getContent());
         content.setCreateTime(comment.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-        if(comment.getParentCommentId()!= null) {
-            // TODO 回复评论
-//            SimpleUserDTO replyUser = userMapper.selectSimpleById(comment.getParentCommentId());
-
+        if (comment.getParentCommentId() != null) {
+            SimpleUserDTO replyUser = commentMapper.selectReplyUser(comment.getParentCommentId());
+            content.setReplyUser(replyUser);
+            messagingTemplate.convertAndSendToUser(replyUser.getId(), MessageDestination.NOTIFY_DEST, payload);
         }
 
-        payload.setNotifyType(MessageNotifyType.COMMENT);
-        payload.setContent(content);
-
-        messagingTemplate.convertAndSendToUser(user, MessageDestination.NOTIFY_DEST, payload);
-    }
-
-    @Override
-    public void deleteCommentMsg(Long commentId, String publishUserId) {
-        MessageNotifyDTO<Long> payload = new MessageNotifyDTO<>();
-        payload.setNotifyType(MessageNotifyType.COMMENT_DELETE);
-        payload.setContent(commentId);
-        messagingTemplate.convertAndSendToUser(publishUserId, MessageDestination.NOTIFY_DEST, payload);
+        if (!comment.getCommentUserId().equals(momentPublishUserId)) {
+            messagingTemplate.convertAndSendToUser(momentPublishUserId, MessageDestination.NOTIFY_DEST, payload);
+        }
     }
 }

@@ -50,7 +50,9 @@ interface MomentStore {
   // 新增：本地更新方法（用于通知）
   addLikeLocally: (momentId: string, likeUser: SimpleUserDTO) => void
   addCommentLocally: (momentId: string, comment: CommentDTO) => void
-  removeLikeLocally: (likeUserId: string) => void
+  removeLikeLocally: (momentId: string, userId: string) => void
+  addMomentLocally: (moment: MomentDTO) => void
+  removeMomentLocally: (momentId: string) => void
   
   // 清理方法
   clearError: () => void
@@ -94,16 +96,23 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
     try {
       const queryParams = {
         lastId: params?.lastId || '',
-        pageSize: params?.pageSize || 5
+        pageSize: params?.pageSize || 20
       }
       
       const response = await momentService.getFriendMoments(queryParams)
       
       if (response.success && response.data) {
+        const items = response.data.items
+        // 如果后端没有返回有效的lastId，从数据末尾提取
+        let finalLastId = response.data.lastId
+        if (!finalLastId || finalLastId === 'undefined' || finalLastId === 'null') {
+          finalLastId = items.length > 0 ? items[items.length - 1].id : ''
+        }
+        
         set({
-          moments: response.data.items,
+          moments: items,
           hasNext: response.data.hasNext,
-          lastId: response.data.lastId,
+          lastId: finalLastId,
           loading: false,
           initialized: true,
           lastFetchTime: now
@@ -134,19 +143,28 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
       return
     }
     
+    const currentLastId = state.lastId || ''
+    
     set({ loading: true })
     
     try {
       const response = await momentService.getFriendMoments({
-        lastId: state.lastId || '',
+        lastId: currentLastId,
         pageSize: 20
       })
       
       if (response.success && response.data) {
+        const newItems = response.data.items
+        // 如果后端没有返回有效的lastId，从新数据末尾提取
+        let finalLastId = response.data.lastId
+        if (!finalLastId || finalLastId === 'undefined' || finalLastId === 'null') {
+          finalLastId = newItems.length > 0 ? newItems[newItems.length - 1].id : state.lastId
+        }
+        
         set({
-          moments: [...state.moments, ...response.data.items],
+          moments: [...state.moments, ...newItems],
           hasNext: response.data.hasNext,
-          lastId: response.data.lastId,
+          lastId: finalLastId,
           loading: false
         })
       } else {
@@ -461,14 +479,55 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
     })
   },
 
-  removeLikeLocally: (likeUserId: string) => {
+  removeLikeLocally: (momentId: string, userId: string) => {
     const state = get()
     set({
-      moments: state.moments.map(moment => ({
-        ...moment,
-        likeUsers: moment.likeUsers?.filter(user => user.id !== likeUserId)
-      }))
+      moments: state.moments.map(moment => 
+        moment.id === momentId
+          ? {
+              ...moment,
+              likeUsers: moment.likeUsers?.filter(user => user.id !== userId)
+            }
+          : moment
+      )
     })
+  },
+
+  addMomentLocally: (moment: MomentDTO) => {
+    const state = get()
+    // 检查是否已存在相同ID的动态，避免重复添加
+    const exists = state.moments.some(existingMoment => existingMoment.id === moment.id)
+    if (exists) {
+      return
+    }
+    
+    set({
+      moments: [moment, ...state.moments]
+    })
+  },
+
+  removeMomentLocally: (momentId: string) => {
+    const state = get()
+    const beforeCount = state.moments.length
+    const newMoments = state.moments.filter(moment => moment.id !== momentId)
+    const afterCount = newMoments.length
+    
+    set({
+      moments: newMoments
+    })
+    
+    if (beforeCount === afterCount) {
+      // 动态未找到，可能已被删除
+      return
+    } else if (afterCount === 0 && state.hasNext) {
+      // 如果删除后动态数量为0且还有更多数据，触发加载更多而不是重新刷新
+      const { loadMoreMoments } = get()
+      loadMoreMoments()
+    } else if (afterCount === 0 && !state.hasNext) {
+      // 如果没有更多数据了，才触发完整刷新
+      const { refreshMoments } = get()
+      refreshMoments()
+    }
   },
 
   // 清理错误

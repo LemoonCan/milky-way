@@ -10,6 +10,6 @@ import java.io.Serializable;
 @Data
 public class UnlikeDTO implements Serializable {
     private String momentId;
-    private String unlikeUserId;
+    private String userId;
     private String publishUserId;
 }

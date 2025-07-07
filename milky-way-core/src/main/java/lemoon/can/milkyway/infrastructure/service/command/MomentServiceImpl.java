@@ -15,6 +15,7 @@ import lemoon.can.milkyway.infrastructure.inner.mp.MessagePushService;
 import lemoon.can.milkyway.infrastructure.repository.CommentRepository;
 import lemoon.can.milkyway.infrastructure.repository.LikeRepository;
 import lemoon.can.milkyway.infrastructure.repository.MomentRepository;
+import lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class MomentServiceImpl implements MomentService {
     private final LikeRepository likeRepository;
     private final SecureId secureId;
     private final MessagePushService messagePushService;
+    private final MomentMapper momentMapper;
 
     @Transactional
     @Override
@@ -57,9 +59,17 @@ public class MomentServiceImpl implements MomentService {
     @Override
     public void delete(String momentId) {
         Long realMomentId = secureId.simpleDecode(momentId, secureId.getMomentSalt());
+        String publishUserId = momentMapper.selectPublishUserIdById(realMomentId);
         momentRepository.deleteById(realMomentId);
         commentRepository.deleteByMomentId(realMomentId);
         likeRepository.deleteByMomentId(realMomentId);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagePushService.momentDeleteMsg(momentId, publishUserId);
+            }
+        });
     }
 
     @Transactional
@@ -108,7 +118,7 @@ public class MomentServiceImpl implements MomentService {
             public void afterCommit() {
                 UnlikeDTO unlikeDTO = new UnlikeDTO();
                 unlikeDTO.setMomentId(momentId);
-                unlikeDTO.setUnlikeUserId(userId);
+                unlikeDTO.setUserId(userId);
                 unlikeDTO.setPublishUserId(publishUserId);
                 messagePushService.unlikeMsg(unlikeDTO);
             }

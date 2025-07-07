@@ -21,7 +21,7 @@ public class MomentDTO {
     private String location;
     private Integer likeCounts;
     private Integer commentCounts;
-    private LocalDateTime creatTime;
+    private String createTime;
     
     /**
      * 点赞用户列表

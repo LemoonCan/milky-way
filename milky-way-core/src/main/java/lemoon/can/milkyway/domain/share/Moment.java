@@ -5,9 +5,11 @@ import lemoon.can.milkyway.common.enums.MomentContentType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -55,6 +57,9 @@ public class Moment {
      * 评论数
      */
     private Integer commentCounts = 0;
+
+    @CreationTimestamp
+    private LocalDateTime createTime;
 
     public Moment(MomentContentType contentType, String text, List<String> medias, String publishUserId) {
         this.contentType = contentType;

@@ -239,28 +239,9 @@ export interface MomentDTO {
   location?: string
   likeCounts?: number // 可选：不再在前端使用显示
   commentCounts?: number // 可选：不再在前端使用显示
-  creatTime: string
+  createTime: string | null  // 修正字段名，匹配后端返回数据
   likeUsers?: SimpleUserDTO[]
   comments?: CommentDTO[]
-}
-
-// 点赞内容DTO
-export interface LikeContentDTO {
-  id: string
-  likeUserId: string
-  likeUser: SimpleUserDTO
-  createTime: string
-}
-
-// 评论内容DTO
-export interface CommentContentDTO {
-  id: string
-  commentUserId: string
-  commentUser: SimpleUserDTO
-  content: string
-  parentCommentId?: string
-  parentCommentUser?: SimpleUserDTO
-  createTime: string
 }
 
 // 评论DTO - 根据实际后端返回数据结构调整
@@ -270,7 +251,7 @@ export interface CommentDTO {
   parentCommentId?: number | null
   user: SimpleUserDTO
   content: string
-  createTime: string
+  createTime: string | null  // 允许null值
   replyUser?: SimpleUserDTO
   replies?: CommentDTO[]
 }
@@ -346,6 +327,13 @@ export interface LikeDTO {
   momentId: string
   likeUser: SimpleUserDTO
   createTime: string
+}
+
+// 取消点赞DTO
+export interface UnlikeDTO {
+  momentId: string
+  userId: string
+  publishUserId: string
 }
 
 // 通知项类型
