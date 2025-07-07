@@ -2,11 +2,13 @@ package lemoon.can.milkyway.infrastructure.inner.mp;
 
 import lemoon.can.milkyway.common.enums.MessageNotifyType;
 import lemoon.can.milkyway.common.utils.security.SecureId;
+import lemoon.can.milkyway.domain.friend.Friend;
 import lemoon.can.milkyway.domain.friend.FriendApplication;
 import lemoon.can.milkyway.domain.share.Comment;
 import lemoon.can.milkyway.domain.share.Like;
 import lemoon.can.milkyway.domain.share.Moment;
 import lemoon.can.milkyway.facade.dto.*;
+import lemoon.can.milkyway.infrastructure.converter.FriendConverter;
 import lemoon.can.milkyway.infrastructure.converter.MomentConverter;
 import lemoon.can.milkyway.infrastructure.inner.MessageDestination;
 import lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper;
@@ -34,6 +36,7 @@ public class MessagePushServiceImpl implements MessagePushService {
     private final MomentConverter momentConverter;
     private final FriendMapper friendMapper;
     private final CommentMapper commentMapper;
+    private final FriendConverter friendConverter;
 
     @Override
     public void friendApplyMsg(FriendApplication friendApplication) {
@@ -50,6 +53,20 @@ public class MessagePushServiceImpl implements MessagePushService {
         payload.setContent(content);
 
         messagingTemplate.convertAndSendToUser(friendApplication.getToUserId(),
+                MessageDestination.NOTIFY_DEST, payload);
+    }
+
+    @Override
+    public void newFriendMsg(Friend friend) {
+        MessageNotifyDTO<FriendDTO> payload = new MessageNotifyDTO<>();
+        payload.setNotifyType(MessageNotifyType.NEW_FRIEND);
+        FriendDTO content = new FriendDTO();
+        content.setRemark(friend.getRemark());
+        content.setFriend(userMapper.selectSimpleById(friend.getId().getFriendId()));
+        content.setStatus(friend.getStatus());
+        content.setPermission(friend.getPermission());
+        payload.setContent(content);
+        messagingTemplate.convertAndSendToUser(friend.getId().getUserId(),
                 MessageDestination.NOTIFY_DEST, payload);
     }
 

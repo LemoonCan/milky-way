@@ -41,6 +41,7 @@ interface FriendState {
   
   // 本地数据更新方法
   addFriendApplicationLocally: (application: FriendApplication) => void
+  addFriendLocally: (friendRelation: FriendRelation) => void
 }
 
 export const useFriendStore = create<FriendState>((set, get) => ({
@@ -412,6 +413,55 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     setTimeout(() => {
       const updatedState = get()
       console.log(`[Friend Store] 状态更新后验证，列表长度: ${updatedState.friendApplications.length}`)
+    }, 100)
+  },
+
+  // 本地添加好友
+  addFriendLocally: (friendRelation) => {
+    const currentState = get()
+    console.log(`[Friend Store] 本地添加好友，当前列表长度: ${currentState.friends.length}`)
+    console.log(`[Friend Store] 新好友信息:`, friendRelation)
+    
+    // 检查是否已存在相同ID的好友，避免重复添加
+    const existingIndex = currentState.friends.findIndex(friend => friend.id === friendRelation.friend.id)
+    if (existingIndex !== -1) {
+      console.log('[Friend Store] 好友已存在，跳过添加')
+      return
+    }
+    
+    // 将FriendRelation转换为Friend类型
+    const newFriend: Friend = {
+      id: friendRelation.friend.id,
+      openId: friendRelation.friend.openId,
+      nickName: friendRelation.friend.nickName,
+      nickNameFirstLetter: friendRelation.friend.nickNameFirstLetter,
+      avatar: friendRelation.friend.avatar,
+      remark: friendRelation.remark,
+      status: friendRelation.status,
+      permission: friendRelation.permission
+    }
+    
+    // 根据首字母排序插入到正确位置
+    const newFriends = [...currentState.friends, newFriend].sort((a, b) => {
+      // 先按首字母排序
+      const letterCompare = a.nickNameFirstLetter.localeCompare(b.nickNameFirstLetter)
+      if (letterCompare !== 0) return letterCompare
+      // 再按昵称排序
+      return a.nickName.localeCompare(b.nickName)
+    })
+    
+    console.log(`[Friend Store] 新好友已添加到列表，新列表长度: ${newFriends.length}`)
+    console.log(`[Friend Store] 新列表内容:`, newFriends.map(friend => ({ id: friend.id, nickName: friend.nickName, status: friend.status })))
+    
+    set({ 
+      friends: newFriends,
+      totalFriendsCount: currentState.totalFriendsCount + 1
+    })
+    
+    // 验证状态是否真的更新了
+    setTimeout(() => {
+      const updatedState = get()
+      console.log(`[Friend Store] 状态更新后验证，列表长度: ${updatedState.friends.length}`)
     }, 100)
   }
 })) 

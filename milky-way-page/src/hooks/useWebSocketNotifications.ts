@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { webSocketClient } from '../utils/websocket'
 import { useNotificationStore } from '../store/notification'
 import { useFriendStore } from '../store/friend'
@@ -8,6 +9,7 @@ import type {
   MessageNotifyDTO,
   FriendApplicationDTO,
   FriendApplication,
+  FriendRelation,
   ChatInfoDTO as NotificationChatInfoDTO,
   // 重新导入需要的类型
   LikeDTO,
@@ -71,6 +73,7 @@ const convertDTOToApplication = (dto: FriendApplicationDTO): FriendApplication =
 }
 
 export const useWebSocketNotifications = () => {
+  const location = useLocation()
   const {
     addNotification,
     // 移除这些不再需要的处理函数
@@ -86,7 +89,7 @@ export const useWebSocketNotifications = () => {
   } = useNotificationStore()
 
   // 获取各个store的刷新方法
-  const { addFriendApplicationLocally } = useFriendStore()
+  const { addFriendApplicationLocally, addFriendLocally } = useFriendStore()
   const { addChatLocally, removeChatUser } = useChatStore()
   const { refreshMoments, addLikeLocally, addCommentLocally, removeLikeLocally, addMomentLocally, removeMomentLocally } = useMomentStore()
   // 所有本地更新方法都已导入
@@ -117,6 +120,31 @@ export const useWebSocketNotifications = () => {
           }
         } else {
           console.error('好友申请通知内容格式错误:', content)
+        }
+        break
+
+      case 'NEW_FRIEND':
+        // 新好友通知
+        if (content && typeof content === 'object' && 'friend' in content) {
+          try {
+            console.log('处理新好友通知:', content)
+            const friendRelation = content as FriendRelation
+            
+            // 检查当前是否在好友页面
+            const isOnFriendPage = location.pathname.includes('/friends')
+            console.log('当前页面路径:', location.pathname, '是否在好友页面:', isOnFriendPage)
+            
+            if (isOnFriendPage) {
+              addFriendLocally(friendRelation)
+              console.log('新好友已添加到本地列表（用户在好友页面）')
+            } else {
+              console.log('用户不在好友页面，跳过更新好友列表')
+            }
+          } catch (error) {
+            console.error('处理新好友通知失败:', error)
+          }
+        } else {
+          console.error('新好友通知内容格式错误:', content)
         }
         break
 
@@ -212,6 +240,7 @@ export const useWebSocketNotifications = () => {
       webSocketClient.removeNotificationHandler(handleNotification)
     }
   }, [
+    location.pathname,
     addNotification,
     // 移除这些不再需要的处理函数
     // handleFriendApplicationNotification,
@@ -224,6 +253,7 @@ export const useWebSocketNotifications = () => {
     // handleMomentCommentedNotification,
     // handleCommentDeletedNotification,
     addFriendApplicationLocally,
+    addFriendLocally,
     addChatLocally,
     removeChatUser,
     refreshMoments,

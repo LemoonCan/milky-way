@@ -51,4 +51,9 @@ public interface ChatMapper {
      * @return 聊天信息
      */
     ChatInfoDO selectChatInfoById(Long id);
+
+    @Select("select id from chat " +
+            "where type='single' " +
+            "and id in(select chat_id from chat_member where user_id in(#{userId1}, #{userId2}) group by chat_id having count(*)=2)")
+    List<Long> selectSingleChatIdByMember(String userId1, String userId2);
 }

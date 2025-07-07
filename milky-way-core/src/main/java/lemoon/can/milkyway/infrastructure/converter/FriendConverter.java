@@ -19,5 +19,4 @@ public abstract class FriendConverter {
     @Mapping(target = "id", source = "id", qualifiedByName = "encodeFriendApplicationId")
     public abstract FriendApplicationDTO toDTO(FriendApplicationDO friendApplicationDO);
 
-    public abstract FriendDTO toDTO(FriendDO friendDO);
-}
+    public abstract FriendDTO toDTO(FriendDO friendDO);}

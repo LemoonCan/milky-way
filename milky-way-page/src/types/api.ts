@@ -282,6 +282,7 @@ export interface MomentsQueryParams {
 // 通知相关类型定义
 export enum MessageNotifyType {
   FRIEND_APPLY = 'FRIEND_APPLY',
+  NEW_FRIEND = 'NEW_FRIEND',
   CHAT_CREATE = 'CHAT_CREATE',
   CHAT_DELETE = 'CHAT_DELETE',
   MOMENT_CREATE = 'MOMENT_CREATE',

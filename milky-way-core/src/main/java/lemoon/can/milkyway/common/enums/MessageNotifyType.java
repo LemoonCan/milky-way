@@ -10,6 +10,10 @@ public enum MessageNotifyType {
      */
     FRIEND_APPLY,
     /**
+     * 新朋友
+     */
+    NEW_FRIEND,
+    /**
      * 群聊创建
      */
     CHAT_CREATE,

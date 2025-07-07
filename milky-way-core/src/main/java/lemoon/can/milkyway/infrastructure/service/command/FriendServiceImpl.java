@@ -18,6 +18,8 @@ import lemoon.can.milkyway.facade.service.command.FriendService;
 import lemoon.can.milkyway.infrastructure.inner.mp.MessagePushService;
 import lemoon.can.milkyway.infrastructure.repository.FriendApplicationRepository;
 import lemoon.can.milkyway.infrastructure.repository.FriendRepository;
+import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMapper;
+import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMemberMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,8 @@ public class FriendServiceImpl implements FriendService {
     private final SecureId secureId;
     private final ChatService chatService;
     private final MessagePushService messagePushService;
+    private final ChatMapper chatMapper;
+    private final ChatMemberMapper chatMemberMapper;
 
     @Override
     @Transactional
@@ -107,16 +111,31 @@ public class FriendServiceImpl implements FriendService {
         chatCreateParam.setOperateUserId(param.getUserId());
         chatCreateParam.setDefaultMessage("我们是好友啦🍒🍓");
         chatService.createChat(chatCreateParam);
+
+        //2.推送好友申请处理结果
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                messagePushService.newFriendMsg(friend1);
+            }
+        });
     }
 
     @Override
+    @Transactional
     public void deleteFriend(FriendOperateParam param) {
         friendRepository.deleteById(new FriendId(param.getFromUserId(), param.getToUserId()));
         friendRepository.deleteById(new FriendId(param.getToUserId(), param.getFromUserId()));
-        
+
+        List<Long> chatIds = chatMapper.selectSingleChatIdByMember(param.getFromUserId(), param.getToUserId());
+        chatIds.forEach((chatId)->{
+            chatMapper.deleteById(chatId);
+            chatMemberMapper.deleteByChatId(chatId);
+        });
     }
 
     @Override
+    @Transactional
     public void blockFriend(FriendOperateParam param) {
         Friend fromFriend = friendRepository.findById(new FriendId(param.getFromUserId(), param.getToUserId()))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "好友不存在"));
@@ -130,6 +149,7 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    @Transactional
     public void unblockFriend(FriendOperateParam param) {
         Friend fromFriend = friendRepository.findById(new FriendId(param.getFromUserId(), param.getToUserId()))
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "好友不存在"));
