@@ -1,7 +1,7 @@
 import React from 'react'
-import { Avatar } from './Avatar'
-import type { Friend } from '../types/api'
-import styles from '../css/FriendListItem.module.css'
+import { Avatar } from '../Avatar'
+import type { Friend } from '../../types/api'
+import styles from '../../css/friends/FriendListItem.module.css'
 
 interface FriendListItemProps {
   friend: Friend

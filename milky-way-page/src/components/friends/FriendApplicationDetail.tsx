@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Avatar } from './Avatar'
+import { Avatar } from '../Avatar'
 import { MessageCircle, UserCheck, Phone, Video } from 'lucide-react'
 import { FriendApplicationVerifyDialog } from './FriendApplicationVerifyDialog'
-import type { FriendApplication } from '../types/api'
-import styles from '../css/FriendApplicationDetail.module.css'
+import type { FriendApplication } from '../../types/api'
+import styles from '../../css/friends/FriendApplicationDetail.module.css'
 
 interface FriendApplicationDetailProps {
   application: FriendApplication

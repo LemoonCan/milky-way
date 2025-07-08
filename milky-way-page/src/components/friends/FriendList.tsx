@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { Search, UserPlus, ChevronDown, ChevronRight, UserCheck } from 'lucide-react'
 import { FriendListItem } from './FriendListItem'
 import { FriendApplicationItem } from './FriendApplicationItem'
-import { TitleBar } from './TitleBar'
-import { useFriendStore } from '../store/friend'
-import type { Friend, FriendApplication } from '../types/api'
-import styles from '../css/FriendList.module.css'
+import { TitleBar } from '../TitleBar'
+import { useFriendStore } from '../../store/friend'
+import type { Friend, FriendApplication } from '../../types/api'
+import styles from '../../css/friends/FriendList.module.css'
 
 interface FriendListProps {
   onAddFriend: () => void

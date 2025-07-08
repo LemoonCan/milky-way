@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { ChatListItem } from './ChatListItem'
-import { TitleBar } from './TitleBar'
+import { TitleBar } from '../TitleBar'
 import { CreateGroupChatDialog } from './CreateGroupChatDialog'
 import { Search, SmilePlus } from 'lucide-react'
 import { useChatStore, type ChatUser } from '@/store/chat'
-import styles from '../css/ChatList.module.css'
+import styles from '../../css/chats/ChatList.module.css'
 
 interface ChatListProps {
   onSelectChat: (userId: string) => void

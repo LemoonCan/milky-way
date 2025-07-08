@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Avatar } from './Avatar'
-import { EmojiText } from './EmojiText'
+import { Avatar } from '../Avatar'
+import { EmojiText } from '../EmojiText'
 import { MessageCircle, Phone, Video, MoreHorizontal, UserMinus, UserX, UserCheck } from 'lucide-react'
-import { ConfirmDialog } from './ui/confirm-dialog'
-import { useFriendStore } from '../store/friend'
-import { userService } from '../services/user'
-import type { Friend, User } from '../types/api'
-import styles from '../css/FriendDetail.module.css'
+import { ConfirmDialog } from '../ui/confirm-dialog'
+import { useFriendStore } from '../../store/friend'
+import { userService } from '../../services/user'
+import type { Friend, User } from '../../types/api'
+import styles from '../../css/friends/FriendDetail.module.css'
 
 interface FriendDetailProps {
   friend: Friend

@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Button } from './ui/button'
+import { Button } from '../ui/button'
 import { User, LogOut, ChevronRight, Bell, Palette, Shield } from 'lucide-react'
-import { ConfirmDialog } from './ui/confirm-dialog'
-import { useAuthStore } from '../store/auth'
-import styles from '../css/SettingsPage.module.css'
+import { ConfirmDialog } from '../ui/confirm-dialog'
+import { useAuthStore } from '../../store/auth'
+import styles from '../../css/settings/SettingsPage.module.css'
 
 interface SettingsPageProps {
   onNavigateToProfile: () => void

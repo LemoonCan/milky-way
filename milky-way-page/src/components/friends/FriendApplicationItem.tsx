@@ -1,7 +1,7 @@
 import React from 'react'
-import { Avatar } from './Avatar'
-import type { FriendApplication } from '../types/api'
-import styles from '../css/FriendApplicationItem.module.css'
+import { Avatar } from '../Avatar'
+import type { FriendApplication } from '../../types/api'
+import styles from '../../css/friends/FriendApplicationItem.module.css'
 
 interface FriendApplicationItemProps {
   application: FriendApplication

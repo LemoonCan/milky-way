@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { MessageCircle, Users, Cherry, Settings } from 'lucide-react'
 import { Avatar } from './Avatar'
-import { ProfileModal } from './ProfileModal'
+import { ProfileModal } from './settings/ProfileModal'
 import { useUserStore } from '../store/user'
 import { ImageUtils } from './LazyImage'
 import styles from '../css/SidebarNav.module.css'

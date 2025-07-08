@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Send, Smile, X } from 'lucide-react'
-import { Button } from './ui/button'
-import { EmojiPicker } from './EmojiPicker'
-import { useMomentStore } from '../store/moment'
-import type { SimpleUserDTO } from '../types/api'
-import styles from '../css/CommentInput.module.css'
+import { Button } from '../ui/button'
+import { EmojiPicker } from '../chats/EmojiPicker'
+import { useMomentStore } from '../../store/moment'
+import type { SimpleUserDTO } from '../../types/api'
+import styles from '../../css/moments/CommentInput.module.css'
 
 interface CommentInputProps {
   momentId: string

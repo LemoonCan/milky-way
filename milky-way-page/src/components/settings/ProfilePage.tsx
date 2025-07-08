@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
+import { Button } from '../ui/button'
+import { Input } from '../ui/input'
+import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
 import { ArrowLeft, Camera, AlertCircle, Check } from 'lucide-react'
-import { cn } from '../lib/utils'
-import { userService } from '../services/user'
-import { useUserStore } from '../store/user'
-import { fileService } from '../services/file'
-import type { UpdateUserRequest } from '../services/user'
-import styles from '../css/ProfilePage.module.css'
+import { cn } from '../../lib/utils'
+import { userService } from '../../services/user'
+import { useUserStore } from '../../store/user'
+import { fileService } from '../../services/file'
+import type { UpdateUserRequest } from '../../services/user'
+import styles from '../../css/settings/ProfilePage.module.css'
 
 interface ProfilePageProps {
   onBack: () => void

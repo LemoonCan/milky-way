@@ -1,8 +1,8 @@
 import React from 'react'
-import { Avatar } from './Avatar'
-import { EmojiText } from './EmojiText'
+import { Avatar } from '../Avatar'
+import { EmojiText } from '../EmojiText'
 import type { ChatUser } from '@/store/chat'
-import styles from '../css/ChatListItem.module.css'
+import styles from '../../css/chats/ChatListItem.module.css'
 
 interface ChatListItemProps {
   user: ChatUser

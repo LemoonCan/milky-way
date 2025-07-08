@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from './store/auth'
-import { LoginPage } from './components/LoginPage'
-import { RegisterPage } from './components/RegisterPage'
-import { RegisterSuccessDialog } from './components/RegisterSuccessDialog'
-import type { RegisterFormData } from './components/RegisterPage'
+import { LoginPage } from './components/auth/LoginPage'
+import { RegisterPage } from './components/auth/RegisterPage'
+import { RegisterSuccessDialog } from './components/auth/RegisterSuccessDialog'
+import type { RegisterFormData } from './components/auth/RegisterPage'
 import ChatApp from './ChatApp'
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {

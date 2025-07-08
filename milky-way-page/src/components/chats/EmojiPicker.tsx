@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { EmojiText } from './EmojiText'
-import { Portal } from './Portal'
-import styles from '../css/EmojiPicker.module.css'
+import { EmojiText } from '../EmojiText'
+import { Portal } from '../Portal'
+import styles from '../../css/chats/EmojiPicker.module.css'
 
 interface EmojiPickerProps {
   isVisible: boolean

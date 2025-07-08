@@ -1,11 +1,11 @@
 import React from 'react'
-import { Avatar } from './Avatar'
-import { EmojiText } from './EmojiText'
+import { Avatar } from '../Avatar'
+import { EmojiText } from '../EmojiText'
 import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
 import type { MessageWithStatus } from '@/store/chat'
 import { isMessageFromMe } from '@/store/chat'
 import { useUserStore } from '@/store/user'
-import styles from '../css/MessageBubble.module.css'
+import styles from '../../css/chats/MessageBubble.module.css'
 
 interface MessageBubbleProps {
   message: MessageWithStatus

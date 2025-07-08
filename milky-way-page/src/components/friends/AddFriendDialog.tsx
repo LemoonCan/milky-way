@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { Search, X, UserPlus } from 'lucide-react'
-import { Avatar } from './Avatar'
-import { useFriendStore } from '../store/friend'
-import { useUserStore } from '../store/user'
-import type { User } from '../types/api'
-import styles from '../css/AddFriendDialog.module.css'
+import { Avatar } from '../Avatar'
+import { useFriendStore } from '../../store/friend'
+import { useUserStore } from '../../store/user'
+import type { User } from '../../types/api'
+import styles from '../../css/friends/AddFriendDialog.module.css'
 
 interface AddFriendDialogProps {
   open: boolean

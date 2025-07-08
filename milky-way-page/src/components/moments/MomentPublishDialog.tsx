@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react'
 import { X, Image, Smile, Send } from 'lucide-react'
-import { Button } from './ui/button'
-import { EmojiPicker } from './EmojiPicker'
-import { Avatar } from './Avatar'
-import { LazyImage } from './LazyImage'
-import { useMomentStore } from '../store/moment'
-import { useUserStore } from '../store/user'
-import styles from '../css/MomentPublishDialog.module.css'
+import { Button } from '../ui/button'
+import { EmojiPicker } from '../chats/EmojiPicker'
+import { Avatar } from '../Avatar'
+import { LazyImage } from '../LazyImage'
+import { useMomentStore } from '../../store/moment'
+import { useUserStore } from '../../store/user'
+import styles from '../../css/moments/MomentPublishDialog.module.css'
 
 interface MomentPublishDialogProps {
   open: boolean

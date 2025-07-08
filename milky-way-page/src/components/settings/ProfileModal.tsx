@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { Avatar } from './Avatar'
-import { EmojiText } from './EmojiText'
+import { Avatar } from '../Avatar'
+import { EmojiText } from '../EmojiText'
 import { MessageCircle, Phone, Video } from 'lucide-react'
-import styles from '../css/ProfileModal.module.css'
+import styles from '../../css/settings/ProfileModal.module.css'
 
 interface ProfileUser {
   id: string

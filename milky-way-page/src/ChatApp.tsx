@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { SidebarNav } from './components/SidebarNav'
-import { ChatList } from './components/ChatList'
-import { ChatWindow } from './components/ChatWindow'
-import { SettingsPage } from './components/SettingsPage'
-import { ProfilePage } from './components/ProfilePage'
-import { FriendPage } from './components/FriendPage'
-import { MomentsPage as MomentsPageComponent } from './components/MomentsPage'
+import { ChatList } from './components/chats/ChatList'
+import { ChatWindow } from './components/chats/ChatWindow'
+import { SettingsPage } from './components/settings/SettingsPage'
+import { ProfilePage } from './components/settings/ProfilePage'
+import { FriendPage } from './components/friends/FriendPage'
+import { MomentsPage as MomentsPageComponent } from './components/moments/MomentsPage'
 
 import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
 import { useAuthStore } from './store/auth'
 import { useWebSocketNotifications } from './hooks/useWebSocketNotifications'
 import styles from './css/App.module.css'
-import chatWindowStyles from './css/ChatWindow.module.css'
+import chatWindowStyles from './css/chats/ChatWindow.module.css'
 
 // 将页面组件移到外部以避免重新创建导致的组件重新挂载问题
 const MessagesPage = ({ 

@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { X } from 'lucide-react'
-import { Avatar } from './Avatar'
-import { useFriendStore } from '../store/friend'
-import type { FriendApplication } from '../types/api'
-import styles from '../css/FriendApplicationVerifyDialog.module.css'
+import { Avatar } from '../Avatar'
+import { useFriendStore } from '../../store/friend'
+import type { FriendApplication } from '../../types/api'
+import styles from '../../css/friends/FriendApplicationVerifyDialog.module.css'
 
 interface FriendApplicationVerifyDialogProps {
   open: boolean
@@ -88,7 +88,7 @@ export const FriendApplicationVerifyDialog: React.FC<FriendApplicationVerifyDial
             />
             <div className={styles.userInfo}>
               <div className={styles.nickName}>{application.fromUser.nickName}</div>
-              <div className={styles.userId}>账号：{application.fromUser.id}</div>
+              <div className={styles.userId}>账号：{application.fromUser.openId}</div>
             </div>
           </div>
 

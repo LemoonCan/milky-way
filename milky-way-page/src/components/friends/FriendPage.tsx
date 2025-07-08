@@ -3,8 +3,8 @@ import { FriendList } from './FriendList'
 import { FriendDetail } from './FriendDetail'
 import { FriendApplicationDetail } from './FriendApplicationDetail'
 import { AddFriendDialog } from './AddFriendDialog'
-import { useFriendStore } from '../store/friend'
-import styles from '../css/FriendPage.module.css'
+import { useFriendStore } from '../../store/friend'
+import styles from '../../css/friends/FriendPage.module.css'
 
 export const FriendPage: React.FC = () => {
   const [showAddFriendDialog, setShowAddFriendDialog] = useState(false)

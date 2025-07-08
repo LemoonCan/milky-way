@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Search, X, Users, Check } from 'lucide-react'
-import { Avatar } from './Avatar'
-import { useFriendStore } from '../store/friend'
-import { chatService, type CreateGroupChatRequest } from '../services/chat'
-import type { Friend } from '../types/api'
-import styles from '../css/CreateGroupChatDialog.module.css'
+import { Avatar } from '../Avatar'
+import { useFriendStore } from '../../store/friend'
+import { chatService, type CreateGroupChatRequest } from '../../services/chat'
+import type { Friend } from '../../types/api'
+import styles from '../../css/chats/CreateGroupChatDialog.module.css'
 
 interface CreateGroupChatDialogProps {
   open: boolean

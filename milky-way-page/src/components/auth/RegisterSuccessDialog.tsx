@@ -5,7 +5,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogDescription,
-} from './ui/alert-dialog'
+} from '../ui/alert-dialog'
 import { CheckCircle } from 'lucide-react'
 
 interface RegisterSuccessDialogProps {
@@ -53,6 +53,7 @@ export const RegisterSuccessDialog: React.FC<RegisterSuccessDialogProps> = ({
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '400px',
+          minHeight: '220px',
           maxWidth: '90vw',
           borderRadius: '32px',
           boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)'
@@ -70,7 +71,7 @@ export const RegisterSuccessDialog: React.FC<RegisterSuccessDialogProps> = ({
         </div>
         
         <AlertDialogHeader>
-          <div className="flex flex-col items-center space-y-6 relative z-10">
+          <div className="flex flex-col items-center space-y-6 pb-6 relative z-10">
             {/* 成功图标 */}
             <div className="relative">
               <div className="w-20 h-20 rounded-full flex items-center justify-center"
@@ -94,11 +95,11 @@ export const RegisterSuccessDialog: React.FC<RegisterSuccessDialogProps> = ({
             </AlertDialogTitle>
             
             {/* 描述 */}
-            <AlertDialogDescription className="text-center space-y-3">
-              <div className="text-base font-medium" 
+            <div className="text-center space-y-3">
+              <AlertDialogDescription className="text-base font-medium" 
                 style={{ color: 'var(--milky-text-secondary)' }}>
                 🎉 恭喜您成功注册银河系账号
-              </div>
+              </AlertDialogDescription>
               <div className="flex items-center justify-center space-x-2 mt-4 px-4 py-2 rounded-full"
                 style={{ 
                   background: 'rgba(252, 214, 108, 0.1)',
@@ -111,7 +112,7 @@ export const RegisterSuccessDialog: React.FC<RegisterSuccessDialogProps> = ({
                   {countdown}秒后自动跳转到登录页面
                 </span>
               </div>
-            </AlertDialogDescription>
+            </div>
           </div>
         </AlertDialogHeader>
       </AlertDialogContent>

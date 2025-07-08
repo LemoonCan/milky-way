@@ -1,15 +1,15 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { RefreshCw, Edit3 } from 'lucide-react'
-import { Button } from './ui/button'
-import { Avatar } from './Avatar'
+import { Button } from '../ui/button'
+import { Avatar } from '../Avatar'
 import { MomentItem } from './MomentItem'
 import { MomentPublishDialog } from './MomentPublishDialog'
-import NotificationButton from './NotificationButton'
-import NotificationPanel from './NotificationPanel'
-import { useMomentStore } from '../store/moment'
-import { useUserStore } from '../store/user'
-import { useNotificationStore } from '../store/notification'
-import styles from '../css/MomentsPage.module.css'
+import NotificationButton from '../NotificationButton'
+import NotificationPanel from '../NotificationPanel'
+import { useMomentStore } from '../../store/moment'
+import { useUserStore } from '../../store/user'
+import { useNotificationStore } from '../../store/notification'
+import styles from '../../css/moments/MomentsPage.module.css'
 
 export const MomentsPage: React.FC = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false)

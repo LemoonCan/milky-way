@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { EmojiText } from './EmojiText'
-import { ProfileModal } from './ProfileModal'
-import { Avatar } from './Avatar'
-import type { CommentDTO } from '../types/api'
-import styles from '../css/CommentList.module.css'
+import { EmojiText } from '../EmojiText'
+import { ProfileModal } from '../settings/ProfileModal'
+import { Avatar } from '../Avatar'
+import type { CommentDTO } from '../../types/api'
+import styles from '../../css/moments/CommentList.module.css'
 
 interface CommentListProps {
   comments: CommentDTO[]

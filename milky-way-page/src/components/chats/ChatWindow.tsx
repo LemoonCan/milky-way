@@ -1,15 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
-import { Avatar } from './Avatar'
-import { ProfileModal } from './ProfileModal'
+import { Avatar } from '../Avatar'
+import { ProfileModal } from '../settings/ProfileModal'
 import { EmojiPicker } from './EmojiPicker'
-import { ConfirmDialog } from './ui/confirm-dialog'
+import { ConfirmDialog } from '../ui/confirm-dialog'
 import { Smile, Paperclip, Send, Trash2 } from 'lucide-react'
 import { useChatStore } from '@/store/chat'
-import { useUserStore } from '../store/user'
-import { chatService } from '../services/chat'
+import { useUserStore } from '../../store/user'
+import { chatService } from '../../services/chat'
 import type { ChatUser } from '@/store/chat'
-import styles from '../css/ChatWindow.module.css'
+import styles from '../../css/chats/ChatWindow.module.css'
 
 // 定义用户信息类型，替换any
 interface UserInfo {
