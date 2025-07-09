@@ -67,11 +67,28 @@ public class MomentController {
         return ResponseEntity.ok(Result.success(id));
     }
 
-    @GetMapping
+    @GetMapping("/myFriends")
     @Operation(summary = "查询好友动态")
-    public ResponseEntity<Result<Slices<MomentDTO>>> moments(@RequestParam @NotNull String lastId,
+    public ResponseEntity<Result<Slices<MomentDTO>>> myFriendsMoments(@RequestParam String lastId,
                                                              @RequestParam @NotNull Integer pageSize) {
         Slices<MomentDTO> slices = momentQueryService.listFriendMoments(UserInfoHolder.id(), lastId, pageSize);
+        return ResponseEntity.ok(Result.success(slices));
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "查询我的动态")
+    public ResponseEntity<Result<Slices<MomentDTO>>> myMoments(@RequestParam String lastId,
+                                                             @RequestParam @NotNull Integer pageSize) {
+        Slices<MomentDTO> slices = momentQueryService.listPersonalMoments(UserInfoHolder.id(), lastId, pageSize);
+        return ResponseEntity.ok(Result.success(slices));
+    }
+
+    @GetMapping("/personal")
+    @Operation(summary = "查询个人动态")
+    public ResponseEntity<Result<Slices<MomentDTO>>> personalMoments(@RequestParam @NotBlank String userId,
+                                                                     @RequestParam String lastId,
+                                                                     @RequestParam @NotNull Integer pageSize) {
+        Slices<MomentDTO> slices = momentQueryService.listPersonalMoments(userId, lastId, pageSize);
         return ResponseEntity.ok(Result.success(slices));
     }
 }

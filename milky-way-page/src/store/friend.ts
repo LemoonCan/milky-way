@@ -139,12 +139,17 @@ export const useFriendStore = create<FriendState>((set, get) => ({
 
   // 获取好友申请列表
   fetchFriendApplications: async (refresh = true) => {
+    const currentState = get()
+    // 如果正在加载好友申请列表，避免重复请求
+    if (currentState.isApplicationsLoading) {
+      console.log('好友申请列表正在加载中，跳过重复请求')
+      return
+    }
+    
     set({ isApplicationsLoading: true, error: null })
     console.log(`开始获取好友申请列表，refresh: ${refresh}`)
     
     try {
-      const currentState = get()
-      
       const params: { pageSize: number; lastId?: string } = {
         pageSize: 10
       }

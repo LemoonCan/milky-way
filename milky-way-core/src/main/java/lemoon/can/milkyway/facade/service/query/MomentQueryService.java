@@ -16,4 +16,13 @@ public interface MomentQueryService {
      * @return
      */
     Slices<MomentDTO> listFriendMoments(String userId, String lastId, int pageSize);
+
+    /**
+     * 查询个人动态(评论全部查出)
+     * @param userId
+     * @param lastId
+     * @param pageSize
+     * @return
+     */
+    Slices<MomentDTO> listPersonalMoments(String userId, String lastId, int pageSize);
 }

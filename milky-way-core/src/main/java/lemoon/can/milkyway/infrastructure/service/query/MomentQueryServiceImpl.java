@@ -67,4 +67,39 @@ public class MomentQueryServiceImpl implements MomentQueryService {
         }
         return new Slices<>(moments, hasNext);
     }
+
+    @Override
+    public Slices<MomentDTO> listPersonalMoments(String userId, String lastId, int pageSize) {
+        Long realLastId = null;
+        if (StringUtils.hasLength(lastId)) {
+            realLastId = secureId.simpleDecode(lastId, secureId.getMomentSalt());
+        }
+        List<MomentDO> momentDos = momentMapper.listPersonalMoments(userId, realLastId, pageSize + 1);
+
+        List<MomentDTO> moments = momentDos.stream()
+                .map(item -> {
+                    MomentDTO dto = momentConverter.toMomentDTO(item);
+                    SimpleUserDTO userDTO = new SimpleUserDTO();
+                    userDTO.setId(item.getUserId());
+                    userDTO.setNickName(item.getUserNickName());
+                    userDTO.setAvatar(item.getUserAvatar());
+                    dto.setUser(userDTO);
+
+                    // 查询点赞用户信息
+                    dto.setLikeUsers(likeMapper.selectLikeUsers(item.getId()));
+
+                    // 查询评论信息
+                    List<CommentDO> comments = commentMapper.simpleSelectComments(item.getId());
+                    dto.setComments(commentConverter.buildSimpleArray(comments));
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        boolean hasNext = moments.size() > pageSize;
+        if (hasNext) {
+            moments.remove(moments.size() - 1);
+        }
+        return new Slices<>(moments, hasNext);
+    }
 }

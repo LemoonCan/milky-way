@@ -20,6 +20,9 @@ interface MomentStore {
   hasNext: boolean
   lastId?: string
   
+  // 动态类型状态
+  momentType: 'friends' | 'mine'
+  
   // 发布状态
   publishLoading: boolean
   publishError: string | null
@@ -33,8 +36,10 @@ interface MomentStore {
   
   // 方法
   fetchMoments: (params?: MomentsQueryParams) => Promise<void>
+  fetchMyMoments: (params?: MomentsQueryParams) => Promise<void>
   loadMoreMoments: () => Promise<void>
   refreshMoments: () => Promise<void>
+  setMomentType: (type: 'friends' | 'mine') => void
   
   // 发布动态
   publishMoment: (content: string, images?: File[]) => Promise<boolean>
@@ -66,6 +71,9 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
   error: null,
   hasNext: true,
   lastId: undefined,
+  
+  // 动态类型状态
+  momentType: 'friends' as const,
   
   publishLoading: false,
   publishError: null,
@@ -148,10 +156,15 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
     set({ loading: true })
     
     try {
-      const response = await momentService.getFriendMoments({
-        lastId: currentLastId,
-        pageSize: 20
-      })
+      const response = state.momentType === 'mine'
+        ? await momentService.getMyMoments({
+            lastId: currentLastId,
+            pageSize: 20
+          })
+        : await momentService.getFriendMoments({
+            lastId: currentLastId,
+            pageSize: 20
+          })
       
       if (response.success && response.data) {
         const newItems = response.data.items
@@ -185,8 +198,76 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
   refreshMoments: async () => {
     // 重置状态，允许重新请求
     set({ initialized: false, lastFetchTime: null })
-    const { fetchMoments } = get()
-    await fetchMoments()
+    const { momentType } = get()
+    if (momentType === 'mine') {
+      await get().fetchMyMoments()
+    } else {
+      await get().fetchMoments()
+    }
+  },
+
+  // 获取我的动态
+  fetchMyMoments: async (params?: MomentsQueryParams) => {
+    const state = get()
+    const now = Date.now()
+    
+    // 如果已经初始化且在短时间内调用，跳过请求（防止 StrictMode 重复调用）
+    if (state.initialized && state.lastFetchTime && (now - state.lastFetchTime) < 1000) {
+      return
+    }
+    
+    // 如果正在加载中，避免重复请求
+    if (state.loading) {
+      return
+    }
+    
+    set({ loading: true, error: null })
+    
+    try {
+      const queryParams = {
+        lastId: params?.lastId || '',
+        pageSize: params?.pageSize || 20
+      }
+      
+      const response = await momentService.getMyMoments(queryParams)
+      
+      if (response.success && response.data) {
+        const items = response.data.items
+        // 如果后端没有返回有效的lastId，从数据末尾提取
+        let finalLastId = response.data.lastId
+        if (!finalLastId || finalLastId === 'undefined' || finalLastId === 'null') {
+          finalLastId = items.length > 0 ? items[items.length - 1].id : ''
+        }
+        
+        set({
+          moments: items,
+          hasNext: response.data.hasNext,
+          lastId: finalLastId,
+          loading: false,
+          initialized: true,
+          lastFetchTime: now
+        })
+      } else {
+        set({
+          error: response.msg || '获取我的动态失败',
+          loading: false,
+          initialized: true,
+          lastFetchTime: now
+        })
+      }
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : '获取我的动态失败',
+        loading: false,
+        initialized: true,
+        lastFetchTime: now
+      })
+    }
+  },
+
+  // 设置动态类型
+  setMomentType: (type: 'friends' | 'mine') => {
+    set({ momentType: type, initialized: false, lastFetchTime: null })
   },
 
   // 发布动态

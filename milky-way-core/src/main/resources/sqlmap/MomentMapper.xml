@@ -50,4 +50,26 @@
 
     </select>
 
+    <select id="listPersonalMoments" resultMap="MomentMap">
+        SELECT
+        m.id,
+        u.id AS user_id,
+        u.nick_name AS user_nick_name,
+        u.avatar AS user_avatar,
+        m.content_type,
+        m.text,
+        m.medias,
+        m.location,
+        m.like_counts,
+        m.comment_counts,
+        m.create_time
+        FROM moment m
+        JOIN users u ON u.id = m.publish_user_id
+        WHERE m.publish_user_id = #{userId}
+        <if test="lastId != null">
+            AND m.id &lt; #{lastId}
+        </if>
+        ORDER BY m.id DESC
+        LIMIT #{pageSize}
+    </select>
 </mapper>

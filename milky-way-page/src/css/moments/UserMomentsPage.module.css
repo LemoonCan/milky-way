@@ -1,4 +1,4 @@
-.momentsPage {
+.userMomentsPage {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -25,13 +25,11 @@
   background: #f5f5f5;
 }
 
-/* 左上角动态类型切换按钮 */
-.topLeftActions {
+/* 左上角返回按钮 */
+.backButton {
   position: absolute;
   top: 16px;
   left: 16px;
-  display: flex;
-  gap: 8px;
   z-index: 10;
 }
 
@@ -58,17 +56,6 @@
 
 .iconButton:hover {
   transform: scale(1.1);
-}
-
-.iconButton.active {
-  background: #51c497;
-  color: white;
-  border: 2px solid #51c497;
-}
-
-.iconButton.active:hover {
-  background: #51c497;
-  transform: scale(1.05);
 }
 
 .rotating {
@@ -101,6 +88,11 @@
 .userName {
   font-size: 15px;
   font-weight: 600;
+}
+
+.userSubtitle {
+  font-size: 12px;
+  color: #666;
 }
 
 .userAvatar {
@@ -198,7 +190,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid #e5e7eb;
-  border-top: 3px solid #3b82f6;
+  border-top: 3px solid var(--milky-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -208,28 +200,25 @@
   100% { transform: rotate(360deg); }
 }
 
-/* 加载更多 */
 .loadMore {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 0;
+  padding: 20px;
   gap: 12px;
   color: #6b7280;
-  font-size: 14px;
 }
 
-/* 没有更多数据 */
 .noMore {
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 20px 0;
-  color: #6b7280;
+  padding: 20px;
+  color: #9ca3af;
   font-size: 14px;
 }
 
-/* 空状态 */
 .empty {
   display: flex;
   flex-direction: column;
@@ -237,69 +226,60 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  color: #6b7280;
 }
 
 .emptyIcon {
+  font-size: 48px;
   margin-bottom: 16px;
-  opacity: 0.6;
 }
 
 .empty h3 {
-  margin: 0 0 8px;
   font-size: 18px;
   font-weight: 600;
   color: #374151;
+  margin-bottom: 8px;
 }
 
 .empty p {
-  margin: 0 0 20px;
   font-size: 14px;
   color: #6b7280;
+  line-height: 1.5;
 }
 
-/* 发布动态按钮 */
-.publishButton {
-  background: var(--milky-primary);
-  color: white;
-  border: none;
-  border-radius: 24px;
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* 错误页面 */
+.errorPage {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  min-width: 140px;
   justify-content: center;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
 }
 
-.publishButton:hover {
-  background: var(--milky-primary);
-  transform: translateY(-2px) scale(1.02);
+.errorMessage {
+  font-size: 16px;
+  color: #ef4444;
+  margin-bottom: 20px;
 }
 
-.publishButton:active {
-  transform: translateY(0) scale(1);
-  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
-}
-
-/* 响应式设计 */
 @media (max-width: 768px) {
   .coverSection {
-    height: 220px;
+    height: 200px;
   }
   
   .momentsList {
     padding: 16px 12px;
-    min-height: calc(100vh - 220px);
   }
   
   .topActions {
     top: 12px;
     right: 12px;
+  }
+  
+  .backButton {
+    top: 12px;
+    left: 12px;
   }
   
   .userInfo {
@@ -308,27 +288,16 @@
   }
   
   .userDetails {
-    display: none; /* 在小屏幕上隐藏用户详情 */
+    gap: 2px;
   }
   
   .userAvatar {
-    border-width: 2px;
+    width: 56px;
+    height: 56px;
   }
   
   .iconButton {
     width: 36px;
     height: 36px;
-  }
-  
-  .publishButton {
-    padding: 10px 20px;
-    font-size: 15px;
-    min-width: 120px;
-  }
-  
-  .divider {
-    max-width: 400px;
-    width: 80%;
-    margin: 0 auto;
   }
 } 

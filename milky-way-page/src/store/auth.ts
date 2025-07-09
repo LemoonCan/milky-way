@@ -4,7 +4,7 @@ import { authService } from '../services/auth'
 import { tokenManager } from '../lib/http'
 import { getErrorMessage } from '../lib/error-handler'
 import { useUserStore } from './user'
-import type { RegisterFormData } from '../components/RegisterPage'
+import type { RegisterFormData } from '../components/auth/RegisterPage'
 import type { User } from '../types/api'
 
 export interface AuthStore {

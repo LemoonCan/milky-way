@@ -132,18 +132,35 @@
   white-space: nowrap;
 }
 
-/* 最新朋友圈 */
-.latestMoment {
+/* 最新朋友圈按钮 */
+.latestMomentButton {
   margin-bottom: 20px;
   display: flex;
   align-items: center;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  text-align: left;
+}
+
+.latestMomentButton:hover {
+  background-color: #f8f9fa;
+}
+
+.latestMomentButton:active {
+  background-color: #e9ecef;
 }
 
 .momentLabel {
-  font-size: 13px;
+  font-size: 14px;
   color: #999;
   flex-shrink: 0;
-  width: 85px; /* 与昵称起始位置对齐，头像70px + 15px gap */
+  width: 70px; /* 与头像宽度对齐 */
+  padding: 8px 0;
 }
 
 .momentContent {
@@ -151,6 +168,19 @@
   line-height: 1.4;
   color: #333;
   flex: 1;
+  margin-left: 15px; /* 与昵称左对齐，头像右侧的gap */
+  padding: 8px 0;
+}
+
+.chevronIcon {
+  flex-shrink: 0;
+  color: #999;
+  margin-left: 8px;
+  transition: color 0.2s ease;
+}
+
+.latestMomentButton:hover .chevronIcon {
+  color: #666;
 }
 
 /* 纯文字朋友圈 */
@@ -183,8 +213,8 @@
 .momentImages {
   display: flex;
   gap: 4px;
-  margin-top: 6px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .momentImage {

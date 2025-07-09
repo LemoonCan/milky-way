@@ -53,7 +53,25 @@ class MomentService {
    * 获取朋友圈动态列表
    */
   async getFriendMoments(params: MomentsQueryParams): Promise<ApiResponse<Slices<MomentDTO>>> {
-    const response = await http.get<ApiResponse<Slices<MomentDTO>>>('/moments', { params })
+    const response = await http.get<ApiResponse<Slices<MomentDTO>>>('/moments/myFriends', { params })
+    return response.data
+  }
+
+  /**
+   * 获取我的动态列表
+   */
+  async getMyMoments(params: MomentsQueryParams): Promise<ApiResponse<Slices<MomentDTO>>> {
+    const response = await http.get<ApiResponse<Slices<MomentDTO>>>('/moments/my', { params })
+    return response.data
+  }
+
+  /**
+   * 获取指定用户的动态列表
+   */
+  async getUserMoments(userId: string, params: MomentsQueryParams): Promise<ApiResponse<Slices<MomentDTO>>> {
+    const response = await http.get<ApiResponse<Slices<MomentDTO>>>('/moments/personal', { 
+      params: { userId, ...params } 
+    })
     return response.data
   }
 }

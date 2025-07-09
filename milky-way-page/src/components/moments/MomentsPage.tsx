@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { RefreshCw, Edit3 } from 'lucide-react'
+import { RefreshCw, Edit3, Grape, Citrus } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Avatar } from '../Avatar'
 import { MomentItem } from './MomentItem'
@@ -21,9 +21,12 @@ export const MomentsPage: React.FC = () => {
     loading, 
     error, 
     hasNext,
+    momentType,
     fetchMoments, 
+    fetchMyMoments,
     loadMoreMoments, 
     refreshMoments,
+    setMomentType,
     clearError 
   } = useMomentStore()
   
@@ -44,8 +47,22 @@ export const MomentsPage: React.FC = () => {
   // 初始化加载
   useEffect(() => {
     fetchUserInfo()
+    // 默认显示好友动态
+    setMomentType('friends')
     fetchMoments()
   }, [])
+
+  // 处理动态类型切换
+  const handleMomentTypeChange = async (type: 'friends' | 'mine') => {
+    if (type === momentType) return
+    
+    setMomentType(type)
+    if (type === 'mine') {
+      await fetchMyMoments()
+    } else {
+      await fetchMoments()
+    }
+  }
 
   // 无限滚动处理
   const handleScroll = useCallback(() => {
@@ -83,6 +100,29 @@ export const MomentsPage: React.FC = () => {
       {/* 封面背景区域 */}
       <div className={styles.coverSection}>
         <div className={styles.coverBackground}>
+          {/* 左上角动态类型切换按钮 */}
+          <div className={styles.topLeftActions}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleMomentTypeChange('friends')}
+              className={`${styles.iconButton} ${momentType === 'friends' ? styles.active : ''}`}
+              title="好友动态"
+            >
+              <Grape size={20} />
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleMomentTypeChange('mine')}
+              className={`${styles.iconButton} ${momentType === 'mine' ? styles.active : ''}`}
+              title="我的动态"
+            >
+              <Citrus size={20} />
+            </Button>
+          </div>
+          
           {/* 右上角操作按钮 */}
           <div className={styles.topActions}>
             <Button
