@@ -9,7 +9,7 @@ import styles from '../../css/chats/MessageBubble.module.css'
 
 interface MessageBubbleProps {
   message: MessageWithStatus
-  onAvatarClick?: (isFromMe: boolean, element: HTMLElement) => void
+  onAvatarClick?: (isFromMe: boolean, element: HTMLElement, userId: string) => void
   onRetryMessage?: (messageId: string) => void // 重发消息回调
 }
 
@@ -33,7 +33,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const getAvatarInfo = () => {
     if (isFromMe) {
       return {
-        userId: currentUser?.openId || "current-user",
+        userId: currentUser?.id || "current-user",
         avatarUrl: currentUser?.avatar
       }
     } else {
@@ -102,7 +102,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {!isFromMe && (
         <div 
           className={`${styles.avatarContainer} ${styles.avatarContainerLeft}`}
-          onClick={(e) => onAvatarClick?.(false, e.currentTarget)}
+          onClick={(e) => onAvatarClick?.(false, e.currentTarget, avatarInfo.userId)}
           style={{ cursor: onAvatarClick ? 'pointer' : 'default' }}
         >
           <Avatar 
@@ -132,7 +132,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {isFromMe && (
         <div 
           className={`${styles.avatarContainer} ${styles.avatarContainerRight}`}
-          onClick={(e) => onAvatarClick?.(true, e.currentTarget)}
+          onClick={(e) => onAvatarClick?.(true, e.currentTarget, avatarInfo.userId)}
           style={{ cursor: onAvatarClick ? 'pointer' : 'default' }}
         >
           <Avatar 

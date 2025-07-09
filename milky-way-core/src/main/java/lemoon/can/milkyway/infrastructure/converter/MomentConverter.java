@@ -2,6 +2,7 @@ package lemoon.can.milkyway.infrastructure.converter;
 
 import lemoon.can.milkyway.domain.share.Moment;
 import lemoon.can.milkyway.facade.dto.MomentDTO;
+import lemoon.can.milkyway.facade.dto.MomentDescriptionDTO;
 import lemoon.can.milkyway.infrastructure.converter.helper.DateTimeConverterHelper;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.repository.dos.MomentDO;
@@ -22,4 +23,7 @@ public interface MomentConverter {
 
     @Mapping(target = "id", source = "id", qualifiedByName = "encodeMomentId")
     MomentDTO toMomentDTO(Moment moment);
+
+    @Mapping(target = "id", source = "id", qualifiedByName = "encodeMomentId")
+    MomentDescriptionDTO toMomentDescriptionDTO(MomentDO momentDO);
 }

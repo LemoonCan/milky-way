@@ -26,4 +26,7 @@ public interface MomentMapper {
 
     @Select("SELECT publish_user_id FROM moment WHERE id = #{id}")
     String selectPublishUserIdById(@Param("id") Long id);
+
+    @Select("SELECT id, content_type, text, medias FROM moment WHERE publish_user_id = #{publishUserId} order by id desc limit 1")
+    MomentDO selectLastMomentByPublishUserId(String publishUserId);
 }

@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.controller.Result;
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
+import lemoon.can.milkyway.facade.dto.UserDetailDTO;
 import lemoon.can.milkyway.facade.service.command.UserService;
 import lemoon.can.milkyway.facade.service.query.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +35,16 @@ public class UserController {
 
     @GetMapping("/userInfo")
     @Operation(summary = "获取当前用户信息")
-    public ResponseEntity<Result<UserDTO>> userInfo() {
-        UserDTO userDTO = userQueryService.getById(UserInfoHolder.id());
-        return ResponseEntity.ok(Result.success(userDTO));
+    public ResponseEntity<Result<SimpleUserDTO>> userInfo() {
+        SimpleUserDTO simpleUserDTO = userQueryService.getById(UserInfoHolder.id());
+        return ResponseEntity.ok(Result.success(simpleUserDTO));
+    }
+
+    @GetMapping("/userDetail")
+    @Operation(summary = "获取用户详情")
+    public ResponseEntity<Result<UserDetailDTO>> userDetail(@RequestParam String id) {
+        UserDetailDTO userDetail = userQueryService.getUserDetailById(id);
+        return ResponseEntity.ok(Result.success(userDetail));
     }
 
     @PostMapping("/userInfo")

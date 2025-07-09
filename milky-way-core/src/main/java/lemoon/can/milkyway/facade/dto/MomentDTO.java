@@ -3,7 +3,6 @@ package lemoon.can.milkyway.facade.dto;
 import lemoon.can.milkyway.common.enums.MomentContentType;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**

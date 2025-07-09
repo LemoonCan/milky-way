@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
-import { MessageCircle, Phone, Video, MoreHorizontal, UserMinus, UserX, UserCheck } from 'lucide-react'
+import { MessageCircle, Phone, Video, MoreHorizontal, UserMinus, UserX, UserCheck, FileText } from 'lucide-react'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { useFriendStore } from '../../store/friend'
 import { userService } from '../../services/user'
-import type { Friend, User } from '../../types/api'
+import type { Friend } from '../../types/api'
+import type { UserDetailInfo } from '../../services/user'
 import styles from '../../css/friends/FriendDetail.module.css'
 
 interface FriendDetailProps {
@@ -18,42 +19,42 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showBlockDialog, setShowBlockDialog] = useState(false)
   const [showUnblockDialog, setShowUnblockDialog] = useState(false)
-  const [userDetails, setUserDetails] = useState<User | null>(null)
+  const [userDetails, setUserDetails] = useState<UserDetailInfo | null>(null)
   const moreActionsRef = useRef<HTMLDivElement>(null)
-  const lastFetchedOpenIdRef = useRef<string | null>(null)
+  const lastFetchedUserIdRef = useRef<string | null>(null)
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
 
   // 获取用户详细信息
   useEffect(() => {
-    // 如果已经请求过相同的openId，则跳过请求
-    if (lastFetchedOpenIdRef.current === friend.openId) {
+    // 如果已经请求过相同的用户ID，则跳过请求
+    if (lastFetchedUserIdRef.current === friend.id) {
       setLoading(false)
       return
     }
 
     const fetchUserDetails = async () => {
       try {
-        console.log(friend);
+        console.log('Fetching user detail for friend:', friend);
         setLoading(true)
-        // 记录当前请求的openId
-        lastFetchedOpenIdRef.current = friend.openId
-        const response = await userService.getUserByOpenId(friend.openId)
+        // 记录当前请求的用户ID
+        lastFetchedUserIdRef.current = friend.id
+        const response = await userService.getUserDetail(friend.id)
         if (response.success && response.data) {
           // 保存用户详细信息到state中
           setUserDetails(response.data)
-          console.log('User details fetched:', response.data)
+          console.log('User detail fetched:', response.data)
         }
       } catch (error) {
-        console.error('Failed to fetch user details:', error)
+        console.error('Failed to fetch user detail:', error)
         // 如果请求失败，清除记录以允许重试
-        lastFetchedOpenIdRef.current = null
+        lastFetchedUserIdRef.current = null
       } finally {
         setLoading(false)
       }
     }
 
     fetchUserDetails()
-  }, [friend.openId])
+  }, [friend.id])
 
   // 点击外部关闭更多操作菜单
   useEffect(() => {
@@ -115,6 +116,38 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     setShowMoreActions(false)
   }
 
+  // 格式化朋友圈内容
+  const formatMomentContent = (moment: UserDetailInfo['lastMoment']) => {
+    if (!moment) return null
+    
+    const hasText = moment.text && moment.text !== null && moment.text.trim().length > 0
+    const hasMedia = moment.medias && moment.medias.length > 0
+
+    if (hasText) {
+      return <EmojiText text={moment.text!} size="1em" />
+    } else if (hasMedia) {
+      return (
+        <div className={styles.momentImages}>
+          {moment.medias!.slice(0, 3).map((imageUrl, index) => (
+            <img
+              key={index}
+              src={imageUrl}
+              alt={`朋友圈图片 ${index + 1}`}
+              className={styles.momentImage}
+            />
+          ))}
+          {moment.medias!.length > 3 && (
+            <div className={styles.moreImages}>
+              +{moment.medias!.length - 3}
+            </div>
+          )}
+        </div>
+      )
+    }
+    
+    return null
+  }
+
   // 如果正在加载，显示加载状态
   if (loading) {
     return (
@@ -159,6 +192,19 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         <div className={styles.sectionTitle}>个性签名</div>
         <div className={styles.signatureContent}>
           <EmojiText text={userDetails?.individualSignature || '暂无个性签名'} size="1em" />
+        </div>
+      </div>
+
+      {/* 最新动态区域 */}
+      <div className={styles.momentSection}>
+        <div className={styles.sectionTitle}>最新动态</div>
+        <div className={styles.momentContent}>
+          {userDetails?.lastMoment ? formatMomentContent(userDetails.lastMoment) : (
+            <div className={styles.noMoment}>
+              <FileText size={16} />
+              <span>暂无动态</span>
+            </div>
+          )}
         </div>
       </div>
 

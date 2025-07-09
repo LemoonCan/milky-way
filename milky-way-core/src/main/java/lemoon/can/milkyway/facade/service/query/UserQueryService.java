@@ -1,6 +1,8 @@
 package lemoon.can.milkyway.facade.service.query;
 
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.UserDTO;
+import lemoon.can.milkyway.facade.dto.UserDetailDTO;
 
 import java.util.List;
 
@@ -11,7 +13,9 @@ import java.util.List;
 public interface UserQueryService {
     List<UserDTO> getAll();
 
-    UserDTO getById(String id);
+    SimpleUserDTO getById(String id);
+
+    UserDetailDTO getUserDetailById(String id);
 
     UserDTO getByOpenId(String openId);
 

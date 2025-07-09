@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { MessageCircle, Users, Cherry, Settings } from 'lucide-react'
 import { Avatar } from './Avatar'
-import { ProfileModal } from './settings/ProfileModal'
+import { ProfileModal } from './ProfileModal'
 import { useUserStore } from '../store/user'
 import { ImageUtils } from './LazyImage'
 import styles from '../css/SidebarNav.module.css'
@@ -50,7 +50,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
       <div ref={avatarRef} onClick={handleAvatarClick} style={{ cursor: 'pointer' }}>
         <Avatar 
           size={48}
-          userId={currentUser?.openId || "current-user"}
+          userId={currentUser?.id || "current-user"}
           avatarUrl={currentUser?.avatar}
           className={styles.userAvatar}
         />
@@ -82,14 +82,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
       {/* 个人信息弹框 */}
       {currentUser && (
         <ProfileModal
-          user={{
-            id: currentUser.openId || 'current-user',
-            openId: currentUser.openId,
-            nickname: currentUser.nickName,
-            account: currentUser.openId,
-            avatar: currentUser.avatar,
-            signature: currentUser.individualSignature
-          }}
+          userId={currentUser.id}
           isVisible={showProfileModal}
           onClose={handleCloseProfileModal}
           triggerElement={avatarRef.current}

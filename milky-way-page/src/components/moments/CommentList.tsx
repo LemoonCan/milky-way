@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { EmojiText } from '../EmojiText'
-import { ProfileModal } from '../settings/ProfileModal'
+import { ProfileModal } from '../ProfileModal'
 import { Avatar } from '../Avatar'
 import type { CommentDTO } from '../../types/api'
 import styles from '../../css/moments/CommentList.module.css'
@@ -155,11 +155,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       {/* 用户信息弹框 */}
       {selectedUser && (
         <ProfileModal
-          user={{
-            id: selectedUser.id,
-            nickname: selectedUser.nickName,
-            avatar: selectedUser.avatar
-          }}
+          userId={selectedUser.id}
           isVisible={showProfileModal}
           onClose={() => setShowProfileModal(false)}
           triggerElement={triggerElement}

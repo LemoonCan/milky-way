@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Heart } from 'lucide-react'
 import { Avatar } from '../Avatar'
-import { ProfileModal } from '../settings/ProfileModal'
+import { ProfileModal } from '../ProfileModal'
 import type { SimpleUserDTO } from '../../types/api'
 import styles from '../../css/moments/LikeList.module.css'
 
@@ -52,11 +52,7 @@ export const LikeList: React.FC<LikeListProps> = ({ likes }) => {
       {/* 用户信息弹框 */}
       {selectedUser && (
         <ProfileModal
-          user={{
-            id: selectedUser.id,
-            nickname: selectedUser.nickName,
-            avatar: selectedUser.avatar
-          }}
+          userId={selectedUser.id}
           isVisible={showProfileModal}
           onClose={() => setShowProfileModal(false)}
           triggerElement={avatarRefs.current[selectedUser.id]}

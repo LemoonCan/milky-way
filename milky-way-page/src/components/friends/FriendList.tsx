@@ -13,7 +13,7 @@ interface FriendListProps {
 
 export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [newFriendsExpanded, setNewFriendsExpanded] = useState(true) // 默认展开
+  const [newFriendsExpanded, setNewFriendsExpanded] = useState(false) // 默认收起
   const [friendsExpanded, setFriendsExpanded] = useState(true)
   
   const { 
@@ -71,6 +71,13 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     console.log(`[FriendList] 待处理申请数量: ${count}`)
     return count
   }, [friendApplications])
+
+  // 当有待处理申请时自动展开新朋友区域
+  useEffect(() => {
+    if (pendingCount > 0 && !newFriendsExpanded) {
+      setNewFriendsExpanded(true)
+    }
+  }, [pendingCount, newFriendsExpanded])
 
   // 处理滚动事件，实现无限滚动加载
   const handleScroll = useCallback(() => {
@@ -256,9 +263,9 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                 <div className={styles.friendsContainer}>
                   {filteredFriends.map((friend) => (
                     <FriendListItem
-                      key={friend.openId}
+                      key={friend.id}
                       friend={friend}
-                      isActive={selectedFriend?.openId === friend.openId}
+                      isActive={selectedFriend?.id === friend.id}
                       onClick={() => handleSelectFriend(friend)}
                     />
                   ))}

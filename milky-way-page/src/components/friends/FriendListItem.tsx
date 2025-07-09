@@ -22,7 +22,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({
       <div className={styles.avatarContainer}>
         <Avatar
           avatarUrl={friend.avatar}
-          userId={friend.openId}
+          userId={friend.id}
           size={44}
         />
         {friend.status === 'BLACKLISTED' && (

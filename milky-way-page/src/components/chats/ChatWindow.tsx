@@ -1,26 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { Avatar } from '../Avatar'
-import { ProfileModal } from '../settings/ProfileModal'
+import { ProfileModal } from '../ProfileModal'
 import { EmojiPicker } from './EmojiPicker'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { Smile, Paperclip, Send, Trash2 } from 'lucide-react'
-import { useChatStore } from '@/store/chat'
-import { useUserStore } from '../../store/user'
+import { useChatStore, isMessageFromMe } from '@/store/chat'
 import { chatService } from '../../services/chat'
 import type { ChatUser } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
 
-// 定义用户信息类型，替换any
-interface UserInfo {
-  id: string
-  openId?: string
-  nickname: string
-  account: string
-  avatar?: string
-  signature?: string
-  region?: string
-}
+
 
 interface ChatWindowProps {
   currentUser: ChatUser | null
@@ -29,7 +19,7 @@ interface ChatWindowProps {
 export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [inputValue, setInputValue] = useState('')
   const [showProfileModal, setShowProfileModal] = useState(false)
-  const [modalUser, setModalUser] = useState<UserInfo | null>(null)
+  const [modalUserId, setModalUserId] = useState<string | null>(null)
   const [showActions, setShowActions] = useState(false)
   const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -137,38 +127,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     return () => container.removeEventListener('scroll', handleScroll)
   }, [currentUser, chatState?.hasMoreOlder, chatState?.isLoading, loadMoreOlderMessages])
 
-  // 获取当前用户信息
-  const { currentUser: currentUserInfo } = useUserStore()
+  // 获取聊天对象的用户ID（在单聊中）
+  const getChatPartnerUserId = (): string | null => {
+    if (!currentUser || currentUser.chatType !== 'SINGLE') return null
+    
+    // 从消息记录中找到不是当前用户发送的消息，获取发送者ID
+    const partnerMessage = messages.find(msg => !isMessageFromMe(msg))
+    if (partnerMessage) {
+      return partnerMessage.sender.id
+    }
+    
+    return null
+  }
 
   // 处理头像点击
-  const handleAvatarClick = (isFromMe: boolean, element: HTMLElement) => {
+  const handleAvatarClick = (isFromMe: boolean, element: HTMLElement, userId: string) => {
     // 确保在设置弹框状态前，先设置触发元素
     setAvatarElement(element)
     
-    if (isFromMe && currentUserInfo) {
-      // 点击自己的头像
-      setModalUser({
-        id: currentUserInfo.openId || 'current-user',
-        openId: currentUserInfo.openId,
-        nickname: currentUserInfo.nickName,
-        account: currentUserInfo.openId,
-        avatar: currentUserInfo.avatar,
-        signature: currentUserInfo.individualSignature,
-        region: '未知'
-      })
-      setShowActions(false)
-    } else if (!isFromMe && currentUser) {
-      // 点击好友的头像
-      setModalUser({
-        id: currentUser.id,
-        nickname: currentUser.name,
-        account: currentUser.id,
-        avatar: currentUser.avatar,
-        signature: '这是一个很酷的人',
-        region: '加拿大 狼村'
-      })
-      setShowActions(true)
-    }
+    // 直接使用传入的userId
+    setModalUserId(userId)
+    setShowActions(!isFromMe) // 点击自己的头像不显示操作按钮，点击他人头像显示
     
     // 使用 setTimeout 确保 DOM 更新后再显示弹框
     setTimeout(() => {
@@ -187,12 +166,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
 
   const handleVoiceCall = () => {
     setShowProfileModal(false)
-    console.log('发起语音通话:', modalUser?.nickname)
+    console.log('发起语音通话:', modalUserId)
   }
 
   const handleVideoCall = () => {
     setShowProfileModal(false)
-    console.log('发起视频通话:', modalUser?.nickname)
+    console.log('发起视频通话:', modalUserId)
   }
 
   // 处理表情按钮点击
@@ -364,7 +343,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         <div className={styles.chatHeaderUser}>
           <Avatar 
             size={40}
-            userId={currentUser.id}
+            userId={getChatPartnerUserId() || currentUser.id}
             avatarUrl={currentUser.avatar}
             style={{
               boxShadow: 'var(--milky-shadow)'
@@ -429,9 +408,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           <MessageBubble
             key={message.id}
             message={message}
-            onAvatarClick={(isFromMe, element) => {
-              handleAvatarClick(isFromMe, element)
-            }}
+            onAvatarClick={handleAvatarClick}
             onRetryMessage={handleRetryMessage}
           />
         ))}
@@ -494,9 +471,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       </div>
 
       {/* 个人信息弹框 */}
-      {modalUser && (
+      {modalUserId && (
         <ProfileModal
-          user={modalUser}
+          userId={modalUserId}
           isVisible={showProfileModal}
           onClose={handleCloseProfileModal}
           triggerElement={avatarElement}

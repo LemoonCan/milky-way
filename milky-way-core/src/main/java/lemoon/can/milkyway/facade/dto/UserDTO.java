@@ -13,25 +13,25 @@ public class UserDTO implements Serializable {
     /**
      * 用户Id
      */
-    private String id;
+    protected String id;
     /**
      * 开放Id
      */
-    private String openId;
+    protected String openId;
     /**
      * 手机号
      */
-    private String phone;
+    protected String phone;
     /**
      * 昵称
      */
-    private String nickName;
+    protected String nickName;
     /**
      * 头像
      */
-    private String avatar;
+    protected String avatar;
     /**
      * 个性签名
      */
-    private String individualSignature;
+    protected String individualSignature;
 }

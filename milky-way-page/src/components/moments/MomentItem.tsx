@@ -7,7 +7,7 @@ import { LazyImage } from '../LazyImage'
 import { LikeList } from './LikeList'
 import { CommentList } from './CommentList'
 import { CommentInput } from './CommentInput'
-import { ProfileModal } from '../settings/ProfileModal'
+import { ProfileModal } from '../ProfileModal'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
@@ -272,11 +272,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
 
       {/* 用户信息弹框 */}
       <ProfileModal
-        user={{
-          id: moment.user.id,
-          nickname: moment.user.nickName,
-          avatar: moment.user.avatar
-        }}
+        userId={moment.user.id}
         isVisible={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         triggerElement={avatarRef.current}
