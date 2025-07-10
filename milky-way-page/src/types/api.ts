@@ -229,6 +229,14 @@ export enum MomentContentType {
   TEXT_IMAGE = 'TEXT_IMAGE'
 }
 
+// 朋友圈动态描述DTO
+export interface MomentDescriptionDTO {
+  id: string
+  contentType: MomentContentType
+  text?: string
+  medias?: string[]
+}
+
 // 朋友圈动态DTO - 根据实际后端返回数据结构调整
 export interface MomentDTO {
   id: string
@@ -254,6 +262,17 @@ export interface CommentDTO {
   createTime: string | null  // 允许null值
   replyUser?: SimpleUserDTO
   replies?: CommentDTO[]
+}
+
+// 新增：带动态信息的评论DTO（用于通知）
+export interface CommentWithMomentDTO {
+  id: number
+  momentDescription: MomentDescriptionDTO
+  parentCommentId?: number | null
+  user: SimpleUserDTO
+  content: string
+  createTime: string
+  replyUser?: SimpleUserDTO
 }
 
 // 发布动态参数 - 根据后端PublishParam调整
@@ -323,10 +342,10 @@ export interface FriendApplicationDTO {
   createTime: string
 }
 
-// 点赞DTO
+// 点赞DTO - 更新结构
 export interface LikeDTO {
-  momentId: string
-  likeUser: SimpleUserDTO
+  momentDescription: MomentDescriptionDTO
+  user: SimpleUserDTO
   createTime: string
 }
 

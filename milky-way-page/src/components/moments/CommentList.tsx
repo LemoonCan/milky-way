@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { EmojiText } from '../EmojiText'
 import { ProfileModal } from '../ProfileModal'
 import { Avatar } from '../Avatar'
@@ -21,6 +21,20 @@ export const CommentList: React.FC<CommentListProps> = ({
   const [selectedUser, setSelectedUser] = useState<CommentDTO['user'] | null>(null)
   const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null)
   const [showAllComments, setShowAllComments] = useState(expandedByDefault)
+  const previousCommentCount = useRef(comments.length)
+  
+  // 监听expandedByDefault的变化，用于外部控制展开状态
+  useEffect(() => {
+    setShowAllComments(expandedByDefault)
+  }, [expandedByDefault])
+  
+  // 监听评论数量变化，有新评论时自动展开
+  useEffect(() => {
+    if (comments.length > previousCommentCount.current) {
+      setShowAllComments(true)
+    }
+    previousCommentCount.current = comments.length
+  }, [comments.length])
   
   if (!comments || comments.length === 0) return null
 

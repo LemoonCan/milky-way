@@ -13,7 +13,7 @@ import type {
   ChatInfoDTO as NotificationChatInfoDTO,
   // 重新导入需要的类型
   LikeDTO,
-  CommentDTO,
+  CommentWithMomentDTO,
   UnlikeDTO,
   MomentDTO
 } from '../types/api'
@@ -76,16 +76,6 @@ export const useWebSocketNotifications = () => {
   const location = useLocation()
   const {
     addNotification,
-    // 移除这些不再需要的处理函数
-    // handleFriendApplicationNotification,
-    // handleGroupChatCreatedNotification,
-    // handleGroupChatDeletedNotification,
-    // handleMomentPublishedNotification,
-    // handleMomentDeletedNotification,
-    // handleMomentLikedNotification,
-    // handleMomentLikeCancelledNotification,
-    // handleMomentCommentedNotification,
-    // handleCommentDeletedNotification
   } = useNotificationStore()
 
   // 获取各个store的刷新方法
@@ -184,11 +174,15 @@ export const useWebSocketNotifications = () => {
         break
 
       case 'LIKE':
-        // 点赞通知
-        if (content && typeof content === 'object' && 'likeUser' in content) {
+        // 点赞通知 - 使用新的LikeDTO结构
+        if (content && typeof content === 'object' && 'user' in content && 'momentDescription' in content) {
           // 使用本地更新而不是重新请求接口
           const likeData = content as LikeDTO
-          addLikeLocally(likeData.momentId, likeData.likeUser)
+          // 检查当前是否在朋友圈页面
+          const isOnMomentsPage = location.pathname.includes('/moments')
+          if (isOnMomentsPage && likeData.momentDescription.id) {
+            addLikeLocally(likeData.momentDescription.id, likeData.user)
+          }
         }
         break
 
@@ -202,15 +196,24 @@ export const useWebSocketNotifications = () => {
         break
 
       case 'COMMENT':
-        // 评论通知
-        if (content && typeof content === 'object' && 'user' in content) {
+        // 评论通知 - 使用新的CommentWithMomentDTO结构
+        if (content && typeof content === 'object' && 'user' in content && 'momentDescription' in content) {
           // 使用本地更新而不是重新请求接口
-          const commentData = content as CommentDTO
-          if (commentData.momentId) {
-            addCommentLocally(commentData.momentId, commentData)
-          } else {
-            // 如果没有 momentId，回退到刷新模式
-            refreshMoments()
+          const commentData = content as CommentWithMomentDTO
+          // 检查当前是否在朋友圈页面
+          const isOnMomentsPage = location.pathname.includes('/moments')
+          if (isOnMomentsPage && commentData.momentDescription.id) {
+            // 转换为CommentDTO格式用于本地更新
+            const localCommentData = {
+              id: commentData.id,
+              momentId: commentData.momentDescription.id,
+              parentCommentId: commentData.parentCommentId,
+              user: commentData.user,
+              content: commentData.content,
+              createTime: commentData.createTime,
+              replyUser: commentData.replyUser
+            }
+            addCommentLocally(commentData.momentDescription.id, localCommentData)
           }
         }
         break
@@ -242,16 +245,6 @@ export const useWebSocketNotifications = () => {
   }, [
     location.pathname,
     addNotification,
-    // 移除这些不再需要的处理函数
-    // handleFriendApplicationNotification,
-    // handleGroupChatCreatedNotification,
-    // handleGroupChatDeletedNotification,
-    // handleMomentPublishedNotification,
-    // handleMomentDeletedNotification,
-    // handleMomentLikedNotification,
-    // handleMomentLikeCancelledNotification,
-    // handleMomentCommentedNotification,
-    // handleCommentDeletedNotification,
     addFriendApplicationLocally,
     addFriendLocally,
     addChatLocally,

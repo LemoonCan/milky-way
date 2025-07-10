@@ -94,8 +94,8 @@ public class MomentController {
 
     @GetMapping("/{momentId}")
     @Operation(summary = "查询动态详情")
-    public ResponseEntity<MomentDTO> getMoment(@PathVariable String momentId) {
+    public ResponseEntity<Result<MomentDTO>> getMoment(@PathVariable String momentId) {
         MomentDTO moment = momentQueryService.getMoment(momentId);
-        return ResponseEntity.ok(moment);
+        return ResponseEntity.ok(Result.success(moment));
     }
 }

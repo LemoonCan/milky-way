@@ -26,7 +26,7 @@
   background: white;
   border-radius: 12px;
   width: 90%;
-  max-width: 400px;
+  max-width: 500px; /* 增加最大宽度以支持四列布局 */
   max-height: 70vh;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -166,6 +166,7 @@
   background-color: #e6f3ff;
 }
 
+/* 原有的通知内容样式 */
 .notificationContent {
   display: flex;
   align-items: flex-start;
@@ -246,22 +247,100 @@
   color: #999;
 }
 
+/* 新增：朋友圈通知的四列布局样式 */
+.momentNotificationContent {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.notificationAvatar {
+  flex-shrink: 0;
+}
+
+.notificationSecondColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.notificationAction {
+  font-size: 12px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.likeIcon {
+  font-size: 14px;
+}
+
+.notificationTime {
+  font-size: 11px;
+  color: #999;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 50px;
+}
+
+.momentPreview {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.momentImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.momentText {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  padding: 4px;
+  line-height: 1.2;
+}
+
+.loadingPlaceholder {
+  font-size: 10px;
+  color: #999;
+  text-align: center;
+  padding: 4px;
+}
+
 .footer {
   padding: 12px 16px;
   border-top: 1px solid #f0f0f0;
-  background: #f8f9fa;
-  border-radius: 0 0 12px 12px;
+  background: #fafafa;
 }
 
 .statsSection {
   display: flex;
+  justify-content: space-around;
   gap: 16px;
 }
 
 .statItem {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 12px;
   color: #666;
 }
@@ -271,14 +350,13 @@
 }
 
 .statText {
-  color: #333;
+  font-weight: 500;
 }
 
-/* 响应式设计 */
 @media (max-width: 480px) {
   .panel {
     width: 95%;
-    max-height: 80vh;
+    max-width: 380px;
   }
   
   .header {
@@ -290,34 +368,29 @@
   }
   
   .actionButton {
-    padding: 4px 8px;
     font-size: 11px;
+    padding: 4px 8px;
   }
   
   .notificationItem {
     padding: 10px 12px;
   }
   
-  .notificationContent {
+  .momentNotificationContent {
     gap: 8px;
   }
   
-  .iconContainer {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+  .momentPreview {
+    width: 32px;
+    height: 32px;
   }
   
-  .notificationTitle {
-    font-size: 13px;
-  }
-  
-  .notificationMessage {
-    font-size: 12px;
+  .notificationTime {
+    min-width: 40px;
   }
   
   .footer {
-    padding: 10px 12px;
+    padding: 8px 12px;
   }
   
   .statsSection {

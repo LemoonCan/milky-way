@@ -105,7 +105,7 @@ public class MessagePushServiceImpl implements MessagePushService {
         LikeDTO content = new LikeDTO();
         MomentDO momentDO = momentMapper.getMomentDescriptionById(like.getMomentId());
         content.setMomentDescription(momentConverter.toMomentDescriptionDTO(momentDO));
-        content.setLikeUser(userMapper.selectSimpleById(like.getLikeUserId()));
+        content.setUser(userMapper.selectSimpleById(like.getLikeUserId()));
         content.setCreateTime(like.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         payload.setNotifyType(MessageNotifyType.LIKE);

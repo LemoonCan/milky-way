@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styles from '../css/NotificationPanel.module.css'
 import { useNotificationStore } from '../store/notification'
-import { MessageNotifyType, type NotificationItem } from '../types/api'
+import { MessageNotifyType, type NotificationItem, type LikeDTO, type CommentWithMomentDTO, type MomentDescriptionDTO, type SimpleUserDTO } from '../types/api'
 import { Avatar } from './Avatar'
-import { BellDot } from 'lucide-react'
+import { EmojiText } from './EmojiText'
+import { BellDot, Heart, MessageCircle } from 'lucide-react'
 
 interface NotificationPanelProps {
   isOpen: boolean
@@ -21,11 +23,11 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   title = '通知'
 }) => {
   const panelRef = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
   const {
     notifications: defaultNotifications,
     stats: defaultStats,
     markAsRead,
-    removeNotification,
     clearAll
   } = useNotificationStore()
 
@@ -88,28 +90,141 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
     }
   }
 
-  // 获取通知图标
-  const getNotificationIcon = (type: MessageNotifyType) => {
-    switch (type) {
-      case MessageNotifyType.LIKE:
-        return '👍'
-      case MessageNotifyType.COMMENT:
-        return '💬'
-      default:
-        return '📢'
+  // 处理通知点击 - 跳转到动态详情页
+  const handleNotificationClick = (notification: NotificationItem) => {
+    markAsRead(notification.id)
+    
+    // 只处理朋友圈相关通知
+    if (notification.type === MessageNotifyType.LIKE || notification.type === MessageNotifyType.COMMENT) {
+      const content = notification.content as LikeDTO | CommentWithMomentDTO
+      let momentId: string | undefined
+      
+      if (notification.type === MessageNotifyType.LIKE) {
+        momentId = (content as LikeDTO).momentDescription.id
+      } else if (notification.type === MessageNotifyType.COMMENT) {
+        momentId = (content as CommentWithMomentDTO).momentDescription.id
+      }
+      
+      if (momentId) {
+        navigate(`/main/moments/detail/${momentId}`)
+        onClose()
+      }
     }
   }
 
-  // 处理通知点击
-  const handleNotificationClick = (notificationId: string) => {
-    markAsRead(notificationId)
+
+
+  // 渲染朋友圈通知内容（四列布局）
+  const renderMomentNotification = (notification: NotificationItem) => {
+    const content = notification.content as LikeDTO | CommentWithMomentDTO
+    
+    // 获取动态信息
+    let momentDescription: MomentDescriptionDTO
+    let user: SimpleUserDTO
+    let createTime: string
+    
+    if (notification.type === MessageNotifyType.LIKE) {
+      const likeData = content as LikeDTO
+      momentDescription = likeData.momentDescription
+      user = likeData.user
+      createTime = likeData.createTime
+    } else {
+      // notification.type === MessageNotifyType.COMMENT
+      const commentData = content as CommentWithMomentDTO
+      momentDescription = commentData.momentDescription
+      user = commentData.user
+      createTime = commentData.createTime
+    }
+
+    // 渲染第二列内容（昵称+通知内容）
+    const renderSecondColumn = () => {
+      if (notification.type === MessageNotifyType.LIKE) {
+        return (
+          <div className={styles.notificationSecondColumn}>
+            <div className={styles.userName}>{user?.nickName}</div>
+            <div className={styles.notificationAction}>
+              <Heart className={styles.likeIcon} size={14} fill="#ef4445" color="#ef4445" />
+              <span>赞了你的动态</span>
+            </div>
+          </div>
+        )
+      } else if (notification.type === MessageNotifyType.COMMENT) {
+        const commentData = content as CommentWithMomentDTO
+        return (
+          <div className={styles.notificationSecondColumn}>
+            <div className={styles.userName}>{user?.nickName}</div>
+            <div className={styles.notificationAction}>
+              {commentData.parentCommentId ? (
+                <EmojiText text={`回复${commentData.replyUser?.nickName || '你'}：${commentData.content}`} />
+              ) : (
+                <EmojiText text={commentData.content} />
+              )}
+            </div>
+          </div>
+        )
+      }
+    }
+
+    // 渲染第四列内容（动态内容）
+    const renderFourthColumn = () => {
+      if (!momentDescription) {
+        return <div className={styles.loadingPlaceholder}>暂无内容</div>
+      }
+
+      // 如果包含图片，显示第一张图片
+      if (momentDescription.medias && momentDescription.medias.length > 0) {
+        return (
+          <div className={styles.momentPreview}>
+            <img 
+              src={momentDescription.medias[0]} 
+              alt="动态图片"
+              className={styles.momentImage}
+            />
+          </div>
+        )
+      }
+      
+      // 如果只有文字，显示三个字+...
+      if (momentDescription.text) {
+        const displayText = momentDescription.text.length > 3 
+          ? momentDescription.text.substring(0, 3) + '...' 
+          : momentDescription.text
+        return (
+          <div className={styles.momentPreview}>
+            <div className={styles.momentText}>
+              <EmojiText text={displayText} />
+            </div>
+          </div>
+        )
+      }
+
+      return <div className={styles.momentPreview}>暂无内容</div>
+    }
+
+    return (
+      <div className={styles.momentNotificationContent}>
+        {/* 第一列：头像 */}
+        <div className={styles.notificationAvatar}>
+          <Avatar avatarUrl={user?.avatar} size={40} />
+        </div>
+        
+        {/* 第二列：昵称+通知内容 */}
+        {renderSecondColumn()}
+        
+        {/* 第三列：时间 */}
+        <div className={styles.notificationTime}>
+          {formatTime(createTime)}
+        </div>
+        
+        {/* 第四列：动态内容 */}
+        {renderFourthColumn()}
+      </div>
+    )
   }
 
-  // 处理删除通知
-  const handleDeleteNotification = (notificationId: string, event: React.MouseEvent) => {
-    event.stopPropagation()
-    removeNotification(notificationId)
-  }
+
+
+
 
   if (!isOpen) return null
 
@@ -124,7 +239,6 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
             )}
           </div>
           <div className={styles.actions}>
-            {/* 移除手动按钮，关闭时自动清空 */}
             <button
               className={styles.closeButton}
               onClick={handleClose}
@@ -149,42 +263,10 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   className={`${styles.notificationItem} ${
                     !notification.read ? styles.unread : ''
                   }`}
-                  onClick={() => handleNotificationClick(notification.id)}
+                  onClick={() => handleNotificationClick(notification)}
                 >
-                  <div className={styles.notificationContent}>
-                    <div className={styles.notificationLeft}>
-                      {notification.avatar ? (
-                        <Avatar avatarUrl={notification.avatar} size={40} />
-                      ) : (
-                        <div className={styles.iconContainer}>
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                      )}
-                    </div>
-                    <div className={styles.notificationMain}>
-                      <div className={styles.notificationTitle}>
-                        {notification.title}
-                      </div>
-                      <div className={styles.notificationMessage}>
-                        {notification.message}
-                      </div>
-                      <div className={styles.notificationTime}>
-                        {formatTime(notification.timestamp)}
-                      </div>
-                    </div>
-                    <div className={styles.notificationRight}>
-                      {!notification.read && (
-                        <div className={styles.unreadDot}></div>
-                      )}
-                      <button
-                        className={styles.deleteButton}
-                        onClick={(e) => handleDeleteNotification(notification.id, e)}
-                        title="删除"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
+                  {/* 渲染朋友圈通知内容 */}
+                  {renderMomentNotification(notification)}
                 </div>
               ))}
             </div>
@@ -197,7 +279,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
             <div className={styles.statsSection}>
               {stats.likeCount > 0 && (
                 <div className={styles.statItem}>
-                  <span className={styles.statIcon}>👍</span>
+                  <Heart className={styles.statIcon} size={14} fill="#ef4445" color="#ef4445" />
                   <span className={styles.statText}>
                     {stats.likeCount} 个新赞
                   </span>
@@ -205,7 +287,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
               )}
               {stats.commentCount > 0 && (
                 <div className={styles.statItem}>
-                  <span className={styles.statIcon}>💬</span>
+                  <MessageCircle className={styles.statIcon} size={14} />
                   <span className={styles.statText}>
                     {stats.commentCount} 条新评论
                   </span>

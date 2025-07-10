@@ -8,7 +8,7 @@ import type {
   ChatInfoDTO,
   MomentDTO,
   LikeDTO,
-  CommentDTO
+  CommentWithMomentDTO
 } from '../types/api'
 
 interface NotificationStore {
@@ -38,7 +38,7 @@ interface NotificationStore {
   handleMomentDeletedNotification: (momentId: string) => void
   handleMomentLikedNotification: (content: LikeDTO) => void
   handleMomentLikeCancelledNotification: (likeId: string) => void
-  handleMomentCommentedNotification: (content: CommentDTO) => void
+  handleMomentCommentedNotification: (content: CommentWithMomentDTO) => void
   handleCommentDeletedNotification: (commentId: string) => void
   
   // 工具方法
@@ -103,8 +103,8 @@ const formatNotificationContent = (
       const data = content as LikeDTO
       return {
         title: '点赞提醒',
-        message: `${data.likeUser.nickName} 赞了您的朋友圈`,
-        avatar: data.likeUser.avatar
+        message: `${data.user.nickName} 赞了您的朋友圈`,
+        avatar: data.user.avatar
       }
     }
     case MessageNotifyType.UNLIKE: {
@@ -114,7 +114,7 @@ const formatNotificationContent = (
       }
     }
     case MessageNotifyType.COMMENT: {
-      const data = content as CommentDTO
+      const data = content as CommentWithMomentDTO
       return {
         title: '评论提醒',
         message: `${data.user.nickName} 评论了您的朋友圈`,
@@ -311,7 +311,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   },
 
   // 评论通知处理器
-  handleMomentCommentedNotification: (content: CommentDTO) => {
+  handleMomentCommentedNotification: (content: CommentWithMomentDTO) => {
     get().addNotification({
       notifyType: MessageNotifyType.COMMENT,
       content
