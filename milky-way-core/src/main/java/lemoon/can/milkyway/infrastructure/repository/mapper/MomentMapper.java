@@ -41,4 +41,15 @@ public interface MomentMapper {
 
     @Select("SELECT id, content_type, text, medias FROM moment WHERE publish_user_id = #{publishUserId} order by id desc limit 1")
     MomentDO selectLastMomentByPublishUserId(String publishUserId);
+
+    @Select("SELECT id, content_type, text, medias FROM moment WHERE id = #{id}")
+    MomentDO getMomentDescriptionById(Long id);
+
+    /**
+     * 根据ID查询动态
+     *
+     * @param id 动态ID
+     * @return 动态信息
+     */
+    MomentDO selectMomentById(Long id);
 }

@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @Data
 public class LikeDTO {
-    private String momentId;
+    private MomentDescriptionDTO momentDescription;
     private SimpleUserDTO likeUser;
     private String createTime;
 }

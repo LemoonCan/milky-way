@@ -9,16 +9,18 @@ interface CommentListProps {
   comments: CommentDTO[]
   momentId: string
   onReply?: (commentId?: string) => void
+  expandedByDefault?: boolean
 }
 
 export const CommentList: React.FC<CommentListProps> = ({ 
   comments, 
-  onReply 
+  onReply,
+  expandedByDefault = false
 }) => {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<CommentDTO['user'] | null>(null)
   const [triggerElement, setTriggerElement] = useState<HTMLElement | null>(null)
-  const [showAllComments, setShowAllComments] = useState(false)
+  const [showAllComments, setShowAllComments] = useState(expandedByDefault)
   
   if (!comments || comments.length === 0) return null
 

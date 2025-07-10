@@ -16,9 +16,10 @@ import styles from '../../css/moments/MomentItem.module.css'
 
 interface MomentItemProps {
   moment: MomentDTO
+  expandComments?: boolean
 }
 
-export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
+export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments = false }) => {
   const [showCommentInput, setShowCommentInput] = useState(false)
   const [showAllImages, setShowAllImages] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
@@ -235,6 +236,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment }) => {
         <CommentList 
           comments={moment.comments} 
           momentId={moment.id}
+          expandedByDefault={expandComments}
           onReply={(commentId?: string) => {
             setParentCommentId(commentId)
             // 找到被回复的评论用户

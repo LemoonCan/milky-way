@@ -25,4 +25,11 @@ public interface MomentQueryService {
      * @return
      */
     Slices<MomentDTO> listPersonalMoments(String userId, String lastId, int pageSize);
+
+    /**
+     * 查询动态详情
+     * @param momentId 动态ID
+     * @return
+     */
+    MomentDTO getMoment(String momentId);
 }

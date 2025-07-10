@@ -8,9 +8,9 @@ import lemoon.can.milkyway.domain.share.Comment;
 import lemoon.can.milkyway.domain.share.Like;
 import lemoon.can.milkyway.domain.share.Moment;
 import lemoon.can.milkyway.facade.dto.*;
-import lemoon.can.milkyway.infrastructure.converter.FriendConverter;
 import lemoon.can.milkyway.infrastructure.converter.MomentConverter;
 import lemoon.can.milkyway.infrastructure.inner.MessageDestination;
+import lemoon.can.milkyway.infrastructure.repository.dos.MomentDO;
 import lemoon.can.milkyway.infrastructure.repository.mapper.CommentMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.FriendMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.MomentMapper;
@@ -36,7 +36,6 @@ public class MessagePushServiceImpl implements MessagePushService {
     private final MomentConverter momentConverter;
     private final FriendMapper friendMapper;
     private final CommentMapper commentMapper;
-    private final FriendConverter friendConverter;
 
     @Override
     public void friendApplyMsg(FriendApplication friendApplication) {
@@ -104,7 +103,8 @@ public class MessagePushServiceImpl implements MessagePushService {
         String momentPublishUserId = momentMapper.selectPublishUserIdById(like.getMomentId());
         MessageNotifyDTO<LikeDTO> payload = new MessageNotifyDTO<>();
         LikeDTO content = new LikeDTO();
-        content.setMomentId(secureId.simpleEncode(like.getMomentId(), secureId.getMomentSalt()));
+        MomentDO momentDO = momentMapper.getMomentDescriptionById(like.getMomentId());
+        content.setMomentDescription(momentConverter.toMomentDescriptionDTO(momentDO));
         content.setLikeUser(userMapper.selectSimpleById(like.getLikeUserId()));
         content.setCreateTime(like.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -132,17 +132,19 @@ public class MessagePushServiceImpl implements MessagePushService {
     public void commentMsg(Comment comment) {
         //点对点
         String momentPublishUserId = momentMapper.selectPublishUserIdById(comment.getMomentId());
-        MessageNotifyDTO<CommentDTO> payload = new MessageNotifyDTO<>();
+        MessageNotifyDTO<CommentWithMomentDTO> payload = new MessageNotifyDTO<>();
         payload.setNotifyType(MessageNotifyType.COMMENT);
-        CommentDTO content = new CommentDTO();
+        CommentWithMomentDTO content = new CommentWithMomentDTO();
         payload.setContent(content);
         content.setId(comment.getId());
-        content.setMomentId(secureId.simpleEncode(comment.getMomentId(), secureId.getMomentSalt()));
+        MomentDO momentDO = momentMapper.getMomentDescriptionById(comment.getMomentId());
+        content.setMomentDescription(momentConverter.toMomentDescriptionDTO(momentDO));
         content.setParentCommentId(comment.getParentCommentId());
         content.setUser(userMapper.selectSimpleById(comment.getCommentUserId()));
         content.setContent(comment.getContent());
         content.setCreateTime(comment.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
         if (comment.getParentCommentId() != null) {
             SimpleUserDTO replyUser = commentMapper.selectReplyUser(comment.getParentCommentId());
             content.setReplyUser(replyUser);

@@ -8,6 +8,7 @@ import { ProfilePage } from './components/settings/ProfilePage'
 import { FriendPage } from './components/friends/FriendPage'
 import { MomentsPage as MomentsPageComponent } from './components/moments/MomentsPage'
 import { UserMomentsPage } from './components/moments/UserMomentsPage'
+import { MomentDetailPage } from './components/moments/MomentDetailPage'
 
 import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
@@ -140,6 +141,7 @@ function ChatApp() {
         <Route path="/friends" element={<FriendPage />} />
         <Route path="/moments" element={<MomentsPageComponent />} />
         <Route path="/moments/user/:userId" element={<UserMomentsPage />} />
+        <Route path="/moments/detail/:momentId" element={<MomentDetailPage />} />
         <Route path="/settings" element={
           <SettingsPageWrapper 
             showProfile={showProfile}

@@ -91,4 +91,11 @@ public class MomentController {
         Slices<MomentDTO> slices = momentQueryService.listPersonalMoments(userId, lastId, pageSize);
         return ResponseEntity.ok(Result.success(slices));
     }
+
+    @GetMapping("/{momentId}")
+    @Operation(summary = "查询动态详情")
+    public ResponseEntity<MomentDTO> getMoment(@PathVariable String momentId) {
+        MomentDTO moment = momentQueryService.getMoment(momentId);
+        return ResponseEntity.ok(moment);
+    }
 }
