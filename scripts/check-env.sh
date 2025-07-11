@@ -61,10 +61,11 @@ check_git() {
         GIT_VERSION=$(git --version | cut -d' ' -f3)
         log_success "Git已安装 (版本: $GIT_VERSION)"
         
-        if [ -d ".git" ]; then
+        if [ -d "${PROJECT_DIR}/.git" ]; then
             log_success "Git仓库检测正常"
             
             # 检查远程仓库
+            cd "$PROJECT_DIR"
             if git remote -v &> /dev/null; then
                 log_success "Git远程仓库配置正常"
                 git remote -v
@@ -72,7 +73,7 @@ check_git() {
                 log_warn "Git远程仓库未配置"
             fi
         else
-            log_error "当前目录不是Git仓库"
+            log_error "项目根目录不是Git仓库"
         fi
     else
         log_fail "Git未安装"

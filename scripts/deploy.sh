@@ -80,18 +80,16 @@ check_dependencies() {
 pull_code() {
     log_step "拉取GitHub代码..."
     
+    # 切换到项目根目录
+    cd "$PROJECT_DIR"
+    
     # 检查是否是Git仓库
     if [ ! -d ".git" ]; then
-        log_error "当前目录不是Git仓库"
+        log_error "项目根目录不是Git仓库"
         exit 1
     fi
     
-    # 保存当前更改
-    if ! git diff --quiet --exit-code; then
-        log_warn "检测到未提交的更改，正在暂存..."
-        git add -A
-        git stash push -m "自动部署前的暂存 - $(date '+%Y-%m-%d %H:%M:%S')"
-    fi
+   
     
     # 拉取最新代码
     log_info "拉取最新代码..."
