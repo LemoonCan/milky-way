@@ -105,14 +105,13 @@ setup_environment() {
     log_step "设置环境变量..."
     
     # 检查环境配置文件
-    if [ ! -f "prod.env" ]; then
-        log_error "prod.env文件不存在，请先创建环境配置文件"
+    log_info "加载生产环境配置..."
+    if [ -f "${PROJECT_DIR}/prod.env" ]; then
+        source "${PROJECT_DIR}/prod.env"
+    else
+        log_error "找不到 prod.env 文件：${PROJECT_DIR}/prod.env"
         exit 1
     fi
-    
-    # 导出环境变量
-    log_info "加载生产环境配置..."
-    export $(cat prod.env | grep -v '^#' | xargs)
     
     # 设置Spring Profile
     export SPRING_PROFILES_ACTIVE=prod

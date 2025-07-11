@@ -6,6 +6,11 @@ spring:
 
 server:
   port: 8081
+  ssl:
+    key-store: ${SSL_KEY_STORE}
+    key-store-password: ${SSL_KEY_PASSWORD}
+    key-password: ${SSL_KEY_PASSWORD}
+    key-store-type: ${SSL_KEY_STORE_TYPE}
 
 env:
   domain: https://localhost:8081/

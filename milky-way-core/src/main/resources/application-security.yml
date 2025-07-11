@@ -1,11 +1,3 @@
-#https证书配置
-server:
-    ssl:
-        key-store: ${SSL_KEY_STORE}
-        key-store-password: ${SSL_KEY_PASSWORD}
-        key-password: ${SSL_KEY_PASSWORD}
-        key-store-type: ${SSL_KEY_STORE_TYPE}
-
 jwt:
   secret-key: ${JWT_SECRET_KEY}
   token-validity: 2592000000   # 30天
