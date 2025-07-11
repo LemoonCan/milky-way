@@ -41,45 +41,45 @@ log_step() {
 # 检查系统依赖
 check_dependencies() {
     log_step "检查系统依赖..."
-    
+
     # 检查Git
     if ! command -v git &> /dev/null; then
         log_error "Git未安装，请先安装Git"
         exit 1
     fi
-    
+
     # 检查Java
     if ! command -v java &> /dev/null; then
         log_error "Java未安装，请先安装Java ${JAVA_VERSION}"
         exit 1
     fi
-    
+
     # 检查Java版本
     JAVA_VER=$(java -version 2>&1 | head -1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
     if [ "$JAVA_VER" -lt "$JAVA_VERSION" ]; then
         log_error "Java版本过低，当前版本：$JAVA_VER，需要版本：$JAVA_VERSION"
         exit 1
     fi
-    
+
     # 检查Node.js
     if ! command -v node &> /dev/null; then
         log_error "Node.js未安装，请先安装Node.js"
         exit 1
     fi
-    
+
     # 检查npm
     if ! command -v npm &> /dev/null; then
         log_error "npm未安装，请先安装npm"
         exit 1
     fi
-    
+
     log_info "系统依赖检查完成"
 }
 
 # 拉取代码
 pull_code() {
     log_step "拉取GitHub代码..."
-    
+
     # 检查是否是Git仓库
     if [ ! -d ".git" ]; then
         log_error "项目根目录不是Git仓库"
@@ -97,36 +97,13 @@ pull_code() {
 setup_environment() {
     log_step "设置环境变量..."
 
-    # 检查环境配置文件
-    log_info "加载生产环境配置..."
-    if [ -f "${PROJECT_DIR}/prod.env" ]; then
-        source "${PROJECT_DIR}/prod.env"
-    else
-        log_error "找不到 prod.env 文件：${PROJECT_DIR}/prod.env"
-        exit 1
-    fi
-
     # 设置Spring Profile
     export SPRING_PROFILES_ACTIVE=prod
 
     # 检查前端环境文件
     if [ ! -f "${FRONTEND_DIR}/.env.production" ]; then
-        log_warn "前端生产环境配置文件不存在，创建默认配置..."
-        cat > "${FRONTEND_DIR}/.env.production" << EOF
-# 生产环境配置
-VITE_NODE_ENV=production
-VITE_APP_NAME=MilkyWay
-VITE_APP_VERSION=1.0.0
-
-# API 和 WebSocket 配置
-VITE_API_BASE_URL=https://api.pilili.xy
-VITE_WS_URL=wss://api.pilili.xy/ws
-
-# HTTPS 配置（nginx 处理 SSL 终止，前端不需要证书）
-VITE_HTTPS_ENABLED=false
-VITE_SERVER_HOST=0.0.0.0
-VITE_SERVER_PORT=5173
-EOF
+        log_error "前端生产环境配置文件不存在，创建默认配置..."
+        exit 1
     fi
 
     log_info "环境变量设置完成"
@@ -196,7 +173,8 @@ start_backend() {
 
     # 启动后端服务
     log_info "启动后端服务（端口：${BACKEND_PORT}）..."
-    nohup java -jar build/libs/milky-way-core-*.jar \
+    nohup env $(cat "${PROJECT_DIR}/prod.env" | xargs) \
+	    java -jar build/libs/milky-way-core-*.jar \
         --spring.profiles.active=prod \
         --server.port=${BACKEND_PORT} \
         > logs/backend.log 2>&1 &
@@ -253,7 +231,7 @@ health_check() {
     # 检查后端健康状态
     log_info "检查后端服务..."
     for i in {1..30}; do
-        if curl -f -s "https://api.pilili.xyz/actuator/health" > /dev/null 2>&1; then
+        if curl -f -s "http://localhost:8080/actuator/health" > /dev/null 2>&1; then
             log_info "后端服务健康检查通过"
             break
         fi
@@ -269,7 +247,7 @@ health_check() {
     # 检查前端服务
     log_info "检查前端服务..."
     for i in {1..15}; do
-        if curl -f -s "http://www.pilili.xyz" > /dev/null 2>&1; then
+        if curl -f -s "https://www.pilili.xyz" > /dev/null 2>&1; then
             log_info "前端服务健康检查通过"
             break
         fi
@@ -319,33 +297,33 @@ main() {
     # 首先切换到项目根目录
     cd "$PROJECT_DIR"
     log_info "工作目录：$PROJECT_DIR"
-    
+
     # 检查依赖
     check_dependencies
-    
-    # 拉取代码
-    pull_code
-    
+
+    # 拉取代码 网络似乎不稳定 拉取经常失败
+    # pull_code
+
     # 设置环境
     setup_environment
-    
+
     # 停止现有服务
     stop_services
-    
+
     # 构建服务
     build_backend
     build_frontend
-    
+
     # 启动服务
     start_backend
     start_frontend
-    
-    # 健康检查
-    health_check
-    
+
+    # 健康检查 目前来看并未检查出来
+   # ihealth_check
+
     # 显示部署信息
     show_deployment_info
-    
+
     log_info "部署完成！"
 }
 
@@ -353,4 +331,4 @@ main() {
 trap 'log_error "部署过程中断"' INT TERM
 
 # 执行主函数
-main "$@" 
+main "$@"

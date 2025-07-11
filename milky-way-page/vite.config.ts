@@ -42,14 +42,7 @@ export default defineConfig(({ mode }) => {
     }
     
     // 从环境变量中解析主机列表（用逗号分隔）
-    const hosts = allowedHosts.split(',').map(host => host.trim()).filter(host => host)
-    
-    // 确保包含默认主机
-    if (!hosts.includes('www.pilili.xyz')) {
-      hosts.push('www.pilili.xyz')
-    }
-    
-    return hosts
+    return allowedHosts.split(',').map(host => host.trim()).filter(host => host)
   }
   
   return {

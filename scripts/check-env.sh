@@ -172,11 +172,34 @@ check_project_files() {
         log_error "Vite配置文件不存在"
     fi
     
-    # 检查环境配置
+    # 检查前端环境配置
     if [ -f "${FRONTEND_DIR}/.env.production" ]; then
         log_success "前端生产环境配置存在"
+        
+        # 验证关键配置
+        if grep -q "VITE_API_BASE_URL" "${FRONTEND_DIR}/.env.production"; then
+            API_URL=$(grep "VITE_API_BASE_URL" "${FRONTEND_DIR}/.env.production" | cut -d'=' -f2)
+            log_info "  └── API地址: ${API_URL}"
+        else
+            log_error "  └── ✗ VITE_API_BASE_URL 配置缺失"
+        fi
+        
+        if grep -q "VITE_WS_URL" "${FRONTEND_DIR}/.env.production"; then
+            WS_URL=$(grep "VITE_WS_URL" "${FRONTEND_DIR}/.env.production" | cut -d'=' -f2)
+            log_info "  └── WebSocket地址: ${WS_URL}"
+        else
+            log_error "  └── ✗ VITE_WS_URL 配置缺失"
+        fi
+        
+        if grep -q "VITE_ALLOWED_HOSTS" "${FRONTEND_DIR}/.env.production"; then
+            ALLOWED_HOSTS=$(grep "VITE_ALLOWED_HOSTS" "${FRONTEND_DIR}/.env.production" | cut -d'=' -f2)
+            log_info "  └── 允许的主机: ${ALLOWED_HOSTS}"
+        else
+            log_warn "  └── ⚠ VITE_ALLOWED_HOSTS 配置缺失（建议设置）"
+        fi
     else
         log_warn "前端生产环境配置不存在，部署时会自动创建"
+        log_info "  └── 参考文档: milky-way-page/guide/ENVIRONMENT.md"
     fi
     echo ""
 }
