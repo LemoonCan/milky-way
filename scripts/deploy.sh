@@ -80,28 +80,23 @@ check_dependencies() {
 pull_code() {
     log_step "拉取GitHub代码..."
     
-    # 切换到项目根目录
-    cd "$PROJECT_DIR"
-    
     # 检查是否是Git仓库
     if [ ! -d ".git" ]; then
         log_error "项目根目录不是Git仓库"
         exit 1
     fi
-    
-   
-    
+
     # 拉取最新代码
     log_info "拉取最新代码..."
     git pull origin main
-    
+
     log_info "代码拉取完成"
 }
 
 # 设置环境变量
 setup_environment() {
     log_step "设置环境变量..."
-    
+
     # 检查环境配置文件
     log_info "加载生产环境配置..."
     if [ -f "${PROJECT_DIR}/prod.env" ]; then
@@ -110,10 +105,10 @@ setup_environment() {
         log_error "找不到 prod.env 文件：${PROJECT_DIR}/prod.env"
         exit 1
     fi
-    
+
     # 设置Spring Profile
     export SPRING_PROFILES_ACTIVE=prod
-    
+
     # 检查前端环境文件
     if [ ! -f "${FRONTEND_DIR}/.env.production" ]; then
         log_warn "前端生产环境配置文件不存在，创建默认配置..."
@@ -133,90 +128,86 @@ VITE_SERVER_HOST=0.0.0.0
 VITE_SERVER_PORT=5173
 EOF
     fi
-    
+
     log_info "环境变量设置完成"
 }
 
 # 构建后端
 build_backend() {
     log_step "构建后端服务..."
-    
-    cd "$BACKEND_DIR"
-    
+
     # 清理之前的构建
     log_info "清理构建缓存..."
     ./gradlew clean
-    
+
     # 构建项目
     log_info "编译后端项目..."
     ./gradlew build -x test
-    
+
     log_info "后端构建完成"
-    cd "$PROJECT_DIR"
 }
 
 # 构建前端
 build_frontend() {
     log_step "构建前端服务..."
-    
+
     cd "$FRONTEND_DIR"
-    
+
     # 安装依赖
     log_info "安装前端依赖..."
     npm install
-    
+
     # 构建项目
     log_info "构建前端项目..."
     npm run build:prod
-    
+
     log_info "前端构建完成"
-    cd "$PROJECT_DIR"
 }
 
 # 停止现有服务
 stop_services() {
     log_step "停止现有服务..."
-    
+
     # 停止后端服务
     if pgrep -f "milky-way" > /dev/null; then
         log_info "停止后端服务..."
         pkill -f "milky-way" || true
         sleep 3
     fi
-    
+
     # 停止前端服务
     if pgrep -f "vite.*preview" > /dev/null; then
         log_info "停止前端服务..."
         pkill -f "vite.*preview" || true
         sleep 3
     fi
-    
+
     log_info "服务停止完成"
 }
 
 # 启动后端服务
 start_backend() {
     log_step "启动后端服务..."
-    
+
     cd "$BACKEND_DIR"
-    
+
     # 创建日志目录
     mkdir -p logs
-    
+
     # 启动后端服务
     log_info "启动后端服务（端口：${BACKEND_PORT}）..."
     nohup java -jar build/libs/milky-way-core-*.jar \
         --spring.profiles.active=prod \
         --server.port=${BACKEND_PORT} \
         > logs/backend.log 2>&1 &
-    
+
     BACKEND_PID=$!
     echo $BACKEND_PID > logs/backend.pid
-    
+
     # 等待服务启动
     log_info "等待后端服务启动..."
     sleep 10
-    
+
     # 检查服务状态
     if ps -p $BACKEND_PID > /dev/null; then
         log_info "后端服务启动成功 (PID: $BACKEND_PID)"
@@ -224,30 +215,28 @@ start_backend() {
         log_error "后端服务启动失败，请检查日志：${BACKEND_DIR}/logs/backend.log"
         exit 1
     fi
-    
-    cd "$PROJECT_DIR"
 }
 
 # 启动前端服务
 start_frontend() {
     log_step "启动前端服务..."
-    
+
     cd "$FRONTEND_DIR"
-    
+
     # 创建日志目录
     mkdir -p logs
-    
+
     # 启动前端服务
     log_info "启动前端服务（端口：${FRONTEND_PORT}）..."
     nohup npm run preview:prod > logs/frontend.log 2>&1 &
-    
+
     FRONTEND_PID=$!
     echo $FRONTEND_PID > logs/frontend.pid
-    
+
     # 等待服务启动
     log_info "等待前端服务启动..."
     sleep 5
-    
+
     # 检查服务状态
     if ps -p $FRONTEND_PID > /dev/null; then
         log_info "前端服务启动成功 (PID: $FRONTEND_PID)"
@@ -255,14 +244,12 @@ start_frontend() {
         log_error "前端服务启动失败，请检查日志：${FRONTEND_DIR}/logs/frontend.log"
         exit 1
     fi
-    
-    cd "$PROJECT_DIR"
 }
 
 # 健康检查
 health_check() {
     log_step "执行健康检查..."
-    
+
     # 检查后端健康状态
     log_info "检查后端服务..."
     for i in {1..30}; do
@@ -270,15 +257,15 @@ health_check() {
             log_info "后端服务健康检查通过"
             break
         fi
-        
+
         if [ $i -eq 30 ]; then
             log_error "后端服务健康检查失败"
             exit 1
         fi
-        
+
         sleep 2
     done
-    
+
     # 检查前端服务
     log_info "检查前端服务..."
     for i in {1..15}; do
@@ -286,22 +273,22 @@ health_check() {
             log_info "前端服务健康检查通过"
             break
         fi
-        
+
         if [ $i -eq 15 ]; then
             log_error "前端服务健康检查失败"
             exit 1
         fi
-        
+
         sleep 2
     done
-    
+
     log_info "健康检查完成"
 }
 
 # 显示部署信息
 show_deployment_info() {
     log_step "部署完成！"
-    
+
     echo ""
     echo "==============================================="
     echo "          Milky Way 部署信息"
@@ -328,6 +315,10 @@ show_deployment_info() {
 # 主执行流程
 main() {
     log_info "开始执行 Milky Way 一键部署脚本..."
+
+    # 首先切换到项目根目录
+    cd "$PROJECT_DIR"
+    log_info "工作目录：$PROJECT_DIR"
     
     # 检查依赖
     check_dependencies

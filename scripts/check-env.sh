@@ -153,7 +153,7 @@ check_project_files() {
         log_error "后端Gradle配置文件不存在"
     fi
     
-    if [ -f "${BACKEND_DIR}/gradlew" ]; then
+    if [ -f "${PROJECT_DIR}/gradlew" ]; then
         log_success "Gradle Wrapper存在"
     else
         log_error "Gradle Wrapper不存在"
