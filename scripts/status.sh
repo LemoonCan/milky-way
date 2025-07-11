@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 
 # Milky Way 服务状态检查脚本
 
@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置参数
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${(%):-%x}")/.." && pwd)"
 BACKEND_DIR="${PROJECT_DIR}/milky-way-core"
 FRONTEND_DIR="${PROJECT_DIR}/milky-way-page"
 BACKEND_PORT=8080
@@ -108,7 +108,7 @@ show_service_overview() {
     echo "系统信息："
     echo "  - 当前时间：$(date '+%Y-%m-%d %H:%M:%S')"
     echo "  - 系统负载：$(uptime | awk -F'load average:' '{print $2}' | sed 's/^[ \t]*//')"
-    echo "  - 内存使用：$(free -h | awk 'NR==2{printf "%.1f%%", $3*100/$2}')"
+    echo "  - 内存使用：$(vm_stat | awk 'BEGIN{total=0; used=0} /Pages free/ {free=$3} /Pages active/ {active=$3} /Pages inactive/ {inactive=$3} /Pages wired/ {wired=$3} END{total=(free+active+inactive+wired)*4096/1024/1024/1024; used=(active+inactive+wired)*4096/1024/1024/1024; printf "%.1f%%", used*100/total}')"
     echo "  - 磁盘使用：$(df -h / | awk 'NR==2{print $5}')"
     echo ""
     

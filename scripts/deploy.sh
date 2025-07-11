@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 
 # Milky Way 一键部署脚本
 # 作者：AI Assistant
@@ -14,7 +14,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置参数
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${(%):-%x}")/.." && pwd)"
 BACKEND_DIR="${PROJECT_DIR}/milky-way-core"
 FRONTEND_DIR="${PROJECT_DIR}/milky-way-page"
 BACKEND_PORT=8080

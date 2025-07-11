@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env zsh
 
 # Milky Way 环境检查脚本
 
@@ -10,7 +10,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置参数
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$(cd "$(dirname "${(%):-%x}")/.." && pwd)"
 BACKEND_DIR="${PROJECT_DIR}/milky-way-core"
 FRONTEND_DIR="${PROJECT_DIR}/milky-way-page"
 JAVA_VERSION=17
