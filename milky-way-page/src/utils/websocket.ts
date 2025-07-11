@@ -2,6 +2,7 @@ import { Client, StompConfig } from '@stomp/stompjs'
 import type { IMessage, StompSubscription } from '@stomp/stompjs'
 import { tokenManager } from '../lib/http'
 import type { MessageDTO, MessageNotifyDTO } from '../types/api'
+import EnvConfig from '../lib/env'
 
 export interface WebSocketMessage {
   chatId: string
@@ -131,10 +132,10 @@ export class WebSocketClient {
     console.log('[WebSocket] 创建新的STOMP客户端，token存在:', !!token)
 
     const config: StompConfig = {
-      brokerURL: `wss://localhost:8081/ws?authToken=${encodeURIComponent(token)}`,
+      brokerURL: `${EnvConfig.WS_URL}?authToken=${encodeURIComponent(token)}`,
       connectHeaders: {
         'accept-version': '1.2',
-        'host': 'localhost:8081'
+        'host': EnvConfig.WS_HOST
       },
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -526,7 +527,7 @@ export class WebSocketClient {
   private async subscribeToGroupChats() {
     try {
       // 获取群聊列表
-      const response = await fetch('https://localhost:8081/chats/groupChats', {
+      const response = await fetch(`${EnvConfig.API_BASE_URL}/chats/groupChats`, {
         headers: {
           'Authorization': `Bearer ${tokenManager.getToken()}`,
           'Content-Type': 'application/json'

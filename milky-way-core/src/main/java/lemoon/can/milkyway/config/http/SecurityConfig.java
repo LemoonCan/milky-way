@@ -54,8 +54,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 跨域
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 无状态 API
-                .requiresChannel(channel ->
-                        channel.anyRequest().requiresSecure()) // HTTPS
+//                .requiresChannel(channel ->
+//                        channel.anyRequest().requiresSecure()) // HTTPS
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 保护关闭？
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.getPermitUrls().toArray(new String[0])).permitAll() // 放行接口

@@ -1,15 +1,25 @@
 import axios, { AxiosError } from 'axios'
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import type { ApiResponse, ErrorResponse } from '../types/api'
+import EnvConfig from './env'
 
 // 创建axios实例
 const http: AxiosInstance = axios.create({
-  baseURL: 'https://localhost:8081',
+  baseURL: EnvConfig.API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 })
+
+// 开发环境下打印配置信息
+if (EnvConfig.IS_DEVELOPMENT) {
+  console.log('🌐 HTTP配置:', {
+    baseURL: EnvConfig.API_BASE_URL,
+    wsURL: EnvConfig.WS_URL,
+    nodeEnv: EnvConfig.NODE_ENV,
+  })
+}
 
 // Token管理
 const TOKEN_KEY = 'milky_way_token'
@@ -78,4 +88,6 @@ http.interceptors.response.use(
   }
 )
 
+// 导出环境配置供其他模块使用
+export { EnvConfig }
 export default http 

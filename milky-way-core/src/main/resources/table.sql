@@ -151,5 +151,3 @@ CREATE TABLE likes
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (moment_id, like_user_id)
 );
-
-alter table likes rename column created_time to create_time;
