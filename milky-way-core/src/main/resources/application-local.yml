@@ -1,0 +1,50 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+server:
+  port: 8081
+
+env:
+  domain: https://localhost:8081/
+  fileAccessUrl: files
+
+#datasource
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+#log
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        security: TRACE
+        web: TRACE
+        org.springframework.messaging: TRACE
+        org.springframework.messaging.simp: TRACE
+        org.springframework.messaging.simp.broker: TRACE
+        org.springframework.messaging.simp.user: TRACE
+
+    lemoon:
+      can:
+        milkyway: DEBUG
+
+
+security:
+  cors:
+    allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
+      - https://localhost:5173
+      - https://localhost:5174
+      - https://localhost:5175
+      - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
+  websocket:
+    cors-allowed-origins:
+      - https://localhost:8081
+      - https://localhost:5173
+      - https://localhost:5174
+      - https://localhost:5175
+      - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn

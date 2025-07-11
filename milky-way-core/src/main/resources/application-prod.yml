@@ -1,0 +1,43 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 5MB
+
+server:
+  port: 443
+
+env:
+  domain: https://pilili.xyz
+  fileAccessUrl: files
+
+# datasource
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+# log
+logging:
+  level:
+    root: INFO
+    org:
+      springframework:
+        security: WARN   # 出现安全问题时记录，避免泄露敏感字段
+        web: INFO        # 保留路由、异常等重要请求信息
+        messaging: WARN
+        messaging.simp: WARN
+        messaging.simp.broker: WARN
+        messaging.simp.user: WARN
+
+    lemoon:
+      can:
+        milkyway: INFO
+
+security:
+  cors:
+    allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
+      -
+      - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
+  websocket:
+    cors-allowed-origins:
+      -
+      - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
