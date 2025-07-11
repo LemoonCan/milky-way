@@ -32,6 +32,25 @@ export default defineConfig(({ mode }) => {
       cert: fs.readFileSync(certPath),
     }
   }
+
+  // 获取允许的主机列表
+  const getAllowedHosts = () => {
+    const allowedHosts = env.VITE_ALLOWED_HOSTS
+    if (!allowedHosts) {
+      // 默认添加常用的主机
+      return ['localhost', '127.0.0.1']
+    }
+    
+    // 从环境变量中解析主机列表（用逗号分隔）
+    const hosts = allowedHosts.split(',').map(host => host.trim()).filter(host => host)
+    
+    // 确保包含默认主机
+    if (!hosts.includes('www.pilili.xyz')) {
+      hosts.push('www.pilili.xyz')
+    }
+    
+    return hosts
+  }
   
   return {
     plugins: [react()],
@@ -50,6 +69,7 @@ export default defineConfig(({ mode }) => {
       https: getHttpsConfig(),
       host: env.VITE_SERVER_HOST || '0.0.0.0',
       port: parseInt(env.VITE_SERVER_PORT) || 4173,
+      allowedHosts: getAllowedHosts(),
     },
     // 构建配置
     build: {
