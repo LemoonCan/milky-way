@@ -109,7 +109,7 @@ deploy_remote() {
         set -e
         echo "🛑 停止旧服务..."
         pkill -f milky-way || true
-        pkill -f "vite.*preview" || true
+        pkill -f "npx serve" || true
         sleep 2
 
         echo "🚀 启动后端..."
@@ -152,13 +152,28 @@ show_deployment_info() {
     echo "=================================================="
 }
 
-main() {
+
+main(){
+  if [[ $# -eq 0 ]]; then
+      build_deploy
+    else
+      only_deploy
+  fi
+}
+
+build_deploy() {
     log_info "🚀 开始 Milky Way 一键部署..."
     check_dependencies
     setup_environment
     build_backend
     build_frontend
     upload_artifacts
+    deploy_remote
+    show_deployment_info
+    log_info "✅ 部署流程已完成"
+}
+
+only_deploy(){
     deploy_remote
     show_deployment_info
     log_info "✅ 部署流程已完成"
