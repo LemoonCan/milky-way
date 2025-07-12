@@ -10,7 +10,8 @@
     "build:prod": "tsc -b --verbose && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview --mode development",
-    "preview:prod": "vite preview --mode production"
+    "preview:prod": "vite preview --mode production",
+    "serve": "serve -s dist -p 3000"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -44,6 +45,7 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "postcss": "^8.5.5",
+    "serve": "^14.2.4",
     "tailwindcss": "^4.1.10",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",

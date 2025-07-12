@@ -24,6 +24,13 @@ ext {
 }
 
 subprojects {
+    plugins.withId('java') {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(17)
+            }
+        }
+    }
     afterEvaluate {
         println "jjwtVersion = ${rootProject.ext.jjwtVersion}"  // 打印变量值
     }
