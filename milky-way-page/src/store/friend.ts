@@ -21,6 +21,9 @@ interface FriendState {
   // 好友总数
   totalFriendsCount: number
   isCountLoading: boolean
+  // 新增：好友申请数量
+  pendingApplicationsCount: number
+  isApplicationCountLoading: boolean
 
   // 操作方法
   setSelectedFriend: (friend: Friend | null) => void
@@ -37,6 +40,8 @@ interface FriendState {
   searchUserByOpenId: (openId: string) => Promise<User | null>
   searchUserByPhone: (phone: string) => Promise<User | null>
   fetchFriendsCount: () => Promise<void>
+  // 新增：获取好友申请数量
+  fetchApplicationsCount: () => Promise<void>
   clearError: () => void
   
   // 本地数据更新方法
@@ -63,6 +68,9 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   // 好友总数
   totalFriendsCount: 0,
   isCountLoading: false,
+  // 新增：好友申请数量初始化
+  pendingApplicationsCount: 0,
+  isApplicationCountLoading: false,
 
   // 设置选中的好友
   setSelectedFriend: (friend) => set({ selectedFriend: friend }),
@@ -82,7 +90,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     
     try {
       // 构建请求参数
-      const params: { pageSize: number; lastLetter?: string; lastNickName?: string } = { pageSize: 20 }
+      const params: { pageSize: number; lastLetter?: string; lastNickName?: string } = { pageSize: 10 }
       
       // 如果不是刷新操作，使用游标参数
       if (!refresh && currentState.lastLetter && currentState.lastNickName) {
@@ -142,16 +150,14 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     const currentState = get()
     // 如果正在加载好友申请列表，避免重复请求
     if (currentState.isApplicationsLoading) {
-      console.log('好友申请列表正在加载中，跳过重复请求')
       return
     }
     
     set({ isApplicationsLoading: true, error: null })
-    console.log(`开始获取好友申请列表，refresh: ${refresh}`)
     
     try {
       const params: { pageSize: number; lastId?: string } = {
-        pageSize: 10
+        pageSize: 20
       }
       
       // 如果不是刷新操作，使用游标参数
@@ -230,11 +236,12 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success) {
         set({ isLoading: false })
-        // 刷新好友列表和申请列表，并更新好友总数
+        // 刷新好友列表和申请列表，并更新好友总数和申请数量
         await Promise.all([
           get().fetchFriends(true),
           get().fetchFriendApplications(true),
-          get().fetchFriendsCount()
+          get().fetchFriendsCount(),
+          get().fetchApplicationsCount()
         ])
         return true // 返回成功标识
       } else {
@@ -391,6 +398,30 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     }
   },
 
+  // 获取好友申请数量
+  fetchApplicationsCount: async () => {
+    const currentState = get()
+    // 如果正在加载，避免重复请求
+    if (currentState.isApplicationCountLoading) {
+      return
+    }
+
+    set({ isApplicationCountLoading: true })
+    
+    try {
+             const response = await friendService.countApplications()
+      
+      if (response.success && typeof response.data === 'number') {
+        set({ pendingApplicationsCount: response.data, isApplicationCountLoading: false })
+      } else {
+        set({ isApplicationCountLoading: false })
+      }
+    } catch (error) {
+      console.error('获取好友申请数量失败:', error)
+      set({ isApplicationCountLoading: false })
+    }
+  },
+
   // 清除错误
   clearError: () => set({ error: null }),
 
@@ -413,6 +444,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     console.log(`[Friend Store] 新列表内容:`, newApplications.map(app => ({ id: app.id, nickName: app.fromUser.nickName, status: app.status })))
     
     set({ friendApplications: newApplications })
+    
+    // 如果是待处理状态的申请，更新申请数量
+    if (application.status === 'APPLYING') {
+      set({ pendingApplicationsCount: currentState.pendingApplicationsCount + 1 })
+    }
     
     // 验证状态是否真的更新了
     setTimeout(() => {

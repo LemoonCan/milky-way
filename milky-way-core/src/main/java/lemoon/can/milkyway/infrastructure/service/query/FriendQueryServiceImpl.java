@@ -61,6 +61,11 @@ public class FriendQueryServiceImpl implements FriendQueryService {
     }
 
     @Override
+    public int countFriendApplications(String userId) {
+        return friendMapper.countFriendApplications(userId);
+    }
+
+    @Override
     public int countFriends(String userId) {
         return friendMapper.countFriends(userId);
     }

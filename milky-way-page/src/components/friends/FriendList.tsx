@@ -15,6 +15,8 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [newFriendsExpanded, setNewFriendsExpanded] = useState(false) // 默认收起
   const [friendsExpanded, setFriendsExpanded] = useState(true)
+  // 新增：追踪用户是否手动收起了新朋友区域
+  const [manuallyCollapsed, setManuallyCollapsed] = useState(false)
   
   const { 
     friends, 
@@ -33,16 +35,20 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     lastNickName,
     lastApplicationId,
     totalFriendsCount,
-    fetchFriendsCount
+    fetchFriendsCount,
+    // 新增：好友申请数量相关
+    pendingApplicationsCount,
+    fetchApplicationsCount
   } = useFriendStore()
   
   const listContainerRef = useRef<HTMLDivElement>(null)
 
-  // 组件加载时获取好友总数（只在组件挂载时执行一次）
+  // 组件加载时获取好友总数和申请数量
   useEffect(() => {
     fetchFriendsCount()
-  }, []) // 移除依赖项，只在组件挂载时执行一次
-
+    fetchApplicationsCount()
+  }, [])
+  
   // 本地搜索过滤好友
   const filteredFriends = useMemo(() => {
     const friendsList = friends || []
@@ -65,24 +71,28 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     return friendApplications || []
   }, [friendApplications])
 
-  // 统计待处理的申请数量
-  const pendingCount = useMemo(() => {
-    const count = friendApplications.filter(app => app.status === 'APPLYING').length
-    console.log(`[FriendList] 待处理申请数量: ${count}`)
-    return count
-  }, [friendApplications])
+  // 移除原来的客户端统计逻辑，直接使用接口获取的数量
+  // const pendingCount = useMemo(() => {
+  //   const count = friendApplications.filter(app => app.status === 'APPLYING').length
+  //   console.log(`[FriendList] 待处理申请数量: ${count}`)
+  //   return count
+  // }, [friendApplications])
 
-  // 当有待处理申请时自动展开新朋友区域
+  // 当有待处理申请时自动展开新朋友区域，但尊重用户的手动操作
   useEffect(() => {
-    if (pendingCount > 0 && !newFriendsExpanded) {
+    if (pendingApplicationsCount > 0 && !newFriendsExpanded && !manuallyCollapsed) {
       setNewFriendsExpanded(true)
     }
-  }, [pendingCount, newFriendsExpanded])
+    // 当没有待处理申请时，重置手动收起状态
+    if (pendingApplicationsCount === 0) {
+      setManuallyCollapsed(false)
+    }
+  }, [pendingApplicationsCount, newFriendsExpanded, manuallyCollapsed])
 
   // 处理滚动事件，实现无限滚动加载
   const handleScroll = useCallback(() => {
     const container = listContainerRef.current
-    if (!container || searchQuery.trim() || isFriendsLoading) {
+    if (!container || searchQuery.trim()) {
       return
     }
 
@@ -90,11 +100,9 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     // 当滚动到距离底部50px时，触发加载更多
     if (scrollHeight - scrollTop - clientHeight < 50) {
       // 根据当前展开的区域决定加载哪种数据
-      if (newFriendsExpanded && hasNextApplicationsPage) {
-        console.log('触发加载更多申请，当前游标:', { lastApplicationId })
+      if (newFriendsExpanded && hasNextApplicationsPage && !isApplicationsLoading) {
         fetchMoreFriendApplications()
-      } else if (friendsExpanded && hasNextPage) {
-        console.log('触发加载更多好友，当前游标:', { lastLetter, lastNickName })
+      } else if (friendsExpanded && hasNextPage && !isFriendsLoading) {
         fetchMoreFriends()
       }
     }
@@ -103,13 +111,16 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     hasNextPage, 
     hasNextApplicationsPage,
     isFriendsLoading, 
+    isApplicationsLoading,
     fetchMoreFriends, 
     fetchMoreFriendApplications,
     lastLetter, 
     lastNickName, 
     lastApplicationId,
     newFriendsExpanded, 
-    friendsExpanded
+    friendsExpanded,
+    friends,
+    friendApplications
   ])
 
   // 绑定滚动事件
@@ -132,7 +143,12 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
   }
 
   const toggleNewFriends = () => {
-    setNewFriendsExpanded(!newFriendsExpanded)
+    const newState = !newFriendsExpanded
+    setNewFriendsExpanded(newState)
+    // 如果用户手动收起（从展开变为收起），记录这个操作
+    if (!newState && pendingApplicationsCount > 0) {
+      setManuallyCollapsed(true)
+    }
   }
 
   const toggleFriends = () => {
@@ -179,19 +195,15 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
             </div>
             <div className={styles.sectionInfo}>
               <div className={styles.sectionTitle}>新朋友</div>
-              {pendingCount > 0 && (
-                <div className={styles.sectionBadge}>{pendingCount}</div>
+              {pendingApplicationsCount > 0 && (
+                <div className={styles.sectionBadge}>{pendingApplicationsCount}</div>
               )}
             </div>
           </div>
           
           {newFriendsExpanded && (
             <div className={styles.sectionContent}>
-              {isApplicationsLoading && (!friendApplications || friendApplications.length === 0) ? (
-                <div className={styles.loadingState}>
-                  加载中...
-                </div>
-              ) : displayApplications.length === 0 ? (
+              {displayApplications.length === 0 ? (
                 <div className={styles.emptyState}>
                   暂无好友申请
                 </div>
@@ -205,27 +217,6 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                       onSelect={handleSelectApplication}
                     />
                   ))}
-                  
-                  {/* 加载更多申请指示器 */}
-                  {hasNextApplicationsPage && (
-                    <div className={styles.loadMoreContainer}>
-                      {isApplicationsLoading ? (
-                        <div className={styles.loadingMore}>
-                          <div className={styles.loadingSpinner}></div>
-                          <span>加载更多...</span>
-                        </div>
-                      ) : (
-                        <button 
-                          className={styles.loadMoreButton}
-                          onClick={() => {
-                            fetchMoreFriendApplications()
-                          }}
-                        >
-                          加载更多...
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -251,11 +242,7 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
           
           {friendsExpanded && (
             <div className={styles.sectionContent}>
-              {isFriendsLoading && (!friends || friends.length === 0) ? (
-                <div className={styles.loadingState}>
-                  加载中...
-                </div>
-              ) : filteredFriends.length === 0 ? (
+              {filteredFriends.length === 0 ? (
                 <div className={styles.emptyState}>
                   {searchQuery ? '未找到匹配的好友' : '暂无好友'}
                 </div>
@@ -269,27 +256,6 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                       onClick={() => handleSelectFriend(friend)}
                     />
                   ))}
-                  
-                  {/* 加载更多好友指示器 */}
-                  {!searchQuery && hasNextPage && (
-                    <div className={styles.loadMoreContainer}>
-                      {isFriendsLoading ? (
-                        <div className={styles.loadingMore}>
-                          <div className={styles.loadingSpinner}></div>
-                          <span>加载更多...</span>
-                        </div>
-                      ) : (
-                        <button 
-                          className={styles.loadMoreButton}
-                          onClick={() => {
-                            fetchMoreFriends()
-                          }}
-                        >
-                          加载更多...
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
             </div>

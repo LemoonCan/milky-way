@@ -215,16 +215,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     }
   }
 
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>
-          <div className={styles.loadingSpinner} />
-          <p>加载中...</p>
-        </div>
-      </div>
-    )
-  }
+  // if (loading) {
+  //   return (
+  //     <div className={styles.container}>
+  //       <div className={styles.loading}>
+  //         <div className={styles.loadingSpinner} />
+  //         <p>加载中...</p>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className={styles.container}>

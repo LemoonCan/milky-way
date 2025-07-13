@@ -6,8 +6,6 @@ import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.param.FriendsApplicationQueryParam;
 import lemoon.can.milkyway.facade.param.FriendsQueryParam;
 
-import java.util.List;
-
 /**
  * @author lemoon
  * @since 2025/5/14
@@ -28,6 +26,8 @@ public interface FriendQueryService {
      * @return
      */
     Slices<FriendDTO> getFriends(FriendsQueryParam param);
+
+    int countFriendApplications(String userId);
 
     int countFriends(String userId);
 }

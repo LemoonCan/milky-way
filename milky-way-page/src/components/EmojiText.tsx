@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import twemoji from 'twemoji'
+import { emojiCache } from '../utils/emojiCache'
 
 interface EmojiTextProps {
   text: string
@@ -16,68 +16,60 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
 }) => {
   const containerRef = useRef<HTMLSpanElement>(null)
   const [parsedHtml, setParsedHtml] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(true)
   const [useFallback, setUseFallback] = useState(false)
 
   useEffect(() => {
     // 确保在客户端环境下才执行
     if (typeof window === 'undefined') {
       setParsedHtml(text) // SSR 时直接显示原始文本
+      setIsLoading(false)
       return
     }
 
-    const tryParseEmoji = (baseUrl: string) => {
+    const loadEmoji = async () => {
       try {
-        // 使用 twemoji 解析文本
-        const parsed = twemoji.parse(text, {
-          base: baseUrl,
-          folder: 'svg',
-          ext: '.svg',
-          size: 'svg',
-          className: 'emoji-img',
-          attributes: () => ({
-            style: `
-              width: ${size};
-              height: ${size};
-              vertical-align: -0.1em;
-              display: inline-block;
-              margin: 0 0.05em 0 0.1em;
-            `,
-            loading: 'lazy',
-            onError: 'this.style.display="none"; this.nextSibling && (this.nextSibling.style.display="inline")'
-          })
-        })
-        return parsed
-      } catch {
-        console.warn('Twemoji parsing error with base:', baseUrl)
-        return null
+        setIsLoading(true)
+        setUseFallback(false)
+        
+        // 使用缓存管理器获取emoji SVG（缓存管理器内部会处理尺寸）
+        const sizeStr = typeof size === 'number' ? `${size}px` : size
+        const parsed = await emojiCache.getEmojiSvg(text, sizeStr)
+        
+        if (parsed && parsed !== text) {
+          setParsedHtml(parsed)
+          setUseFallback(false)
+        } else {
+          // 解析失败，使用原始文本
+          setParsedHtml(text)
+          setUseFallback(true)
+        }
+      } catch (error) {
+        console.warn('Emoji loading error:', error)
+        setParsedHtml(text)
+        setUseFallback(true)
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    // 更新CDN源配置，使用更可靠的源，包括国内可用的镜像
-    const cdnSources = [
-      'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'
-    ]
-
-    let parsed = null
-    for (const cdn of cdnSources) {
-      parsed = tryParseEmoji(cdn)
-      if (parsed && parsed !== text) {
-        break
-      }
-    }
-
-    if (parsed && parsed !== text) {
-      setParsedHtml(parsed)
-      setUseFallback(false)
+    // 检查是否已缓存（不再需要传递size参数）
+    if (emojiCache.isCached(text)) {
+      // 如果已缓存，立即加载
+      loadEmoji()
     } else {
-      // 静默失败，不在控制台输出警告
+      // 如果未缓存，先显示原始文本，然后异步加载
       setParsedHtml(text)
+      setIsLoading(false)
       setUseFallback(true)
+      
+      // 异步加载emoji
+      loadEmoji()
     }
   }, [text, size])
 
-  // 如果在服务端渲染或解析失败，直接显示原始文本
-  if (typeof window === 'undefined' || !parsedHtml || useFallback) {
+  // 如果在服务端渲染，直接显示原始文本
+  if (typeof window === 'undefined') {
     return (
       <span className={className} style={style}>
         {text}
@@ -85,6 +77,25 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
     )
   }
 
+  // 如果正在加载且未缓存，显示原始文本
+  if (isLoading && useFallback) {
+    return (
+      <span className={className} style={style}>
+        {text}
+      </span>
+    )
+  }
+
+  // 如果解析失败，显示原始文本
+  if (useFallback && !isLoading) {
+    return (
+      <span className={className} style={style}>
+        {text}
+      </span>
+    )
+  }
+
+  // 显示解析后的emoji
   return (
     <span 
       ref={containerRef}

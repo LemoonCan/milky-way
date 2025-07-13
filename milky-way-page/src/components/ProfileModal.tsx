@@ -195,12 +195,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         style={modalPosition}
         onClick={(e) => e.stopPropagation()}
       >
-        {loading ? (
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-            <span>加载中...</span>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className={styles.error}>
             <div className={styles.errorIcon}>⚠️</div>
             <span>{error}</span>

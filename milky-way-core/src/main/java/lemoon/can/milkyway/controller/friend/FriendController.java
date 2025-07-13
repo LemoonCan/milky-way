@@ -29,6 +29,12 @@ public class FriendController {
     private final FriendService friendService;
     private final FriendQueryService friendQueryService;
 
+    @GetMapping("/applications/count")
+    public ResponseEntity<Result<Integer>> countApplications() {
+        int count = friendQueryService.countFriendApplications(UserInfoHolder.id());
+        return ResponseEntity.ok(Result.success(count));
+    }
+
     @GetMapping("/applications")
     @Operation(summary = "获取好友申请列表")
     public ResponseEntity<Result<Slices<FriendApplicationDTO>>> applications(@RequestParam(required = false) String lastId,

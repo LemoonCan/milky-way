@@ -103,7 +103,8 @@
   border-radius: 0 0 12px 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .categoryName {
@@ -111,6 +112,13 @@
   color: var(--milky-text-light);
   font-weight: 500;
 }
+
+.emojiCount {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  margin-left: auto;
+}
+
 
 /* 滚动条样式 */
 .categories::-webkit-scrollbar {

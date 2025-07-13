@@ -19,7 +19,6 @@ export const UserMomentsPage: React.FC = () => {
   const location = useLocation()
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [targetUser, setTargetUser] = useState<UserDetailInfo | null>(null)
-  const [userLoading, setUserLoading] = useState(true)
   const momentsListRef = useRef<HTMLDivElement>(null)
   
   // 从路由状态中获取用户信息
@@ -30,6 +29,7 @@ export const UserMomentsPage: React.FC = () => {
     loading, 
     error, 
     hasNext,
+    initialized,
     fetchUserMoments, 
     loadMoreMoments, 
     refreshMoments,
@@ -46,7 +46,6 @@ export const UserMomentsPage: React.FC = () => {
       if (userInfoFromState) {
         setTargetUser(userInfoFromState)
       }
-      setUserLoading(false)
       
       // 获取用户动态
       if (!cancelled) {
@@ -134,7 +133,7 @@ export const UserMomentsPage: React.FC = () => {
               size="icon"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className={`${styles.iconButton} ${isRefreshing ? styles.rotating : ''}`}
+              className={`${styles.iconButton} ${isRefreshing || loading ? styles.rotating : ''}`}
               title="刷新"
             >
               <RefreshCw size={20} />
@@ -145,7 +144,7 @@ export const UserMomentsPage: React.FC = () => {
           <div className={styles.userInfo}>
             <div className={styles.userDetails}>
               <span className={styles.userName}>
-                {userLoading ? '加载中...' : (targetUser?.nickName || '未知用户')}
+                {targetUser?.nickName || '未知用户'}
               </span>
             </div>
             <Avatar
@@ -179,22 +178,6 @@ export const UserMomentsPage: React.FC = () => {
             <MomentItem key={moment.id} moment={moment} />
           ))}
 
-          {/* 初始加载状态 */}
-          {loading && moments.length === 0 && (
-            <div className={styles.loading}>
-              <div className={styles.loadingSpinner} />
-              <span>加载中...</span>
-            </div>
-          )}
-
-          {/* 加载更多状态 */}
-          {loading && moments.length > 0 && (
-            <div className={styles.loadMore}>
-              <div className={styles.loadingSpinner} />
-              <span>加载中...</span>
-            </div>
-          )}
-
           {/* 没有更多数据 */}
           {!hasNext && moments.length > 0 && (
             <div className={styles.noMore}>
@@ -202,11 +185,12 @@ export const UserMomentsPage: React.FC = () => {
             </div>
           )}
 
-          {/* 空状态 */}
-          {!loading && moments.length === 0 && !error && (
+          {/* 空状态 - 只有在已初始化且非加载状态且动态确实为空时才显示 */}
+          {initialized && !loading && moments.length === 0 && !error && (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}>📱</div>
-              <h3>暂无动态</h3>
+              <h3>还没有动态</h3>
+              <p>该用户暂时没有发布动态</p>
             </div>
           )}
         </div>

@@ -98,11 +98,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
         className={`${styles.chatListContent} ${styles.listContainer}`}
         onScroll={handleScroll}
       >
-        {isLoading && chatUsers.length === 0 ? (
-          <div className={styles.emptyState}>
-            加载中...
-          </div>
-        ) : filteredUsers.length === 0 ? (
+        {filteredUsers.length === 0 ? (
           <div className={styles.emptyState}>
             {searchQuery ? '未找到匹配的聊天' : '暂无聊天记录'}
           </div>
@@ -116,13 +112,6 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
                 onClick={() => onSelectChat(user.id)}
               />
             ))}
-            {/* 加载更多指示器 */}
-            {isLoading && chatUsers.length > 0 && (
-              <div className="text-center py-4 text-gray-500">
-                加载更多...
-              </div>
-            )}
-
           </div>
         )}
       </div>

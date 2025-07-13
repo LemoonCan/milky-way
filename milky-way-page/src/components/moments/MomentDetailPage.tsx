@@ -92,7 +92,7 @@ export const MomentDetailPage: React.FC = () => {
               size="icon"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className={`${styles.iconButton} ${isRefreshing ? styles.rotating : ''}`}
+              className={`${styles.iconButton} ${isRefreshing || loading ? styles.rotating : ''}`}
               title="刷新"
             >
               <RefreshCw size={20} />
@@ -103,7 +103,7 @@ export const MomentDetailPage: React.FC = () => {
           <div className={styles.userInfo}>
             <div className={styles.userDetails}>
               <span className={styles.userName}>
-                {loading ? '加载中...' : (moment?.user?.nickName || '未知用户')}
+                {moment?.user?.nickName || '未知用户'}
               </span>
             </div>
             <Avatar
@@ -129,14 +129,6 @@ export const MomentDetailPage: React.FC = () => {
               >
                 ×
               </button>
-            </div>
-          )}
-
-          {/* 初始加载状态 */}
-          {loading && (
-            <div className={styles.loading}>
-              <div className={styles.loadingSpinner} />
-              <span>加载中...</span>
             </div>
           )}
 

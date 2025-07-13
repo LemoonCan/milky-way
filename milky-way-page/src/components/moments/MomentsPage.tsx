@@ -22,6 +22,7 @@ export const MomentsPage: React.FC = () => {
     error, 
     hasNext,
     momentType,
+    initialized,
     fetchMoments, 
     fetchMyMoments,
     loadMoreMoments, 
@@ -130,7 +131,7 @@ export const MomentsPage: React.FC = () => {
               size="icon"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className={`${styles.iconButton} ${isRefreshing ? styles.rotating : ''}`}
+              className={`${styles.iconButton} ${isRefreshing || loading ? styles.rotating : ''}`}
             >
               <RefreshCw size={20} />
             </Button>
@@ -176,22 +177,6 @@ export const MomentsPage: React.FC = () => {
             <MomentItem key={moment.id} moment={moment} />
           ))}
 
-          {/* 加载状态 */}
-          {loading && moments.length === 0 && (
-            <div className={styles.loading}>
-              <div className={styles.loadingSpinner} />
-              <span>加载中...</span>
-            </div>
-          )}
-
-          {/* 加载更多状态 */}
-          {loading && moments.length > 0 && (
-            <div className={styles.loadMore}>
-              <div className={styles.loadingSpinner} />
-              <span>加载中...</span>
-            </div>
-          )}
-
           {/* 没有更多数据 */}
           {!hasNext && moments.length > 0 && (
             <div className={styles.noMore}>
@@ -199,8 +184,8 @@ export const MomentsPage: React.FC = () => {
             </div>
           )}
 
-          {/* 空状态 */}
-          {!loading && moments.length === 0 && !error && (
+          {/* 空状态 - 只有在已初始化且非加载状态且动态确实为空时才显示 */}
+          {initialized && !loading && moments.length === 0 && !error && (
             <div className={styles.empty}>
               <Edit3 size={48} className={styles.emptyIcon} />
               <h3>还没有动态</h3>
@@ -223,13 +208,13 @@ export const MomentsPage: React.FC = () => {
         onClose={() => setShowPublishDialog(false)}
       />
 
-      {/* 通知面板 - 朋友圈专用 */}
+      {/* 通知面板  */}
       <NotificationPanel
         isOpen={isNotificationPanelOpen}
         onClose={closeNotificationPanel}
         customNotifications={momentNotifications}
         customStats={momentStats}
-        title="朋友圈通知"
+        title="动态通知"
       />
 
       {/* 错误提示 */}

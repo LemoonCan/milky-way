@@ -91,6 +91,14 @@ class FriendService {
     const response = await http.get<ApiResponse<number>>('/friends/count')
     return response.data
   }
+
+  /**
+   * 获取好友申请数量
+   */
+  async countApplications(): Promise<ApiResponse<number>> {
+    const response = await http.get<ApiResponse<number>>('/friends/applications/count')
+    return response.data
+  }
 }
 
 // 导出服务实例

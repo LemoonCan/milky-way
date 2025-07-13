@@ -25,6 +25,9 @@ public interface FriendMapper {
      */
     List<FriendDO> findFriends(String userId, Character lastLetter, String lastNickName, int pageSize);
 
+    @Select("select count(1) from friend_application where to_user_id = #{userId} and status = 'APPLYING'")
+    int countFriendApplications(String userId);
+
     @Select("select count(1) from friend where user_id = #{userId}")
     int countFriends(String userId);
 

@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { EmojiText } from '../EmojiText'
 import { Portal } from '../Portal'
+import { preloadEmojiPickerSize } from '../../utils/emojiCache'
 import styles from '../../css/chats/EmojiPicker.module.css'
 
 interface EmojiPickerProps {
@@ -89,6 +90,7 @@ const EMOJI_CATEGORIES = {
 }
 
 const MAX_RECENT_EMOJIS = 30
+const EMOJIS_PER_BATCH = 60 // 每批渲染的emoji数量（8列×6行）
 
 export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   isVisible,
@@ -98,7 +100,39 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState('smileys')
   const [recentEmojis, setRecentEmojis] = useState<string[]>([])
+  const [visibleEmojis, setVisibleEmojis] = useState<number>(EMOJIS_PER_BATCH)
   const pickerRef = useRef<HTMLDivElement>(null)
+  const emojiGridRef = useRef<HTMLDivElement>(null)
+
+  // 准备分类数据（包含最近使用）
+  const categories = useMemo(() => ({
+    recent: {
+      name: '最近使用',
+      icon: '🕐',
+      emojis: recentEmojis
+    },
+    ...Object.fromEntries(
+      Object.entries(EMOJI_CATEGORIES).filter(([key]) => key !== 'recent')
+    )
+  }), [recentEmojis])
+
+  // 获取当前分类的emoji（限制数量）
+  const currentCategoryEmojis = useMemo(() => {
+    const currentCategory = categories[activeCategory as keyof typeof categories]
+    if (!currentCategory) {
+      console.log(`[EmojiPicker] 找不到分类: ${activeCategory}`)
+      return []
+    }
+    
+    const result = currentCategory.emojis.slice(0, visibleEmojis)
+    
+    // 开发环境下的调试信息
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[EmojiPicker] 分类: ${activeCategory}, 总数: ${currentCategory.emojis.length}, 可见: ${visibleEmojis}, 当前: ${result.length}`)
+    }
+    
+    return result
+  }, [activeCategory, visibleEmojis, categories])
 
   // 加载最近使用的emoji
   useEffect(() => {
@@ -117,6 +151,22 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     }
   }, [])
 
+  // 当面板显示时，预加载当前分类的emoji
+  useEffect(() => {
+    if (isVisible && activeCategory) {
+      const currentCategory = EMOJI_CATEGORIES[activeCategory as keyof typeof EMOJI_CATEGORIES]
+      if (currentCategory?.emojis) {
+        // 异步预加载当前分类的emoji（20px尺寸用于面板）
+        preloadEmojiPickerSize(currentCategory.emojis.slice(0, visibleEmojis))
+      }
+    }
+  }, [isVisible, activeCategory, visibleEmojis])
+
+  // 重置分类时重置可见emoji数量
+  useEffect(() => {
+    setVisibleEmojis(EMOJIS_PER_BATCH)
+  }, [activeCategory])
+
   // 计算弹框位置
   const getPickerPosition = () => {
     if (!triggerElement) {
@@ -126,8 +176,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     const rect = triggerElement.getBoundingClientRect()
     const pickerWidth = 320
     const pickerHeight = 400
-    
-
     
     // 计算按钮中心点，水平居中对齐
     const buttonCenterX = rect.left + rect.width / 2
@@ -166,7 +214,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   }
 
   // 处理emoji选择
-  const handleEmojiSelect = (emoji: string) => {
+  const handleEmojiSelect = useCallback((emoji: string) => {
     // 添加到最近使用
     const newRecentEmojis = [emoji, ...recentEmojis.filter(e => e !== emoji)]
       .slice(0, MAX_RECENT_EMOJIS)
@@ -176,7 +224,39 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
     
     // 调用回调
     onEmojiSelect(emoji)
-  }
+  }, [recentEmojis, onEmojiSelect])
+
+  // 处理滚动加载更多emoji
+  const handleScroll = useCallback(() => {
+    const grid = emojiGridRef.current
+    if (!grid) return
+
+    const { scrollTop, scrollHeight, clientHeight } = grid
+    // 滚动到底部附近时加载更多
+    if (scrollHeight - scrollTop - clientHeight < 50) {
+      const currentCategory = EMOJI_CATEGORIES[activeCategory as keyof typeof EMOJI_CATEGORIES]
+      if (currentCategory && visibleEmojis < currentCategory.emojis.length) {
+        const newVisibleCount = Math.min(
+          visibleEmojis + EMOJIS_PER_BATCH,
+          currentCategory.emojis.length
+        )
+        setVisibleEmojis(newVisibleCount)
+        
+        // 预加载新显示的emoji
+        const newEmojis = currentCategory.emojis.slice(visibleEmojis, newVisibleCount)
+        preloadEmojiPickerSize(newEmojis)
+      }
+    }
+  }, [activeCategory, visibleEmojis])
+
+  // 绑定滚动事件
+  useEffect(() => {
+    const grid = emojiGridRef.current
+    if (grid) {
+      grid.addEventListener('scroll', handleScroll)
+      return () => grid.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
 
   // 点击外部关闭
   useEffect(() => {
@@ -201,18 +281,6 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   if (!isVisible) return null
 
   const pickerPosition = getPickerPosition()
-
-  // 准备分类数据（包含最近使用）
-  const categories = {
-    recent: {
-      name: '最近使用',
-      icon: '🕐',
-      emojis: recentEmojis
-    },
-    ...Object.fromEntries(
-      Object.entries(EMOJI_CATEGORIES).filter(([key]) => key !== 'recent')
-    )
-  }
 
   const categoryKeys = recentEmojis.length > 0 
     ? ['recent', ...Object.keys(EMOJI_CATEGORIES).filter(key => key !== 'recent')]
@@ -245,8 +313,8 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
         </div>
 
         {/* emoji网格 */}
-        <div className={styles.emojiGrid}>
-          {categories[activeCategory as keyof typeof categories]?.emojis.map((emoji, index) => (
+        <div className={styles.emojiGrid} ref={emojiGridRef}>
+          {currentCategoryEmojis.map((emoji, index) => (
             <button
               key={`${activeCategory}-${index}`}
               className={styles.emojiBtn}
@@ -256,12 +324,21 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
               <EmojiText text={emoji} size="20px" />
             </button>
           ))}
+          
+
         </div>
 
         {/* 底部信息 */}
         <div className={styles.footer}>
           <span className={styles.categoryName}>
             {categories[activeCategory as keyof typeof categories]?.name}
+          </span>
+          <span className={styles.emojiCount}>
+            {(() => {
+              const currentCategory = categories[activeCategory as keyof typeof categories]
+              const totalEmojis = currentCategory?.emojis.length || 0
+              return `${currentCategoryEmojis.length}${totalEmojis > 0 ? `/${totalEmojis}` : ''}`
+            })()}
           </span>
         </div>
       </div>
