@@ -114,7 +114,7 @@ export class ErrorHandler {
       case 'ECONNREFUSED':
         return '无法连接到服务器'
       default:
-        return '网络错误，请检查网络连接'
+        return '网络错误'
     }
   }
 

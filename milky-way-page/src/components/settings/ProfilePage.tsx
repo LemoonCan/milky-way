@@ -27,7 +27,6 @@ interface FormErrors {
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
-  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -71,7 +70,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   }, [])
 
   const loadUserInfo = async () => {
-    setLoading(true)
     setError('')
     
     try {
@@ -93,8 +91,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     } catch (err) {
       console.error('获取用户信息失败:', err)
       setError('获取用户信息失败，请稍后重试')
-    } finally {
-      setLoading(false)
     }
   }
 

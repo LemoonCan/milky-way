@@ -40,45 +40,47 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const lastRequestedUserIdRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const [user, setUser] = useState<UserDetailInfo | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [shouldShowModal, setShouldShowModal] = useState(false);
 
   // 获取用户详细信息
   useEffect(() => {
     if (isVisible && userId) {
       // 如果是重复请求相同的用户ID，避免重复
-      if (lastRequestedUserIdRef.current === userId) {
+      if (lastRequestedUserIdRef.current === userId && user && !error) {
         console.log("用户详情已存在，跳过重复请求，用户ID:", userId);
+        setShouldShowModal(true);
         return;
       }
 
       lastRequestedUserIdRef.current = userId;
-      setLoading(true);
       setError(null);
+      setShouldShowModal(false);
 
       userService
         .getUserDetail(userId)
         .then((response: ApiResponse<UserDetailInfo>) => {
           if (response.success && response.data) {
             setUser(response.data);
+            setShouldShowModal(true); // 数据加载成功后才显示弹框
           } else {
             setError("获取用户信息失败");
+            setShouldShowModal(false); // 加载失败时不显示弹框
           }
-          setLoading(false);
         })
         .catch((err) => {
           console.error("获取用户详细信息失败:", err);
           setError("获取用户信息失败");
-          setLoading(false);
+          setShouldShowModal(false); // 加载失败时不显示弹框
         });
     } else if (!isVisible) {
       // 弹框关闭时重置状态
       setUser(null);
       setError(null);
-      setLoading(true);
+      setShouldShowModal(false);
       lastRequestedUserIdRef.current = null;
     }
-  }, [isVisible, userId]);
+  }, [isVisible, userId, user, error]);
 
   // 跳转到用户动态页面
   const handleNavigateToUserMoments = () => {
@@ -181,7 +183,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     return null;
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || !shouldShowModal) return null;
 
   const modalPosition = getModalPosition();
 
@@ -195,12 +197,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         style={modalPosition}
         onClick={(e) => e.stopPropagation()}
       >
-        {error ? (
-          <div className={styles.error}>
-            <div className={styles.errorIcon}>⚠️</div>
-            <span>{error}</span>
-          </div>
-        ) : user ? (
+        {user && (
           <>
             {/* 头像和基本信息区域 */}
             <div className={styles.basicInfo}>
@@ -280,7 +277,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </div>
             )}
           </>
-        ) : null}
+        )}
       </div>
     </>
   );

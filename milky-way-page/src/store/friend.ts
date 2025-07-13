@@ -157,7 +157,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     
     try {
       const params: { pageSize: number; lastId?: string } = {
-        pageSize: 20
+        pageSize: 10
       }
       
       // 如果不是刷新操作，使用游标参数

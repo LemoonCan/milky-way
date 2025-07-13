@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { momentService } from '../services/moment'
 import { fileService, FilePermission } from '../services/file'
 import { useUserStore } from './user'
+import { getErrorMessage } from '../lib/error-handler'
 import type { 
   MomentDTO, 
   PublishParam, 
@@ -135,7 +136,7 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
       }
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : '获取动态失败',
+        error: getErrorMessage(error),
         loading: false,
         initialized: true,
         lastFetchTime: now
@@ -257,7 +258,7 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
       }
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : '获取我的动态失败',
+        error: getErrorMessage(error),
         loading: false,
         initialized: true,
         lastFetchTime: now

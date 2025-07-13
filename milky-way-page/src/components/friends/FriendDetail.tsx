@@ -15,7 +15,7 @@ interface FriendDetailProps {
 
 export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const [showMoreActions, setShowMoreActions] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showBlockDialog, setShowBlockDialog] = useState(false)
   const [showUnblockDialog, setShowUnblockDialog] = useState(false)
@@ -147,18 +147,6 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     
     return null
   }
-
-  // 如果正在加载，显示加载状态
-  // if (loading) {
-  //   return (
-  //     <div className={styles.friendDetail}>
-  //       <div className={styles.loadingState}>
-  //         <div className={styles.loadingSpinner}></div>
-  //         <p>加载中...</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }  
 
   return (
     <div className={styles.friendDetail}>

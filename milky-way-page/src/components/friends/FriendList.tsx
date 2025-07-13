@@ -42,6 +42,8 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
   } = useFriendStore()
   
   const listContainerRef = useRef<HTMLDivElement>(null)
+  const applicationsContainerRef = useRef<HTMLDivElement>(null)
+  const friendsContainerRef = useRef<HTMLDivElement>(null)
 
   // 组件加载时获取好友总数和申请数量
   useEffect(() => {
@@ -89,9 +91,9 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     }
   }, [pendingApplicationsCount, newFriendsExpanded, manuallyCollapsed])
 
-  // 处理滚动事件，实现无限滚动加载
-  const handleScroll = useCallback(() => {
-    const container = listContainerRef.current
+  // 好友申请列表滚动检测
+  const handleApplicationsScroll = useCallback(() => {
+    const container = applicationsContainerRef.current
     if (!container || searchQuery.trim()) {
       return
     }
@@ -99,38 +101,60 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     const { scrollTop, scrollHeight, clientHeight } = container
     // 当滚动到距离底部50px时，触发加载更多
     if (scrollHeight - scrollTop - clientHeight < 50) {
-      // 根据当前展开的区域决定加载哪种数据
-      if (newFriendsExpanded && hasNextApplicationsPage && !isApplicationsLoading) {
+      if (hasNextApplicationsPage && !isApplicationsLoading) {
+        console.log('[FriendList] 加载更多好友申请数据')
         fetchMoreFriendApplications()
-      } else if (friendsExpanded && hasNextPage && !isFriendsLoading) {
+      }
+    }
+  }, [
+    searchQuery, 
+    hasNextApplicationsPage,
+    isApplicationsLoading,
+    fetchMoreFriendApplications,
+    lastApplicationId
+  ])
+
+  // 好友列表滚动检测
+  const handleFriendsScroll = useCallback(() => {
+    const container = friendsContainerRef.current
+    if (!container || searchQuery.trim()) {
+      return
+    }
+
+    const { scrollTop, scrollHeight, clientHeight } = container
+    // 当滚动到距离底部50px时，触发加载更多
+    if (scrollHeight - scrollTop - clientHeight < 50) {
+      if (hasNextPage && !isFriendsLoading) {
+        console.log('[FriendList] 加载更多好友数据')
         fetchMoreFriends()
       }
     }
   }, [
     searchQuery, 
-    hasNextPage, 
-    hasNextApplicationsPage,
-    isFriendsLoading, 
-    isApplicationsLoading,
-    fetchMoreFriends, 
-    fetchMoreFriendApplications,
+    hasNextPage,
+    isFriendsLoading,
+    fetchMoreFriends,
     lastLetter, 
-    lastNickName, 
-    lastApplicationId,
-    newFriendsExpanded, 
-    friendsExpanded,
-    friends,
-    friendApplications
+    lastNickName
   ])
 
-  // 绑定滚动事件
+  // 绑定好友申请列表滚动事件
   useEffect(() => {
-    const container = listContainerRef.current
-    if (container) {
-      container.addEventListener('scroll', handleScroll)
-      return () => container.removeEventListener('scroll', handleScroll)
+    const container = applicationsContainerRef.current
+    if (container && newFriendsExpanded) {
+      container.addEventListener('scroll', handleApplicationsScroll)
+      return () => container.removeEventListener('scroll', handleApplicationsScroll)
     }
-  }, [handleScroll])
+  }, [handleApplicationsScroll, newFriendsExpanded])
+
+  // 绑定好友列表滚动事件
+  useEffect(() => {
+    const container = friendsContainerRef.current
+    if (container && friendsExpanded) {
+      container.addEventListener('scroll', handleFriendsScroll)
+      return () => container.removeEventListener('scroll', handleFriendsScroll)
+    }
+  }, [handleFriendsScroll, friendsExpanded])
 
   const handleSelectFriend = (friend: Friend) => {
     setSelectedFriend(friend)
@@ -208,7 +232,7 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                   暂无好友申请
                 </div>
               ) : (
-                <div className={styles.applicationsContainer}>
+                <div className={styles.applicationsContainer} ref={applicationsContainerRef}>
                   {displayApplications.map((application) => (
                     <FriendApplicationItem
                       key={application.id}
@@ -247,7 +271,7 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                   {searchQuery ? '未找到匹配的好友' : '暂无好友'}
                 </div>
               ) : (
-                <div className={styles.friendsContainer}>
+                <div className={styles.friendsContainer} ref={friendsContainerRef}>
                   {filteredFriends.map((friend) => (
                     <FriendListItem
                       key={friend.id}
