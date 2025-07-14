@@ -214,7 +214,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
                         />
                         <span className={styles.permissionText}>
                           <strong>全部权限</strong>
-                          <small>可查看朋友圈、动态等</small>
+                          <small>可查看动态等</small>
                         </span>
                       </label>
                       <label className={styles.permissionOption}>

@@ -50,7 +50,7 @@ class MomentService {
   }
 
   /**
-   * 获取朋友圈动态列表
+   * 获取好友动态列表
    */
   async getFriendMoments(params: MomentsQueryParams): Promise<ApiResponse<Slices<MomentDTO>>> {
     const response = await http.get<ApiResponse<Slices<MomentDTO>>>('/moments/myFriends', { params })

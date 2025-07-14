@@ -33,7 +33,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
   const navItems = [
     { id: 'messages', icon: MessageCircle, label: '消息' },
     { id: 'friends', icon: Users, label: '好友' },
-    { id: 'moments', icon: Cherry, label: '朋友圈' },
+    { id: 'moments', icon: Cherry, label: '动态' },
   ]
 
   const handleAvatarClick = () => {

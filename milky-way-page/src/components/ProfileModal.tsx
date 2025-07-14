@@ -104,7 +104,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
     const rect = triggerElement.getBoundingClientRect();
     const modalWidth = 320;
-    const modalHeight = showActions ? 380 : 320; // 增加高度以容纳朋友圈
+    const modalHeight = showActions ? 380 : 320; 
 
     // 弹框默认出现在触发元素右侧，垂直居中对齐
     let top = rect.top + rect.height / 2 - modalHeight / 2;
@@ -150,7 +150,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     }
   }, [isVisible, onClose]);
 
-  // 格式化朋友圈内容
+  // 格式化动态内容
   const formatMomentContent = (moment: UserDetailInfo["lastMoment"]) => {
     if (!moment) return null;
 
@@ -165,7 +165,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <img
               key={index}
               src={imageUrl}
-              alt={`朋友圈图片 ${index + 1}`}
+              alt={`动态图片 ${index + 1}`}
               className={styles.momentImage}
             />
           ))}

@@ -116,7 +116,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     setShowMoreActions(false)
   }
 
-  // 格式化朋友圈内容
+  // 格式化动态内容
   const formatMomentContent = (moment: UserDetailInfo['lastMoment']) => {
     if (!moment) return null
     
@@ -132,7 +132,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
             <img
               key={index}
               src={imageUrl}
-              alt={`朋友圈图片 ${index + 1}`}
+              alt={`动态图片 ${index + 1}`}
               className={styles.momentImage}
             />
           ))}

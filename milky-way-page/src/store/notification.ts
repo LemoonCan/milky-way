@@ -88,7 +88,7 @@ const formatNotificationContent = (
     case MessageNotifyType.MOMENT_CREATE: {
       const data = content as MomentDTO
       return {
-        title: '朋友圈动态',
+        title: '新动态',
         message: `${data.user.nickName} 发布了新动态`,
         avatar: data.user.avatar
       }
@@ -103,7 +103,7 @@ const formatNotificationContent = (
       const data = content as LikeDTO
       return {
         title: '点赞提醒',
-        message: `${data.user.nickName} 赞了您的朋友圈`,
+        message: `${data.user.nickName} 赞了您的动态`,
         avatar: data.user.avatar
       }
     }
@@ -117,7 +117,7 @@ const formatNotificationContent = (
       const data = content as CommentWithMomentDTO
       return {
         title: '评论提醒',
-        message: `${data.user.nickName} 评论了您的朋友圈`,
+        message: `${data.user.nickName} 评论了您的动态`,
         avatar: data.user.avatar
       }
     }

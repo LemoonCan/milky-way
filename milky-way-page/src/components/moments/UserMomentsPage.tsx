@@ -102,7 +102,7 @@ export const UserMomentsPage: React.FC = () => {
       <div className={styles.errorPage}>
         <div className={styles.errorMessage}>用户ID不能为空</div>
         <Button onClick={handleBack} variant="outline">
-          返回朋友圈
+          返回好友动态
         </Button>
       </div>
     )
@@ -120,7 +120,7 @@ export const UserMomentsPage: React.FC = () => {
               size="icon"
               onClick={handleBack}
               className={styles.iconButton}
-              title="返回朋友圈"
+              title="返回好友动态"
             >
               <Undo2 size={20} />
             </Button>
