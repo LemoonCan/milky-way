@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.temporal.ChronoUnit;
+
 /**
  * @author lemoon
  * @since 2025/5/1
@@ -60,7 +62,7 @@ public class FileController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileDTO.getFileName() + "\"")
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400, s-maxage=86400")
                 .header(HttpHeaders.ETAG, "\"" + fileId + "\"")
-                .header(HttpHeaders.EXPIRES, java.time.Instant.now().plus(1, java.time.temporal.ChronoUnit.DAYS).toString())
+                .header(HttpHeaders.EXPIRES, java.time.Instant.now().plus(1, ChronoUnit.DAYS).toString())
                 .body(fileDTO.getResource());
     }
 

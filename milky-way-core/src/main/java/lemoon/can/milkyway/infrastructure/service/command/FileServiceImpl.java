@@ -1,19 +1,19 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
+import lemoon.can.milkyway.common.exception.BusinessException;
+import lemoon.can.milkyway.common.exception.ErrorCode;
+import lemoon.can.milkyway.common.utils.Snowflake;
+import lemoon.can.milkyway.common.utils.security.AccessTokenManager;
+import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lemoon.can.milkyway.config.properties.Env;
 import lemoon.can.milkyway.domain.file.FileMetaInfo;
 import lemoon.can.milkyway.facade.dto.AccessToken;
 import lemoon.can.milkyway.facade.dto.FileDTO;
 import lemoon.can.milkyway.facade.dto.FileInfoDTO;
-import lemoon.can.milkyway.common.exception.BusinessException;
-import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.facade.service.command.FileService;
 import lemoon.can.milkyway.infrastructure.repository.FileMetaInfoRepository;
 import lemoon.can.milkyway.infrastructure.repository.FileRepository;
-import lemoon.can.milkyway.common.utils.Snowflake;
-import lemoon.can.milkyway.common.utils.security.AccessTokenManager;
-import lemoon.can.milkyway.common.utils.security.UserInfoHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
@@ -81,7 +81,8 @@ public class FileServiceImpl implements FileService {
                 return fileInfoDTO;
             }
             case PRIVATE -> {
-                String url = generateTemporaryAccessUrl(fileId, 60 * 10L);
+                long defaultExpireInSeconds = 7 * 24 * 60 * 60L;
+                String url = generateTemporaryAccessUrl(fileId, defaultExpireInSeconds);
                 FileInfoDTO fileInfoDTO = new FileInfoDTO();
                 fileInfoDTO.setFileId(fileId);
                 fileInfoDTO.setFileAccessUrl(url);

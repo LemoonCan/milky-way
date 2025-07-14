@@ -9,6 +9,7 @@ import { CommentList } from './CommentList'
 import { CommentInput } from './CommentInput'
 import { ProfileModal } from '../ProfileModal'
 import { ConfirmDialog } from '../ui/confirm-dialog'
+import { ImagePreviewModal } from '../ImagePreviewModal'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
 import type { MomentDTO, SimpleUserDTO } from '../../types/api'
@@ -26,6 +27,8 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [parentCommentId, setParentCommentId] = useState<string | undefined>(undefined)
   const [replyToUser, setReplyToUser] = useState<SimpleUserDTO | undefined>(undefined)
+  const [showImagePreview, setShowImagePreview] = useState(false)
+  const [previewImageIndex, setPreviewImageIndex] = useState(0)
   const avatarRef = useRef<HTMLDivElement>(null)
   
   const { likeMoment, unlikeMoment, deleteMoment, operationLoading } = useMomentStore()
@@ -121,21 +124,32 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
             key={index}
             className={styles.imageItem}
           >
-            <LazyImage
-              src={url}
-              alt={`动态图片 ${index + 1}`}
-              className={styles.momentImage}
-              placeholder={
-                <div className={styles.imagePlaceholder}>
-                  <div className={styles.placeholderShimmer} />
-                </div>
-              }
-            />
+            <div 
+              className={styles.imageWrapper}
+              onClick={() => {
+                setPreviewImageIndex(index)
+                setShowImagePreview(true)
+              }}
+            >
+              <LazyImage
+                src={url}
+                alt={`动态图片 ${index + 1}`}
+                className={styles.momentImage}
+                placeholder={
+                  <div className={styles.imagePlaceholder}>
+                    <div className={styles.placeholderShimmer} />
+                  </div>
+                }
+              />
+            </div>
             {/* 如果是最后一张且还有更多图片 */}
             {!showAllImages && index === maxDisplay - 1 && images.length > maxDisplay && (
               <div 
                 className={styles.moreImagesOverlay}
-                onClick={() => setShowAllImages(true)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowAllImages(true)
+                }}
               >
                 <span>+{images.length - maxDisplay}</span>
               </div>
@@ -340,6 +354,15 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
             </div>
           </div>
         }
+      />
+      
+      {/* 图片预览弹框 */}
+      <ImagePreviewModal
+        isOpen={showImagePreview}
+        onClose={() => setShowImagePreview(false)}
+        images={moment.medias || []}
+        currentIndex={previewImageIndex}
+        onIndexChange={setPreviewImageIndex}
       />
     </div>
   )

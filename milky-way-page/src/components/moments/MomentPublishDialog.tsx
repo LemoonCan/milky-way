@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import { EmojiPicker } from '../chats/EmojiPicker'
 import { Avatar } from '../Avatar'
 import { LazyImage } from '../LazyImage'
+import { ImagePreviewModal } from '../ImagePreviewModal'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
 import styles from '../../css/moments/MomentPublishDialog.module.css'
@@ -22,6 +23,9 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [emojiButtonElement, setEmojiButtonElement] = useState<HTMLElement | null>(null)
+  const [showImagePreview, setShowImagePreview] = useState(false)
+  const [previewImageIndex, setPreviewImageIndex] = useState(0)
+
   
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -30,7 +34,7 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
   const { currentUser } = useUserStore()
 
   // 处理文件选择
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (files.length === 0) return
 
@@ -41,6 +45,8 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
     // 生成预览URL
     const newUrls = files.map(file => URL.createObjectURL(file))
     setPreviewUrls(prev => [...prev, ...newUrls].slice(0, 9))
+
+
   }
 
   // 移除图片
@@ -55,6 +61,8 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
     if (previewUrls[index]) {
       URL.revokeObjectURL(previewUrls[index])
     }
+    
+
   }
 
   // 处理发布
@@ -73,7 +81,7 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
     }
   }
 
-  // 处理关闭
+    // 处理关闭
   const handleClose = () => {
     if (publishLoading) return
     
@@ -83,6 +91,9 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
     setSelectedImages([])
     setContent('')
     setShowEmojiPicker(false)
+    setShowImagePreview(false)
+    setPreviewImageIndex(0)
+    
     onClose()
   }
 
@@ -128,11 +139,20 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
       <div className={styles.imagePreview}>
         {previewUrls.map((url, index) => (
           <div key={index} className={styles.previewItem}>
-            <LazyImage
-              src={url}
-              alt={`预览图片 ${index + 1}`}
-              className={styles.previewImage}
-            />
+            <div 
+              className={styles.imageWrapper}
+              onClick={() => {
+                setPreviewImageIndex(index)
+                setShowImagePreview(true)
+              }}
+            >
+              <LazyImage
+                src={url}
+                alt={`预览图片 ${index + 1}`}
+                className={styles.previewImage}
+              />
+            </div>
+            
             <Button
               variant="ghost"
               size="icon"
@@ -275,6 +295,15 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
           onClose={() => setShowEmojiPicker(false)}
           onEmojiSelect={handleEmojiSelect}
           triggerElement={emojiButtonElement}
+        />
+        
+        {/* 图片预览弹框 */}
+        <ImagePreviewModal
+          isOpen={showImagePreview}
+          onClose={() => setShowImagePreview(false)}
+          images={previewUrls}
+          currentIndex={previewImageIndex}
+          onIndexChange={setPreviewImageIndex}
         />
       </div>
     </div>

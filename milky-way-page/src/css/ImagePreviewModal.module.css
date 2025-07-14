@@ -1,0 +1,296 @@
+/* 背景遮罩 */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 弹框主体 */
+.modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* 图片和工具栏区域 */
+.imageSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  max-width: 95vw;
+  max-height: 95vh;
+  pointer-events: auto;
+}
+
+/* 图片上方工具栏 */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  width: 100%;
+  z-index: 10;
+  padding: 0 5px;
+}
+
+.imageCounter {
+  position: absolute;
+  left: 5px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toolButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.toolButton {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toolButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  color: #333;
+  transform: scale(1.1);
+}
+
+.toolButton:focus {
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.toolButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.closeButton {
+  background: rgba(255, 71, 87, 0.9);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.closeButton:hover {
+  background: rgba(255, 71, 87, 1);
+  color: white;
+  transform: scale(1.1);
+}
+
+.closeButton:focus {
+  outline: none;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+}
+
+/* 图片容器 */
+.imageContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  width: 85vw;
+  height: 70vh;
+}
+
+/* 横屏时：弹框适合横图，横图填满弹框，竖图等比例适配高度 */
+@media (orientation: landscape) {
+  .imageContainer {
+    width: 80vw;
+    height: 60vh;
+    aspect-ratio: 16 / 9; /* 横图比例 */
+  }
+  
+  .imageSection {
+    max-width: 90vw;
+    max-height: 85vh;
+  }
+}
+
+/* 竖屏时：弹框适合竖图，竖图填满弹框，横图等比例适配宽度 */
+@media (orientation: portrait) {
+  .imageContainer {
+    width: 70vw;
+    height: 70vh;
+    aspect-ratio: 3 / 4; /* 竖图比例 */
+  }
+  
+  .imageSection {
+    max-width: 85vw;
+    max-height: 90vh;
+  }
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  user-select: none;
+  border-radius: 12px;
+}
+
+/* 导航按钮 */
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  z-index: 20;
+  opacity: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.navButton:focus {
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 1);
+  color: #333;
+  border: none;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.prevButton {
+  left: 10px;
+}
+
+.nextButton {
+  right: 10px;
+}
+
+/* 鼠标悬停在图片容器上时显示导航按钮 */
+.imageContainer:hover .navButton {
+  opacity: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .toolbar {
+    top: 10px;
+    width: 95%;
+    padding: 0 10px;
+  }
+  
+  .imageCounter {
+    left: 10px;
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  
+  .toolButton,
+  .closeButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .navButton {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .prevButton {
+    left: 10px;
+  }
+  
+  .nextButton {
+    right: 10px;
+  }
+  
+  .previewImage {
+    max-width: 95%;
+    max-height: 95%;
+  }
+}
+
+/* 防止拖拽选择 */
+.modal * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .toolButton:hover,
+  .closeButton:hover,
+  .navButton:hover {
+    background: initial;
+    border-color: initial;
+  }
+  
+  .toolButton:active,
+  .closeButton:active,
+  .navButton:active {
+    transform: scale(0.95);
+  }
+}
+
+/* 高对比度支持 */
+@media (prefers-contrast: high) {
+  .overlay {
+    background-color: black;
+  }
+  
+  .toolButton,
+  .navButton {
+    background: black;
+    border: 1px solid white;
+  }
+  
+  .closeButton {
+    background: red;
+    border: 1px solid white;
+  }
+} 
