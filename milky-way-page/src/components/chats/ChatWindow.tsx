@@ -4,9 +4,12 @@ import { Avatar } from '../Avatar'
 import { ProfileModal } from '../ProfileModal'
 import { EmojiPicker } from './EmojiPicker'
 import { ConfirmDialog } from '../ui/confirm-dialog'
-import { Smile, Paperclip, Send, Trash2 } from 'lucide-react'
+import { ImagePreviewModal } from '../ImagePreviewModal'
+import { Smile, Paperclip, Send, Trash2, X, Image, Video, FileText } from 'lucide-react'
 import { useChatStore, isMessageFromMe } from '@/store/chat'
+import { useUserStore } from '@/store/user'
 import { chatService } from '../../services/chat'
+import { fileService, FilePermission } from '../../services/file'
 import type { ChatUser } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
 
@@ -27,12 +30,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [showDeleteChatDialog, setShowDeleteChatDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [showFilePreview, setShowFilePreview] = useState(false)
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set())
+  const [showImagePreview, setShowImagePreview] = useState(false)
+  const [previewImageUrl, setPreviewImageUrl] = useState<string>('')
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const previousUserIdRef = useRef<string | null>(null)
-  const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId, removeChatUser } = useChatStore()
+  const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId, removeChatUser, addMessage, error, setError, clearError } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -54,6 +63,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     if (currentUser && currentUser.id !== previousUserIdRef.current) {
       // 用户切换了聊天对象，立即滚动到底部
       previousUserIdRef.current = currentUser.id
+      
+      // 清空文件选择状态
+      setSelectedFiles([])
+      setShowFilePreview(false)
       
       // 使用多重保障确保滚动生效
       const forceScrollToBottom = () => {
@@ -211,6 +224,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     setShowEmojiPicker(false)
   }
 
+  // 处理图片点击
+  const handleImageClick = (imageUrl: string) => {
+    setPreviewImageUrl(imageUrl)
+    setShowImagePreview(true)
+  }
+
+  // 关闭图片预览
+  const handleCloseImagePreview = () => {
+    setShowImagePreview(false)
+    setPreviewImageUrl('')
+  }
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !currentUser) return
 
@@ -241,14 +266,27 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       sendStatus: 'sending'
     })
 
-    // 使用统一的发送逻辑进行重试
+    // 根据消息类型进行重发
     try {
-      await chatService.sendMessage({
-        chatId: currentUser.id,
-        content: targetMessage.content,
-        messageType: 'TEXT',
-        clientMsgId: retryClientMsgId
-      })
+      const messageType = targetMessage.meta.type
+      
+      if (messageType === 'TEXT') {
+        // 文本消息重发
+        await chatService.sendMessage({
+          chatId: currentUser.id,
+          content: targetMessage.meta.content,
+          messageType: 'TEXT',
+          clientMsgId: retryClientMsgId
+        })
+      } else if (messageType === 'IMAGE' || messageType === 'VIDEO' || messageType === 'FILE') {
+        // 文件消息重发
+        await chatService.sendMessage({
+          chatId: currentUser.id,
+          content: targetMessage.meta.media || '',
+          messageType: messageType,
+          clientMsgId: retryClientMsgId
+        })
+      }
 
       // 设置回执超时：如果15秒内没有收到回执，标记为失败
       setTimeout(() => {
@@ -310,6 +348,273 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     } finally {
       setIsDeleting(false)
     }
+  }
+
+  // 处理文件上传按钮点击
+  const handleFileUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  // 处理文件选择
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+
+    // 检查文件数量限制
+    if (files.length > 9) {
+      setError('最多只能选择9个文件')
+      setTimeout(() => {
+        clearError()
+      }, 3000)
+      return
+    }
+
+    // 先保存文件到数组，然后再重置输入框
+    const fileArray = []
+    for (let i = 0; i < files.length; i++) {
+      fileArray.push(files[i])
+    }
+    
+    // 重置文件输入框
+    event.target.value = ''
+
+    // 设置选中的文件并显示预览
+    setSelectedFiles(fileArray)
+    setShowFilePreview(true)
+  }
+
+  // 移除选中的文件
+  const removeSelectedFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  // 取消文件发送
+  const cancelFileUpload = () => {
+    setSelectedFiles([])
+    setShowFilePreview(false)
+  }
+
+  // 确认发送文件
+  const confirmFileUpload = async () => {
+    if (!currentUser || selectedFiles.length === 0) return
+
+    setShowFilePreview(false)
+    
+    // 立即为每个文件创建临时消息并显示在对话框中
+    const fileMessagesData = selectedFiles.map(file => {
+      const clientMsgId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      const tempMessageId = `temp-${clientMsgId}`
+      const messageType = getMessageTypeFromFile(file)
+      
+      // 创建文件预览URL（用于立即显示）
+      const previewUrl = URL.createObjectURL(file)
+      
+      const messageData = {
+        id: tempMessageId,
+        clientMsgId,
+        chatId: currentUser.id,
+        sender: (() => {
+          // 从 useUserStore 获取真正的当前用户信息
+          const userStore = useUserStore.getState()
+          const realCurrentUser = userStore.currentUser
+          
+          if (realCurrentUser) {
+            return {
+              id: realCurrentUser.id,
+              openId: realCurrentUser.openId,
+              nickName: realCurrentUser.nickName,
+              avatar: realCurrentUser.avatar
+            }
+          } else {
+            return {
+              id: 'unknown',
+              openId: 'unknown',
+              nickName: '我',
+              avatar: undefined
+            }
+          }
+        })(),
+        meta: {
+          type: messageType,
+          content: file.name, // 设置文件名到content中
+          media: previewUrl // 使用预览URL立即显示
+        },
+        sentTime: new Date().toISOString(),
+        read: false,
+        sendStatus: 'sending' as const,
+        fileData: {
+          originalFile: file,
+          isUploading: true,
+          uploadProgress: 0
+        }
+      }
+      
+      return { messageData, clientMsgId, file }
+    })
+    
+    // 立即添加所有消息到对话框
+    fileMessagesData.forEach(({ messageData }) => {
+      addMessage(currentUser.id, messageData)
+    })
+    
+    // 异步上传文件
+    for (const { clientMsgId, file } of fileMessagesData) {
+      handleSingleFileUpload(file, clientMsgId)
+    }
+    
+    // 清空选中的文件
+    setSelectedFiles([])
+  }
+
+  // 处理单个文件上传
+  const handleSingleFileUpload = async (file: File, clientMsgId: string) => {
+    if (!currentUser) return
+
+    const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    
+    try {
+      // 添加到上传中的文件列表
+      setUploadingFiles(prev => new Set([...prev, fileId]))
+
+      // 更新消息状态为上传中
+      updateMessageByClientId(currentUser.id, clientMsgId, {
+        sendStatus: 'sending',
+        fileData: {
+          originalFile: file,
+          isUploading: true,
+          uploadProgress: 0
+        }
+      })
+
+      // 上传文件到服务器
+      const uploadResult = await fileService.uploadFile(file, {
+        permission: FilePermission.PRIVATE
+      })
+
+      // 根据文件类型确定消息类型
+      const messageType = getMessageTypeFromFile(file)
+      
+      // 上传成功后，更新消息的media URL为服务器URL
+      // 同时清理本地预览URL以防止内存泄漏
+      const currentMessages = getChatMessages(currentUser.id)
+      const currentMessage = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
+      if (currentMessage && currentMessage.meta.media && currentMessage.meta.media.startsWith('blob:')) {
+        URL.revokeObjectURL(currentMessage.meta.media)
+      }
+      
+      updateMessageByClientId(currentUser.id, clientMsgId, {
+        meta: {
+          type: messageType,
+          content: file.name, // 保持文件名
+          media: uploadResult.fileAccessUrl
+        },
+        fileData: {
+          originalFile: file,
+          isUploading: false,
+          uploadProgress: 100
+        }
+      })
+
+      // 发送消息到服务器
+      await sendFileMessage(currentUser.id, uploadResult.fileAccessUrl, messageType, clientMsgId)
+
+    } catch (error) {
+      console.error('文件上传失败:', error)
+      
+      // 上传失败时也要清理预览URL
+      const currentMessages = getChatMessages(currentUser.id)
+      const currentMessage = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
+      if (currentMessage && currentMessage.meta.media && currentMessage.meta.media.startsWith('blob:')) {
+        URL.revokeObjectURL(currentMessage.meta.media)
+      }
+      
+      // 标记消息为发送失败
+      updateMessageByClientId(currentUser.id, clientMsgId, {
+        sendStatus: 'failed',
+        fileData: {
+          originalFile: file,
+          isUploading: false,
+          uploadProgress: 0
+        }
+      })
+      
+      // 使用错误提醒替代alert
+      setError(`文件上传失败: ${file.name}`)
+      
+      // 3秒后自动清除错误
+      setTimeout(() => {
+        clearError()
+      }, 3000)
+    } finally {
+      // 从上传中的文件列表中移除
+      setUploadingFiles(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(fileId)
+        return newSet
+      })
+    }
+  }
+
+  // 根据文件类型确定消息类型
+  const getMessageTypeFromFile = (file: File): 'IMAGE' | 'VIDEO' | 'FILE' => {
+    if (file.type.startsWith('image/')) {
+      return 'IMAGE'
+    } else if (file.type.startsWith('video/')) {
+      return 'VIDEO'
+    } else {
+      return 'FILE'
+    }
+  }
+
+  // 发送文件消息
+  const sendFileMessage = async (chatId: string, fileUrl: string, messageType: 'IMAGE' | 'VIDEO' | 'FILE', clientMsgId: string) => {
+    
+    try {
+      // 发送消息到服务器（不再创建新消息，而是更新现有消息）
+      await chatService.sendMessage({
+        chatId,
+        content: fileUrl,
+        messageType,
+        clientMsgId
+      })
+      
+      // 设置回执超时：如果15秒内没有收到回执，标记为失败
+      setTimeout(() => {
+        const currentMessages = getChatMessages(chatId)
+        const message = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
+        if (message && message.sendStatus === 'sending') {
+          updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
+        }
+      }, 15000)
+      
+    } catch (error) {
+      console.error('[ChatWindow] 发送文件消息失败:', error)
+      
+      // 标记消息为发送失败
+      updateMessageByClientId(chatId, clientMsgId, {
+        sendStatus: 'failed'
+      })
+      
+      throw error
+    }
+  }
+
+  // 获取文件类型图标
+  const getFileTypeIcon = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      return <Image size={20} />
+    } else if (file.type.startsWith('video/')) {
+      return <Video size={20} />
+    } else {
+      return <FileText size={20} />
+    }
+  }
+
+  // 格式化文件大小
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
   // 点击外部关闭菜单
@@ -410,23 +715,75 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
             message={message}
             onAvatarClick={handleAvatarClick}
             onRetryMessage={handleRetryMessage}
+            onImageClick={handleImageClick}
           />
         ))}
         <div ref={messagesEndRef} />
       </div>
 
+      {/* 文件预览弹框 */}
+      {showFilePreview && (
+        <div className={styles.filePreviewOverlay}>
+          <div className={styles.filePreviewDialog}>
+            <div className={styles.filePreviewHeader}>
+              <h3>发送文件</h3>
+              <button onClick={cancelFileUpload} className={styles.closeButton}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className={styles.filePreviewContent}>
+              {selectedFiles.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--milky-text-light)' }}>
+                  没有选择文件
+                </div>
+              ) : (
+                selectedFiles.map((file, index) => (
+                  <div key={index} className={styles.filePreviewItem}>
+                    <div className={styles.filePreviewIcon}>
+                      {getFileTypeIcon(file)}
+                    </div>
+                    <div className={styles.filePreviewInfo}>
+                      <div className={styles.filePreviewName}>{file.name}</div>
+                      <div className={styles.filePreviewSize}>{formatFileSize(file.size)}</div>
+                    </div>
+                    <button
+                      onClick={() => removeSelectedFile(index)}
+                      className={styles.removeFileButton}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className={styles.filePreviewActions}>
+              <button onClick={cancelFileUpload} className={styles.cancelButton}>
+                取消
+              </button>
+              <button onClick={confirmFileUpload} className={styles.confirmButton}>
+                发送 ({selectedFiles.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 输入工具栏 */}
       <div className={styles.inputToolbar}>
         <div className={styles.toolbarTop}>
-                  <div className={styles.toolbarLeft}>
-          <div 
-            className={styles.toolBtn}
-            onClick={handleEmojiButtonClick}
-            style={{ cursor: 'pointer' }}
-          >
-            <Smile style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
-          </div>
-            <div className={styles.toolBtn}>
+          <div className={styles.toolbarLeft}>
+            <div 
+              className={styles.toolBtn}
+              onClick={handleEmojiButtonClick}
+              style={{ cursor: 'pointer' }}
+            >
+              <Smile style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
+            </div>
+            <div 
+              className={styles.toolBtn}
+              onClick={handleFileUploadClick}
+              style={{ cursor: 'pointer' }}
+            >
               <Paperclip style={{ width: '20px', height: '20px', color: 'var(--milky-text-light)' }} />
             </div>
           </div>
@@ -445,6 +802,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
             </div>
           </div>
         </div>
+        
+        {/* 文件上传状态提示 */}
+        {uploadingFiles.size > 0 && (
+          <div style={{ padding: '8px', fontSize: '12px', color: 'var(--milky-text-light)' }}>
+            正在上传文件...({uploadingFiles.size} 个文件)
+          </div>
+        )}
         
         <div className={styles.inputContainer}>
           <textarea
@@ -470,6 +834,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         </div>
       </div>
 
+      {/* 隐藏的文件输入框 */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept="*/*"
+        style={{ display: 'none' }}
+        onChange={handleFileSelect}
+      />
+
       {/* 个人信息弹框 */}
       {modalUserId && (
         <ProfileModal
@@ -492,6 +866,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         triggerElement={emojiButtonElement}
       />
 
+      {/* 图片预览弹框 */}
+      <ImagePreviewModal
+        isOpen={showImagePreview}
+        onClose={handleCloseImagePreview}
+        images={previewImageUrl ? [previewImageUrl] : []}
+        currentIndex={0}
+      />
+
       {/* 解散群聊确认弹框 */}
       <ConfirmDialog
         isOpen={showDeleteChatDialog}
@@ -502,6 +884,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         onConfirm={confirmDeleteChat}
         onCancel={() => setShowDeleteChatDialog(false)}
       />
+
+      {/* 错误提示 */}
+      {error && (
+        <div className={styles.errorToast}>
+          <span>{error}</span>
+          <button onClick={clearError} className={styles.errorCloseBtn}>
+            ×
+          </button>
+        </div>
+      )}
     </div>
   )
 } 

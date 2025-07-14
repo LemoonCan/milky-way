@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.facade.dto;
 
-import lemoon.can.milkyway.common.enums.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,17 +30,13 @@ public class MessageInfoDTO {
     private SimpleUserDTO sender;
 
     /**
-     * 类型
+     * 消息内容
      */
-    private MessageType type;
-    
-    /**
-     * 内容
-     */
-    private String content;
+    private MessageMetaDTO meta;
     
     /**
      * 发送时间
      */
     private String sentTime;
+
 }

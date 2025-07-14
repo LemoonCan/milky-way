@@ -2,13 +2,12 @@ package lemoon.can.milkyway.infrastructure.service.query;
 
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
-import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.dto.MessageInfoDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.param.ChatMessagesQueryParam;
 import lemoon.can.milkyway.facade.service.query.ChatQueryService;
 import lemoon.can.milkyway.infrastructure.converter.ChatConverter;
-import lemoon.can.milkyway.infrastructure.converter.MessageConverter2;
+import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.MessageDO;
@@ -35,7 +34,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
     private final ChatConverter chatConverter;
     private final MessageMapper messageMapper;
     private final SecureIdConverterHelper secureIdConverterHelper;
-    private final MessageConverter2 messageConverter2;
+    private final MessageConverter messageConverter;
 
     private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -91,7 +90,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
                 messageDos.remove((messageDos.size() - 1));
             }
             messageDTOS = messageDos.stream()
-                    .map(messageConverter2::toMessageInfoDTO)
+                    .map(messageConverter::toMessageInfoDTO)
                     .toList();
         } else {
             //向前滚动
@@ -105,7 +104,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
             }
 
             for (int i = messageDos.size() - 1; i >= 0; i--) {
-                messageDTOS.add(messageConverter2.toMessageInfoDTO(messageDos.get(i)));
+                messageDTOS.add(messageConverter.toMessageInfoDTO(messageDos.get(i)));
             }
         }
 

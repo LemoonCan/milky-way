@@ -1,6 +1,9 @@
 import React from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
+import { ImageMessage } from './ImageMessage'
+import { VideoMessage } from './VideoMessage'
+import { FileMessage } from './FileMessage'
 import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
 import type { MessageWithStatus } from '@/store/chat'
 import { isMessageFromMe } from '@/store/chat'
@@ -11,12 +14,14 @@ interface MessageBubbleProps {
   message: MessageWithStatus
   onAvatarClick?: (isFromMe: boolean, element: HTMLElement, userId: string) => void
   onRetryMessage?: (messageId: string) => void // 重发消息回调
+  onImageClick?: (imageUrl: string) => void // 图片点击回调
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   onAvatarClick,
   onRetryMessage,
+  onImageClick,
 }) => {
   const { currentUser } = useUserStore()
   
@@ -83,12 +88,59 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     }
   }
 
+  // 渲染消息内容
+  const renderMessageContent = () => {
+    switch (message.meta.type) {
+      case 'IMAGE':
+        return (
+          <ImageMessage 
+            media={message.meta.media || ''} 
+            onLoad={() => {
+              // 图片加载完成后可以进行额外处理
+            }}
+            onClick={() => onImageClick?.(message.meta.media || '')}
+          />
+        )
+      case 'VIDEO':
+        return (
+          <VideoMessage 
+            media={message.meta.media || ''} 
+          />
+        )
+      case 'FILE': {
+        // 只有在上传前预览时才从原始文件中读取文件名
+        const getFileName = () => {
+          // 如果有原始文件且正在上传，使用原始文件名
+          if (message.fileData?.originalFile && message.fileData?.isUploading) {
+            return message.fileData.originalFile.name
+          }
+          // 否则使用 meta.content 中的文件名（正常情况）
+          return message.meta.content
+        }
+        
+        return (
+          <FileMessage 
+            media={message.meta.media || ''} 
+            fileName={getFileName()}
+          />
+        )
+      }
+      case 'TEXT':
+      default:
+        return (
+          <p className={styles.messageText}>
+            <EmojiText text={message.meta.content} size="1.2em" />
+          </p>
+        )
+    }
+  }
+
   // 系统消息特殊处理
-  if (message.type === 'SYSTEM') {
+  if (message.meta.type === 'SYSTEM') {
     return (
       <div className={styles.systemMessageContainer}>
         <div className={styles.systemMessage}>
-          <EmojiText text={message.content} size="0.9em" />
+          <EmojiText text={message.meta.content} size="0.9em" />
         </div>
         <div className={styles.systemMessageTime}>
           {formatTime(message.sentTime)}
@@ -114,13 +166,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       )}
       
       <div className={`${styles.messageContent} ${isFromMe ? styles.messageContentAlignEnd : styles.messageContentAlignStart}`}>
-        <div
-          className={`${styles.messageBubble} ${isFromMe ? styles.messageBubbleSent : styles.messageBubbleReceived}`}
-        >
-          <p className={styles.messageText}>
-            <EmojiText text={message.content} size="1.2em" />
-          </p>
-        </div>
+        {(message.meta.type === 'IMAGE' || message.meta.type === 'VIDEO' || message.meta.type === 'FILE') ? (
+          // 媒体消息不需要气泡背景
+          <div className={styles.mediaMessageContainer}>
+            {renderMessageContent()}
+          </div>
+        ) : (
+          // 文本消息使用气泡背景
+          <div
+            className={`${styles.messageBubble} ${isFromMe ? styles.messageBubbleSent : styles.messageBubbleReceived}`}
+          >
+            {renderMessageContent()}
+          </div>
+        )}
         <div className={styles.messageTimeContainer}>
           <span className={styles.messageTime}>
             {formatTime(message.sentTime)}

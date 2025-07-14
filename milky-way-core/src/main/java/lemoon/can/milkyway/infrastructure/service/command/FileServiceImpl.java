@@ -125,4 +125,13 @@ public class FileServiceImpl implements FileService {
         return env.getDomain() + env.getFileAccessUrl() + "?accessCode=" + accessCode;
     }
 
+    @Override
+    public String getFileName(String temporaryAccessUrl) {
+        String accessCode = temporaryAccessUrl.substring(temporaryAccessUrl.indexOf("accessCode=") + 11);
+        AccessToken accessToken = accessTokenManager.parseAndValidate(accessCode, secretKey);
+
+        FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(accessToken.getObjectId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
+        return fileMetaInfo.getName();
+    }
 }

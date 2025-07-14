@@ -1,33 +1,40 @@
 package lemoon.can.milkyway.common.enums;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
  * 消息类型
  * @author lemoon
  * @since 2025/5/15
  */
+@AllArgsConstructor
+@Getter
 public enum MessageType {
     /**
      * 系统消息
      */
-    SYSTEM,
+    SYSTEM("系统消息"),
     /**
      * 文字
      */
-    TEXT,
+    TEXT("文字"),
     /**
      * 图片
      */
-    IMAGE,
+    IMAGE("图片"),
     /**
      * 声音
      */
-    VOICE,
+    VOICE("声音"),
     /**
      * 视频
      */
-    VIDEO,
+    VIDEO("视频"),
     /**
      * 文件
      */
-    FILE
+    FILE("文件"),
+    ;
+    private final String desc;
 }

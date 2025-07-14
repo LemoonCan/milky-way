@@ -1,0 +1,45 @@
+/* FileMessage 组件样式模块 */
+
+.fileMessage {
+  margin: 0;
+  padding: 0;
+}
+
+.fileMessageContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.fileMessageContent:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fileMessageContent:active {
+  transform: translateY(0);
+}
+
+.fileIcon {
+  color: var(--milky-text-light);
+  flex-shrink: 0;
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  word-break: break-all;
+} 

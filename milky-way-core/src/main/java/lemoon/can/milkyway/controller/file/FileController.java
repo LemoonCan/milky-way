@@ -17,6 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 /**
@@ -57,12 +60,14 @@ public class FileController {
     @Operation(summary = "访问")
     public ResponseEntity<Resource> access(@PathVariable String fileId) {
         FileDTO fileDTO = fileService.loadFile(fileId);
+        String encodedFileName = URLEncoder.encode(fileDTO.getFileName(), StandardCharsets.UTF_8)
+                .replace("+", "%20");
         return ResponseEntity.ok()
                 .contentType(FileUtil.parseMediaType(fileDTO.getFileType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileDTO.getFileName() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"file\"; filename*=UTF-8''" + encodedFileName)
                 .header(HttpHeaders.CACHE_CONTROL, "public, max-age=86400, s-maxage=86400")
                 .header(HttpHeaders.ETAG, "\"" + fileId + "\"")
-                .header(HttpHeaders.EXPIRES, java.time.Instant.now().plus(1, ChronoUnit.DAYS).toString())
+                .header(HttpHeaders.EXPIRES, Instant.now().plus(1, ChronoUnit.DAYS).toString())
                 .body(fileDTO.getResource());
     }
 
@@ -75,9 +80,12 @@ public class FileController {
     @Operation(summary = "访问")
     public ResponseEntity<Resource> temporaryAccess(@RequestParam String accessCode) {
         FileDTO fileDTO = fileService.temporaryLoadFile(accessCode);
+        String encodedFileName = URLEncoder.encode(fileDTO.getFileName(), StandardCharsets.UTF_8)
+                .replace("+", "%20");
         return ResponseEntity.ok()
                 .contentType(FileUtil.parseMediaType(fileDTO.getFileType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileDTO.getFileName() + "\"")
+                //加上 filename*=UTF-8
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"file\"; filename*=UTF-8''" + encodedFileName)
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(fileDTO.getResource());
     }

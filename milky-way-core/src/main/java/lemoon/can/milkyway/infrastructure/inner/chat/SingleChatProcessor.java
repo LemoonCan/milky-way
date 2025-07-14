@@ -3,7 +3,7 @@ package lemoon.can.milkyway.infrastructure.inner.chat;
 import lemoon.can.milkyway.domain.chat.Chat;
 import lemoon.can.milkyway.domain.chat.ChatMember;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
-import lemoon.can.milkyway.infrastructure.converter.MessageConverter2;
+import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SingleChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
-    private final MessageConverter2 messageConverter2;
+    private final MessageConverter messageConverter;
 
     /**
      * 推送单聊消息
@@ -41,7 +41,7 @@ public class SingleChatProcessor implements ChatProcessor {
 
             //点对点
             messagingTemplate.convertAndSendToUser(member.getUserId(), "/queue/messages",
-                    messageConverter2.messageContentDTO(message));
+                    messageConverter.messageContentDTO(message));
         }
     }
 }

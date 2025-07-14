@@ -49,4 +49,11 @@ public interface FileService {
      * @return 临时访问链接
      */
     String generateTemporaryAccessUrl(String fileId, Long expireInSeconds);
+
+    /**
+     * 获取文件名称
+     * @param temporaryAccessUrl 临时访问链接
+     * @return 文件名称
+     */
+    String getFileName(String temporaryAccessUrl);
 }

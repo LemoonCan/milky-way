@@ -47,6 +47,7 @@
         END AS avatar,
 
         lm.id AS lastMessageId,
+        lm.type as lastMessageType,
         -- 最后一条消息内容（来自预处理子查询 lm）
         lm.content AS lastMessage,
 
@@ -89,7 +90,7 @@
 
         -- 最后一条消息子查询（提升性能，避免重复查询）
         LEFT JOIN (
-        SELECT m1.id, m1.chat_id, m1.content, m1.sent_time
+        SELECT m1.id, m1.chat_id, m1.type, m1.content, m1.sent_time
         FROM message m1
         INNER JOIN (
         SELECT MAX(id) as max_id, chat_id

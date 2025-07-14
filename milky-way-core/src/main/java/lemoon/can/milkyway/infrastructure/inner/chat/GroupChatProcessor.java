@@ -6,7 +6,7 @@ import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lemoon.can.milkyway.facade.dto.MessageNotifyDTO;
 import lemoon.can.milkyway.infrastructure.converter.ChatConverter;
-import lemoon.can.milkyway.infrastructure.converter.MessageConverter2;
+import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.inner.MessageDestination;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO;
@@ -31,7 +31,7 @@ import java.util.List;
 public class GroupChatProcessor implements ChatProcessor {
     private final SimpMessagingTemplate messagingTemplate;
     private final SecureIdConverterHelper secureIdConverterHelper;
-    private final MessageConverter2 messageConverter2;
+    private final MessageConverter messageConverter;
     private final ChatMapper chatMapper;
     private final ChatMemberMapper chatMemberMapper;
     private final ChatConverter chatConverter;
@@ -42,7 +42,7 @@ public class GroupChatProcessor implements ChatProcessor {
         String destination = pushDestination(chat);
         //广播
         messagingTemplate.convertAndSend(destination,
-                messageConverter2.messageContentDTO(message));
+                messageConverter.messageContentDTO(message));
     }
 
     @Override

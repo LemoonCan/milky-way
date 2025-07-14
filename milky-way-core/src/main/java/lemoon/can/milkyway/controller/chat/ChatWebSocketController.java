@@ -50,8 +50,7 @@ public class ChatWebSocketController {
             MessageDTO failedMessageDTO = new MessageDTO();
             failedMessageDTO.setChatId(param.getChatId());
             failedMessageDTO.setClientMsgId(param.getClientMsgId());
-            failedMessageDTO.setContent(param.getContent());
-            
+
             // 创建失败回执并手动设置data
             Result<MessageDTO> failedResult = Result.fail(ErrorCode.SYSTEM_ERROR, "消息发送失败");
             failedResult.setData(failedMessageDTO);

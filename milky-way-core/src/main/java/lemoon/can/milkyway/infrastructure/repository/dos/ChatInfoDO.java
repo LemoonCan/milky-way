@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.infrastructure.repository.dos;
 
 import lemoon.can.milkyway.common.enums.ChatType;
+import lemoon.can.milkyway.common.enums.MessageType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,10 @@ public class ChatInfoDO {
      * 最新消息ID
      */
     private Long lastMessageId;
+    /**
+     * 最新消息时间
+     */
+    private MessageType lastMessageType;
     /**
      * 最新消息
      */

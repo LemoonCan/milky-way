@@ -6,7 +6,7 @@ import EnvConfig from '../lib/env'
 
 export interface WebSocketMessage {
   chatId: string
-  messageType: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
+  messageType: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
   content: string
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   senderUserId?: string
@@ -36,12 +36,7 @@ export interface MessageReceipt {
   success: boolean
   code: string
   msg: string
-  data?: {
-    id: string
-    clientMsgId?: string
-    chatId: string
-    [key: string]: unknown
-  }
+  data?: MessageDTO
 }
 
 // 连接状态枚举

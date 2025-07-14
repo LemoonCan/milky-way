@@ -33,10 +33,13 @@ export interface MessageDTO {
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
-  type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
-  content: string
+  meta: {
+    type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
+    content: string
+    media?: string | null
+  }
   sentTime: string
-  read: boolean
+  read?: boolean
   readTime?: string
 }
 
@@ -67,7 +70,7 @@ export interface ChatMessagesQueryParam {
 export interface SendMessageRequest {
   chatId: string
   content: string
-  messageType?: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE'
+  messageType?: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
   clientMsgId?: string // 客户端消息ID，用于回执匹配
 }
 

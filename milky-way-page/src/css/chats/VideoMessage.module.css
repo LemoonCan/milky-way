@@ -1,0 +1,17 @@
+/* VideoMessage 组件样式模块 */
+
+.videoMessage {
+  margin: 0;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.messageVideo {
+  max-width: 320px;
+  max-height: 320px;
+  width: auto;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+} 
