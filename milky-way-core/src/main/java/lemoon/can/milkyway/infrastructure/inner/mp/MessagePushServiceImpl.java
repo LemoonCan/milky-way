@@ -147,6 +147,9 @@ public class MessagePushServiceImpl implements MessagePushService {
 
         if (comment.getParentCommentId() != null) {
             SimpleUserDTO replyUser = commentMapper.selectReplyUser(comment.getParentCommentId());
+            if(replyUser.getId().equals(content.getUser().getId())){
+                return;
+            }
             content.setReplyUser(replyUser);
             messagingTemplate.convertAndSendToUser(replyUser.getId(), MessageDestination.NOTIFY_DEST, payload);
         }

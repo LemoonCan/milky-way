@@ -4,17 +4,22 @@ import { RefreshCw, Undo2 } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Avatar } from '../Avatar'
 import { MomentItem } from './MomentItem'
+import { useMomentStore } from '../../store/moment'
 import { momentService } from '../../services/moment'
-import type { MomentDTO } from '../../types/api'
 import styles from '../../css/moments/MomentDetailPage.module.css'
 
 export const MomentDetailPage: React.FC = () => {
   const { momentId } = useParams<{ momentId: string }>()
   const navigate = useNavigate()
-  const [moment, setMoment] = useState<MomentDTO | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // 使用 useMomentStore 来管理状态
+  const { moments, addMomentLocally } = useMomentStore()
+  
+  // 从 store 中查找当前动态
+  const moment = moments.find(m => m.id === momentId)
 
   // 加载动态详情
   const loadMoment = async () => {
@@ -24,7 +29,11 @@ export const MomentDetailPage: React.FC = () => {
       setLoading(true)
       setError(null)
       const momentData = await momentService.getMoment(momentId)
-      setMoment(momentData)
+      
+      // 将数据添加到 store 中（如果不存在）
+      if (momentData) {
+        addMomentLocally(momentData)
+      }
     } catch (err) {
       console.error('Failed to load moment:', err)
       // 尝试从错误对象中获取具体的错误消息
@@ -37,8 +46,14 @@ export const MomentDetailPage: React.FC = () => {
 
   // 初始化加载
   useEffect(() => {
+    // 如果 store 中已经有这个动态，就不需要重新加载
+    if (moment) {
+      setLoading(false)
+      return
+    }
+    
     loadMoment()
-  }, [momentId])
+  }, [momentId, moment])
 
   // 刷新动态
   const handleRefresh = async () => {
