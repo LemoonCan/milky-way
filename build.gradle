@@ -11,9 +11,9 @@ allprojects{
         // 先检查本地
         mavenLocal()
         // 阿里云镜像 https://developer.aliyun.com/mvn/guide
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/gradle-plugin' }
         // 最后检查公开仓库
         mavenCentral()
     }
