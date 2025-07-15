@@ -777,6 +777,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     
     const state = get()
     const currentChatState = state.chatMessagesMap[chatId]
+    const chatUser = state.chatUsers.find(user => user.id === chatId)
+    
+    // 在群聊中，如果收到的是自己发送的消息，直接跳过所有处理（避免重复）
+    // 因为消息回执已经处理了聊天列表的更新
+    const isMyMessage = isMessageFromMe(messageDTO)
+    if (chatUser && chatUser.chatType === 'GROUP' && isMyMessage) {
+      console.log(`[ChatStore] 群聊中收到自己发送的消息 ${messageDTO.id}，跳过处理避免重复`)
+      return
+    }
     
     // 检查消息是否已存在（避免重复添加）
     if (currentChatState) {
@@ -791,10 +800,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     get().addMessage(chatId, messageDTO)
     
     // 更新聊天用户信息
-    const chatUser = state.chatUsers.find(user => user.id === chatId)
     if (chatUser) {
-      // 检查是否是自己发送的消息
-      const isMyMessage = isMessageFromMe(messageDTO)
+      // 检查是否是自己发送的消息（在前面已经做过了，这里直接使用）
       const shouldIncreaseUnread = !isMyMessage && state.currentChatId !== chatId
       
       console.log(`[ChatStore] 更新聊天用户信息 - 聊天ID: ${chatId}, 是否增加未读: ${shouldIncreaseUnread}`)

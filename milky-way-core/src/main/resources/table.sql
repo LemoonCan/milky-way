@@ -70,9 +70,6 @@ CREATE TABLE file_meta_info
     update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
 
-alter table file_meta_info
-    add column extra VARCHAR(255) COMMENT '扩展信息' after permission;
-
 -- 聊天室表
 CREATE TABLE chat
 (
