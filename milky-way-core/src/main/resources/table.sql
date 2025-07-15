@@ -65,9 +65,13 @@ CREATE TABLE file_meta_info
     storage_path VARCHAR(255) COMMENT '文件存储路径',
     size         BIGINT COMMENT '文件大小(字节)',
     permission   VARCHAR(16)  NOT NULL COMMENT '权限',
+    extra        VARCHAR(255) COMMENT '扩展信息',
     create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
+
+alter table file_meta_info
+    add column extra VARCHAR(255) COMMENT '扩展信息' after permission;
 
 -- 聊天室表
 CREATE TABLE chat
@@ -148,6 +152,6 @@ CREATE TABLE likes
 (
     moment_id    BIGINT      NOT NULL COMMENT '动态ID',
     like_user_id VARCHAR(24) NOT NULL COMMENT '点赞用户ID',
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (moment_id, like_user_id)
 );

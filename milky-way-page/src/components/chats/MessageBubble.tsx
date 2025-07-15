@@ -104,7 +104,10 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       case 'VIDEO':
         return (
           <VideoMessage 
-            media={message.meta.media || ''} 
+            coverUrl={message.meta.media || ''} 
+            videoUrl={message.meta.videoUrl}
+            sendStatus={message.sendStatus}
+            fileData={message.fileData}
           />
         )
       case 'FILE': {

@@ -21,6 +21,7 @@ public interface FileService {
 
     /**
      * 访问文件
+     *
      * @param fileId 文件ID
      * @return 文件
      */
@@ -28,6 +29,7 @@ public interface FileService {
 
     /**
      * 临时访问文件
+     *
      * @param accessCode 访问码
      * @return 文件
      */
@@ -44,16 +46,34 @@ public interface FileService {
     /**
      * 生成临时访问链接
      *
-     * @param fileId        文件ID
-     * @param expireInSeconds 过期时间（秒）
+     * @param fileId          文件ID
+     * @param expireInSeconds 间隔过期时间（秒）
      * @return 临时访问链接
      */
     String generateTemporaryAccessUrl(String fileId, Long expireInSeconds);
 
     /**
+     * 生成临时访问链接
+     *
+     * @param fileId        文件ID
+     * @param expireAtSec 过期时间（毫秒）
+     * @return 临时访问链接
+     */
+    String generateTemporaryAtAccessUrl(String fileId, Long expireAtSec);
+
+    /**
      * 获取文件名称
+     *
      * @param temporaryAccessUrl 临时访问链接
      * @return 文件名称
      */
     String getFileName(String temporaryAccessUrl);
+
+    /**
+     * 获取视频封面图访问链接
+     *
+     * @param temporaryAccessUrl 文件ID
+     * @return 视频封面图访问链接
+     */
+    String getVideoCoverImageAccessUrl(String temporaryAccessUrl);
 }

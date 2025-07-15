@@ -12,6 +12,7 @@ import lemoon.can.milkyway.facade.dto.FileDTO;
 import lemoon.can.milkyway.facade.dto.FileInfoDTO;
 import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.facade.service.command.FileService;
+import lemoon.can.milkyway.infrastructure.inner.VideoService;
 import lemoon.can.milkyway.infrastructure.repository.FileMetaInfoRepository;
 import lemoon.can.milkyway.infrastructure.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,9 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -40,6 +44,7 @@ public class FileServiceImpl implements FileService {
     private final FileMetaInfoRepository fileMetaInfoRepository;
     private final Env env;
     private final AccessTokenManager accessTokenManager;
+    private final VideoService videoService;
     @Value("${file.access.secret-key}")
     private String secretKey;
 
@@ -58,6 +63,7 @@ public class FileServiceImpl implements FileService {
             log.error("文件{}上传失败", multipartFile.getOriginalFilename(), e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
         }
+
         FileMetaInfo fileMetaInfo = FileMetaInfo.builder()
                 .id(fileId)
                 .name(multipartFile.getOriginalFilename())
@@ -67,6 +73,9 @@ public class FileServiceImpl implements FileService {
                 .permission(fileParam.getPermission())
                 .build();
         fileMetaInfoRepository.save(fileMetaInfo);
+
+        //额外操作
+        after(fileMetaInfo);
 
         return uploadResult(fileId, fileParam);
     }
@@ -89,6 +98,13 @@ public class FileServiceImpl implements FileService {
                 return fileInfoDTO;
             }
             default -> throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的文件权限");
+        }
+    }
+
+    private void after(FileMetaInfo fileMetaInfo) {
+        if (fileMetaInfo.isVideo()) {
+            //如果是视频文件，生成封面图
+            videoService.generateCoverImage(fileMetaInfo);
         }
     }
 
@@ -126,12 +142,35 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public String getFileName(String temporaryAccessUrl) {
-        String accessCode = temporaryAccessUrl.substring(temporaryAccessUrl.indexOf("accessCode=") + 11);
-        AccessToken accessToken = accessTokenManager.parseAndValidate(accessCode, secretKey);
+    public String generateTemporaryAtAccessUrl(String fileId, Long expireAtSec) {
+        String accessCode = accessTokenManager.build(fileId, expireAtSec, secretKey);
+        return env.getDomain() + env.getFileAccessUrl() + "?accessCode=" + accessCode;
+    }
 
+    @Override
+    public String getFileName(String temporaryAccessUrl) {
+        AccessToken accessToken = getAccessToken(temporaryAccessUrl);
         FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(accessToken.getObjectId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
         return fileMetaInfo.getName();
+    }
+
+    @Override
+    public String getVideoCoverImageAccessUrl(String temporaryAccessUrl) {
+        AccessToken accessToken = getAccessToken(temporaryAccessUrl);
+        if(!StringUtils.hasLength(accessToken.getObjectId())){
+            return null;
+        }
+        FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(accessToken.getObjectId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
+        if(!StringUtils.hasLength(fileMetaInfo.getVideoCoverImage())){
+            return null;
+        }
+        return generateTemporaryAtAccessUrl(fileMetaInfo.getVideoCoverImage(), accessToken.getExpireAt());
+    }
+
+    private AccessToken getAccessToken(String temporaryAccessUrl) {
+        String accessCode = temporaryAccessUrl.substring(temporaryAccessUrl.indexOf("accessCode=") + 11);
+        return accessTokenManager.parseAndValidate(accessCode, secretKey);
     }
 }

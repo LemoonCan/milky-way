@@ -6,7 +6,7 @@ import { EmojiPicker } from './EmojiPicker'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { ImagePreviewModal } from '../ImagePreviewModal'
 import { Smile, Paperclip, Send, Trash2, X, Image, Video, FileText } from 'lucide-react'
-import { useChatStore, isMessageFromMe } from '@/store/chat'
+import { useChatStore, isMessageFromMe, type MessageWithStatus } from '@/store/chat'
 import { useUserStore } from '@/store/user'
 import { chatService } from '../../services/chat'
 import { fileService, FilePermission } from '../../services/file'
@@ -261,10 +261,21 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     const retryClientMsgId = `retry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
     // 更新消息的 clientMsgId 并设置状态为发送中
-    updateMessageByClientId(currentUser.id, targetMessage.clientMsgId || targetMessage.id, {
+    const updateData: Partial<MessageWithStatus> = {
       clientMsgId: retryClientMsgId,
       sendStatus: 'sending'
-    })
+    }
+    
+    // 如果是文件消息，确保保持fileData
+    if (targetMessage.fileData?.originalFile) {
+      updateData.fileData = {
+        originalFile: targetMessage.fileData.originalFile,
+        isUploading: true,
+        uploadProgress: 0
+      }
+    }
+    
+    updateMessageByClientId(currentUser.id, targetMessage.clientMsgId || targetMessage.id, updateData)
 
     // 根据消息类型进行重发
     try {
@@ -279,13 +290,16 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           clientMsgId: retryClientMsgId
         })
       } else if (messageType === 'IMAGE' || messageType === 'VIDEO' || messageType === 'FILE') {
-        // 文件消息重发
-        await chatService.sendMessage({
-          chatId: currentUser.id,
-          content: targetMessage.meta.media || '',
-          messageType: messageType,
-          clientMsgId: retryClientMsgId
-        })
+        // 文件消息重发 - 重新上传原始文件
+        const originalFile = targetMessage.fileData?.originalFile
+        if (originalFile) {
+          // 重新上传文件
+          handleSingleFileUpload(originalFile, retryClientMsgId)
+          return // handleSingleFileUpload会处理后续逻辑
+        } else {
+          // 没有原始文件，无法重发
+          throw new Error('找不到原始文件，无法重发')
+        }
       }
 
       // 设置回执超时：如果15秒内没有收到回执，标记为失败

@@ -46,4 +46,25 @@ public class FileMetaInfo {
      */
     @Enumerated(EnumType.STRING)
     private FilePermissionEnum permission;
+
+    /**
+     * 扩展信息
+     */
+    private String extra;
+
+    public void setVideoCoverImage(String coverImage) {
+        if (isVideo()) {
+            this.extra = coverImage;
+        }
+    }
+    public String getVideoCoverImage() {
+        if (isVideo()) {
+            return extra;
+        }
+        return null;
+    }
+
+    public boolean isVideo() {
+        return this.type.startsWith("video/");
+    }
 }

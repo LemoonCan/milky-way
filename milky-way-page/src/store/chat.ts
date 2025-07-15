@@ -745,11 +745,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             if (targetMessage) {
               console.log(`[ChatStore] 找到对应消息，clientMsgId: ${clientMsgId} -> serverId: ${id}`)
               
-              // 更新消息为发送成功状态，并使用服务器返回的真实ID
+              // 更新消息为发送成功状态，并使用服务器返回的真实数据
               get().updateMessageByClientId(chatId, clientMsgId, {
                 id: id, // 使用服务器返回的真实ID
                 sendStatus: 'sent',
-                sentTime: messageData.sentTime
+                sentTime: messageData.sentTime,
+                meta: messageData.meta, // 更新服务器返回的meta信息（包括封面图URL）
+                fileData: undefined // 清除本地文件数据
               })
               
               console.log(`[ChatStore] 消息回执处理完成`)

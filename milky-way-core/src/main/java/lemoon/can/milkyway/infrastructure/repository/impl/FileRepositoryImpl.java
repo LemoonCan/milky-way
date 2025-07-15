@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 public class FileRepositoryImpl implements FileRepository {
 
     @Override
-    public String storage(InputStream inputStream, FileParam fileParam, String userOpenId, String fileId, String fileType) throws IOException {
+    public String storage(InputStream inputStream, FileParam fileParam, String userId, String fileId, String fileType) throws IOException {
         //目录 用户/每天/具体文件
         //映射扩展名
         MimeType type;
@@ -35,7 +35,7 @@ public class FileRepositoryImpl implements FileRepository {
             throw new BusinessException(ErrorCode.UNSUPPORTED,
                     String.format("不支持的文件类型%s", fileType));
         }
-        String path = filePath(fileParam.getPermission(), userOpenId, fileId, type.getExtension());
+        String path = filePath(fileParam.getPermission(), userId, fileId, type.getExtension());
         Path filePath = Paths.get(path);
         try (
                 BufferedInputStream bis = new BufferedInputStream(inputStream);
@@ -63,10 +63,11 @@ public class FileRepositoryImpl implements FileRepository {
         }
     }
 
-    private String filePath(FilePermissionEnum permission, String userOpenId, String fileId, String extension) {
+    @Override
+    public String filePath(FilePermissionEnum permission, String userId, String fileId, String extension) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String dir = "house/files/" + permission.name() + "/" + userOpenId + "/" + now.format(formatter) + "/";
+        String dir = "house/files/" + permission.name() + "/" + userId + "/" + now.format(formatter) + "/";
         File directory = new File(dir);
         directory.mkdirs();
         return dir + fileId + extension;

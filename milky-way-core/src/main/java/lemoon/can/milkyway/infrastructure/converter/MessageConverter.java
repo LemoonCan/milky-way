@@ -103,9 +103,13 @@ public abstract class MessageConverter {
         messageMeta.setContent(content);
         switch (messageType) {
             case IMAGE:
-            case VIDEO:
                 messageMeta.setContent("[" + messageType.getDesc() + "]");
                 messageMeta.setMedia(content);
+                break;
+            case VIDEO:
+                messageMeta.setContent("[" + messageType.getDesc() + "]");
+                messageMeta.setMedia(fileService.getVideoCoverImageAccessUrl(content));
+                messageMeta.setVideoUrl(content);
                 break;
             case FILE:
                 messageMeta.setContent(fileService.getFileName(content));

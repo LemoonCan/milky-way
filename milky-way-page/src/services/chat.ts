@@ -37,6 +37,7 @@ export interface MessageDTO {
     type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
     content: string
     media?: string | null
+    videoUrl?: string // 真实视频URL，用于视频消息类型
   }
   sentTime: string
   read?: boolean

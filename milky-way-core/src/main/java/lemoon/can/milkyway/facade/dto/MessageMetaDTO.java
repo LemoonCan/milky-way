@@ -22,7 +22,12 @@ public class MessageMetaDTO implements Serializable {
     private String content;
 
     /**
-     * 当消息类型为图片、声音、视频或文件时，存储媒体文件链接
+     * 当消息类型为图片或文件时，存储媒体文件链接
+     * 当消息类型为视频时，存储封面视频图链接
      */
     private String media;
+    /**
+     * 当消息类型为视频时，放置视频链接
+     */
+    private String videoUrl;
 }

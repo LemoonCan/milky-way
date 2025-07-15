@@ -14,4 +14,112 @@
   height: auto;
   display: block;
   border-radius: 8px;
+}
+
+/* 视频容器 - 用于上传时显示视频播放器 */
+.videoContainer {
+  position: relative;
+  max-width: 320px;
+  max-height: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* 视频封面容器 */
+.videoCover {
+  position: relative;
+  max-width: 320px;
+  max-height: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+/* 封面图片 */
+.coverImage {
+  max-width: 320px;
+  max-height: 320px;
+  width: auto;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+}
+
+/* 封面图占位符 */
+.coverPlaceholder {
+  width: 320px;
+  height: 180px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  border-radius: 8px;
+  gap: 8px;
+}
+
+.coverPlaceholder span {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 播放按钮 */
+.playButton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.playButton:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* 发送状态指示器 */
+.sendingIndicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 4px 8px;
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 上传进度文字 */
+.uploadProgress {
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 旋转动画的加载指示器 */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 } 
