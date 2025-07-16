@@ -2,18 +2,16 @@ import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { Avatar } from '../Avatar'
 import { ProfileModal } from '../ProfileModal'
-import { EmojiPicker } from './EmojiPicker'
+
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { ImagePreviewModal } from '../ImagePreviewModal'
 import { ChatInput } from './ChatInput'
-import { FileUploadDialog } from './FileUploadDialog'
+
 import { Trash2 } from 'lucide-react'
 import { useChatStore, isMessageFromMe, type MessageWithStatus } from '@/store/chat'
 import { chatService } from '../../services/chat'
 import type { ChatUser } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
-import { showError } from '../../lib/globalErrorHandler'
-
 
 interface ChatWindowProps {
   currentUser: ChatUser | null
@@ -25,14 +23,10 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [modalUserId, setModalUserId] = useState<string | null>(null)
   const [showActions, setShowActions] = useState(false)
   const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [emojiButtonElement, setEmojiButtonElement] = useState<HTMLElement | null>(null)
+
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [showDeleteChatDialog, setShowDeleteChatDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [showFilePreview, setShowFilePreview] = useState(false)
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [showImagePreview, setShowImagePreview] = useState(false)
   const [previewImageUrl, setPreviewImageUrl] = useState<string>('')
   const moreActionsRef = useRef<HTMLDivElement>(null)
@@ -40,7 +34,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previousUserIdRef = useRef<string | null>(null)
-  const { getChatMessages, sendMessageViaWebSocket, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId, removeChatUser } = useChatStore()
+  const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId, removeChatUser } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -63,8 +57,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       // 用户切换了聊天对象，立即滚动到底部
       previousUserIdRef.current = currentUser.id
       
-      // 清空文件选择状态
-      setShowFilePreview(false)
+
       
       // 使用多重保障确保滚动生效
       const forceScrollToBottom = () => {
@@ -185,43 +178,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     console.log('发起视频通话:', modalUserId)
   }
 
-  // 处理表情按钮点击
-  const handleEmojiButtonClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    setEmojiButtonElement(e.currentTarget)
-    setShowEmojiPicker(!showEmojiPicker)
-  }
-
-  // 处理emoji选择
-  const handleEmojiSelect = (emoji: string) => {
-    // 获取当前光标位置
-    const textarea = textareaRef.current
-    if (!textarea) return
-
-    const startPos = textarea.selectionStart
-    const endPos = textarea.selectionEnd
-    
-    // 在光标位置插入emoji
-    const newValue = inputValue.substring(0, startPos) + emoji + inputValue.substring(endPos)
-    setInputValue(newValue)
-
-    // 关闭emoji选择器
-    setShowEmojiPicker(false)
-
-    // 重新聚焦到输入框并设置光标位置
-    setTimeout(() => {
-      if (textarea) {
-        textarea.focus()
-        const newCursorPos = startPos + emoji.length
-        textarea.setSelectionRange(newCursorPos, newCursorPos)
-      }
-    }, 0)
-  }
-
-  // 关闭emoji选择器
-  const handleCloseEmojiPicker = () => {
-    setShowEmojiPicker(false)
-  }
-
   // 处理图片点击
   const handleImageClick = (imageUrl: string) => {
     setPreviewImageUrl(imageUrl)
@@ -232,20 +188,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const handleCloseImagePreview = () => {
     setShowImagePreview(false)
     setPreviewImageUrl('')
-  }
-
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || !currentUser) return
-
-    try {
-      // 始终使用WebSocket发送消息，让失败处理逻辑统一在 sendMessageViaWebSocket 中处理
-      await sendMessageViaWebSocket(currentUser.id, inputValue.trim())
-      setInputValue('')
-    } catch (error) {
-      console.error('发送消息失败:', error)
-      // 发送失败时，仍然清空输入框，但可以在此处添加错误提示
-      setInputValue('')
-    }
   }
 
   // 重发消息处理
@@ -340,43 +282,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     }
   }
 
-  // 处理文件上传按钮点击
-  const handleFileUploadClick = () => {
-    fileInputRef.current?.click()
-  }
 
-  // 处理文件选择
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
-
-    // 检查文件数量限制
-    if (files.length > 9) {
-      showError('最多只能选择9个文件')
-      return
-    }
-
-    // 转换为数组并保存
-    const fileArray = Array.from(files)
-    setSelectedFiles(fileArray)
-    
-    // 重置文件输入框
-    event.target.value = ''
-
-    // 显示文件预览弹框
-    setShowFilePreview(true)
-  }
-
-  // 移除选中的文件
-  const removeSelectedFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
-  }
-
-  // 关闭文件预览弹框
-  const handleCloseFilePreview = () => {
-    setShowFilePreview(false)
-    setSelectedFiles([])
-  }
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -482,35 +388,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 文件预览弹框 */}
-      <FileUploadDialog
-        isVisible={showFilePreview}
-        onClose={handleCloseFilePreview}
-        currentChatId={currentUser?.id || null}
-        onError={showError}
-        initialFiles={selectedFiles}
-        onRemoveFile={removeSelectedFile}
-      />
-
-      {/* 隐藏的文件输入框 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept="*/*"
-        style={{ display: 'none' }}
-        onChange={handleFileSelect}
-      />
-
       {/* 输入工具栏 */}
               <ChatInput
           inputValue={inputValue}
           onInputChange={setInputValue}
-          onSendMessage={handleSendMessage}
-          onEmojiButtonClick={handleEmojiButtonClick}
-          onFileUploadClick={handleFileUploadClick}
           uploadingFiles={new Set()}
           textareaRef={textareaRef}
+          currentChatId={currentUser?.id || null}
         />
 
       {/* 个人信息弹框 */}
@@ -527,13 +411,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         />
       )}
 
-      {/* Emoji选择器 */}
-      <EmojiPicker
-        isVisible={showEmojiPicker}
-        onClose={handleCloseEmojiPicker}
-        onEmojiSelect={handleEmojiSelect}
-        triggerElement={emojiButtonElement}
-      />
+
 
       {/* 图片预览弹框 */}
       <ImagePreviewModal

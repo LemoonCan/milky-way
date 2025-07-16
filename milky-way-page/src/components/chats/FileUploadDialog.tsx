@@ -10,18 +10,14 @@ interface FileUploadDialogProps {
   isVisible: boolean
   onClose: () => void
   currentChatId: string | null
-  onError: (error: string) => void
   initialFiles?: File[]
-  onRemoveFile: (index: number) => void
 }
 
 export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
   isVisible,
   onClose,
   currentChatId,
-  onError,
   initialFiles = [],
-  onRemoveFile
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>(initialFiles)
   
@@ -63,7 +59,6 @@ export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
 
   // 移除文件
   const handleRemoveFile = (index: number) => {
-    onRemoveFile(index)
     // 同时更新本地状态
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
