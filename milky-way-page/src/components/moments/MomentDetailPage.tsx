@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { RefreshCw, Undo2 } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -6,13 +6,13 @@ import { Avatar } from '../Avatar'
 import { MomentItem } from './MomentItem'
 import { useMomentStore } from '../../store/moment'
 import { momentService } from '../../services/moment'
+import { handleAndShowError } from '../../lib/globalErrorHandler'
 import styles from '../../css/moments/MomentDetailPage.module.css'
 
 export const MomentDetailPage: React.FC = () => {
   const { momentId } = useParams<{ momentId: string }>()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // 使用 useMomentStore 来管理状态
@@ -27,7 +27,6 @@ export const MomentDetailPage: React.FC = () => {
     
     try {
       setLoading(true)
-      setError(null)
       const momentData = await momentService.getMoment(momentId)
       
       // 将数据添加到 store 中（如果不存在）
@@ -36,9 +35,7 @@ export const MomentDetailPage: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to load moment:', err)
-      // 尝试从错误对象中获取具体的错误消息
-      const errorMessage = err instanceof Error ? err.message : '加载动态失败'
-      setError(errorMessage)
+      handleAndShowError(err)
     } finally {
       setLoading(false)
     }
@@ -53,16 +50,13 @@ export const MomentDetailPage: React.FC = () => {
     }
     
     loadMoment()
-  }, [momentId, moment])
+  }, [momentId])
 
   // 刷新动态
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    try {
-      await loadMoment()
-    } finally {
-      setIsRefreshing(false)
-    }
+    await loadMoment()
+    setIsRefreshing(false)
   }
 
   // 返回动态页面
@@ -134,18 +128,7 @@ export const MomentDetailPage: React.FC = () => {
       {/* 动态详情内容 */}
       <div className={styles.momentContent}>
         <div className={styles.momentContentInner}>
-          {/* 错误提示 */}
-          {error && (
-            <div className={styles.errorToast}>
-              <span>{error}</span>
-              <button 
-                className={styles.errorCloseBtn}
-                onClick={() => setError(null)}
-              >
-                ×
-              </button>
-            </div>
-          )}
+          {/* 错误提示现在由全局处理 */}
 
           {/* 动态详情 */}
           {!loading && moment && (
@@ -153,7 +136,7 @@ export const MomentDetailPage: React.FC = () => {
           )}
 
           {/* 空状态 */}
-          {!loading && !moment && !error && (
+          {!loading && !moment && (
             <div className={styles.empty}>
               <div className={styles.emptyIcon}>📱</div>
               <h3>动态不存在</h3>

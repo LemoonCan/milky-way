@@ -62,15 +62,7 @@ export const FriendPage: React.FC = () => {
         onClose={handleCloseAddFriendDialog}
       />
 
-      {/* 错误提示 */}
-      {error && (
-        <div className={styles.errorToast}>
-          <span>{error}</span>
-          <button onClick={clearError} className={styles.errorCloseBtn}>
-            ×
-          </button>
-        </div>
-      )}
+      {/* 错误提示现在由全局处理 */}
     </div>
   )
 } 

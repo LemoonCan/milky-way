@@ -63,39 +63,16 @@ class FileService {
     })
     formData.append('fileParam', fileParamBlob)
 
-    try {
-      const response = await http.post<ApiResponse<FileInfoDTO>>('/files', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+    const response = await http.post<ApiResponse<FileInfoDTO>>('/files', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
 
-      if (response.data.success && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '文件上传失败')
-      }
-    } catch (error) {
-      // 对于HTTP状态码错误，只显示通用错误信息
-      const httpError = error as { response?: { status: number } }
-      if (httpError?.response?.status && httpError.response.status !== 200) {
-        const status = httpError.response.status
-        if (status==403){
-            throw new Error('访问受限')
-        }else if(status === 413) {
-          throw new Error('文件过大，请选择较小的文件')
-        } else if (status >= 400 && status < 500) {
-          throw new Error('文件上传失败，请检查文件格式')
-        } else if (status >= 500) {
-          throw new Error('服务器错误，请稍后重试')
-        } else {
-          throw new Error('文件上传失败')
-        }
-      }
-      
-      // 对于其他错误，显示原始错误信息或通用信息
-      const errorWithMessage = error as { message?: string }
-      throw new Error(errorWithMessage?.message || '文件上传失败')
+    if (response.data.success && response.data.data) {
+      return response.data.data
+    } else {
+      throw new Error(response.data.msg || '文件上传失败')
     }
   }
 

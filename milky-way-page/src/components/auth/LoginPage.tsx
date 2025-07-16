@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { Sparkles, AlertCircle } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { useAuthStore } from '../../store/auth'
 import styles from '../../css/auth/LoginPage.module.css'
@@ -85,15 +85,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
 
         {/* 登录表单 */}
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* API错误显示 */}
-          {error && (
-            <div className={cn(styles.inputGroup, styles.errorAlert)}>
-              <div className={styles.errorMessage}>
-                <AlertCircle className={styles.errorIcon} />
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
+          {/* API错误现在由全局处理 */}
           
           <div className={styles.inputGroup}>
             <label className={styles.label}>账号</label>

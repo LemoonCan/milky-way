@@ -14,6 +14,7 @@ import styles from "../css/ProfileModal.module.css";
 import { userService } from "../services/user";
 import type { UserDetailInfo } from "../services/user";
 import type { ApiResponse } from "../types/api";
+import { handleAndShowError } from '../lib/globalErrorHandler'
 
 interface ProfileModalProps {
   userId: string;
@@ -40,21 +41,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const lastRequestedUserIdRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const [user, setUser] = useState<UserDetailInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [shouldShowModal, setShouldShowModal] = useState(false);
 
   // 获取用户详细信息
   useEffect(() => {
     if (isVisible && userId) {
       // 如果是重复请求相同的用户ID，避免重复
-      if (lastRequestedUserIdRef.current === userId && user && !error) {
+      if (lastRequestedUserIdRef.current === userId && user) {
         console.log("用户详情已存在，跳过重复请求，用户ID:", userId);
         setShouldShowModal(true);
         return;
       }
 
       lastRequestedUserIdRef.current = userId;
-      setError(null);
       setShouldShowModal(false);
 
       userService
@@ -64,23 +63,22 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             setUser(response.data);
             setShouldShowModal(true); // 数据加载成功后才显示弹框
           } else {
-            setError("获取用户信息失败");
+            handleAndShowError(new Error(response.msg || "获取用户信息失败"));
             setShouldShowModal(false); // 加载失败时不显示弹框
           }
         })
         .catch((err) => {
           console.error("获取用户详细信息失败:", err);
-          setError("获取用户信息失败");
+          handleAndShowError(err);
           setShouldShowModal(false); // 加载失败时不显示弹框
         });
     } else if (!isVisible) {
       // 弹框关闭时重置状态
       setUser(null);
-      setError(null);
       setShouldShowModal(false);
       lastRequestedUserIdRef.current = null;
     }
-  }, [isVisible, userId, user, error]);
+  }, [isVisible, userId, user]);
 
   // 跳转到用户动态页面
   const handleNavigateToUserMoments = () => {

@@ -4,6 +4,7 @@ import { Avatar } from '../Avatar'
 import { useFriendStore } from '../../store/friend'
 import { useUserStore } from '../../store/user'
 import type { User } from '../../types/api'
+import { showError, handleAndShowError } from '../../lib/globalErrorHandler'
 import styles from '../../css/friends/AddFriendDialog.module.css'
 
 interface AddFriendDialogProps {
@@ -14,7 +15,6 @@ interface AddFriendDialogProps {
 export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResult, setSearchResult] = useState<User | null>(null)
-  const [searchError, setSearchError] = useState('')
   const [message, setMessage] = useState('')
   const [remark, setRemark] = useState('')
   const [permission, setPermission] = useState<'ALL' | 'CHAT'>('ALL')
@@ -26,7 +26,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
   const handleClose = () => {
     setSearchQuery('')
     setSearchResult(null)
-    setSearchError('')
     setMessage('')
     setRemark('')
     setPermission('ALL')
@@ -37,7 +36,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
-    setSearchError('')
     try {
       // 默认使用 openId 搜索
       const user = await searchUserByOpenId(searchQuery.trim())
@@ -50,11 +48,10 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
           setMessage(`我是${currentUser.nickName}...`)
         }
       } else {
-        setSearchResult(null)
-        setSearchError('用户不存在')
+        showError('未找到该用户')
       }
-    } catch {
-      setSearchResult(null)
+    } catch (error) {
+      handleAndShowError(error)
     }
   }
 
@@ -76,7 +73,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
   const handleBack = () => {
     setStep('search')
     setSearchResult(null)
-    setSearchError('')
+    setMessage('')
   }
 
   if (!open) return null
@@ -107,17 +104,12 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
-                      if (searchError) setSearchError('')
                     }}
                     className={styles.searchInput}
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                   />
                   {/* 搜索错误提示 */}
-                  {searchError && (
-                    <div className={styles.searchError}>
-                      {searchError}
-                    </div>
-                  )}
+                  {/* Removed search error handling */}
                 </div>
                 <button
                   onClick={handleSearch}

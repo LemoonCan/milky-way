@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios'
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import type { ApiResponse, ErrorResponse } from '../types/api'
 import EnvConfig from './env'
+import { handleAndShowError } from './globalErrorHandler'
 
 // 创建axios实例
 const http: AxiosInstance = axios.create({
@@ -76,13 +77,12 @@ http.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token过期或无效，清除本地token并跳转到登录页
       tokenManager.removeToken()
-      // 可以在这里触发全局事件或路由跳转
-      console.warn('认证失效，请重新登录')
+      // 使用全局错误处理显示认证失效消息
+      handleAndShowError(new Error('登录已过期，请重新登录'))
+    } else {
+      // 其他HTTP错误，使用全局错误处理
+      handleAndShowError(error)
     }
-    
-    // 统一错误处理
-    const errorMessage = error.response?.data?.message || error.message || '网络请求失败'
-    console.error('API请求错误:', errorMessage)
     
     return Promise.reject(error)
   }

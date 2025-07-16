@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,16 +198,6 @@
 .addMoreButton span {
   font-size: 20px;
   font-weight: 600;
-}
-
-/* 错误提示 */
-.error {
-  color: #e53e3e;
-  font-size: 14px;
-  margin-top: 10px;
-  margin-left: 0;
-  padding-left: 2px;
-  line-height: 1.2;
 }
 
 /* 工具栏 */

@@ -79,17 +79,12 @@ class MomentService {
    * 获取单个动态详情
    */
   async getMoment(momentId: string): Promise<MomentDTO> {
-    try {
-      const response = await http.get<ApiResponse<MomentDTO>>(`/moments/${momentId}`)
-      
-      if (response.data.success !== false && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '获取动态详情失败')
-      }
-    } catch (error) {
-      console.error('[MomentService] 获取动态详情失败:', error)
-      throw error
+    const response = await http.get<ApiResponse<MomentDTO>>(`/moments/${momentId}`)
+    
+    if (response.data.success !== false && response.data.data) {
+      return response.data.data
+    } else {
+      throw new Error(response.data.msg || '获取动态详情失败')
     }
   }
 }

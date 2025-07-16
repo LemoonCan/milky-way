@@ -33,7 +33,6 @@ export const UserMomentsPage: React.FC = () => {
     fetchUserMoments, 
     loadMoreMoments, 
     refreshMoments,
-    clearError,
     resetState
   } = useUserMomentStore()
 
@@ -160,18 +159,7 @@ export const UserMomentsPage: React.FC = () => {
       {/* 动态列表 */}
       <div className={styles.momentsList} ref={momentsListRef}>
         <div className={styles.momentsListInner}>
-          {/* 错误提示 */}
-          {error && (
-            <div className={styles.errorToast}>
-              <span>{error}</span>
-              <button 
-                className={styles.errorCloseBtn}
-                onClick={clearError}
-              >
-                ×
-              </button>
-            </div>
-          )}
+          {/* 错误提示现在由全局处理 */}
 
           {/* 动态条目 */}
           {moments.map((moment) => (

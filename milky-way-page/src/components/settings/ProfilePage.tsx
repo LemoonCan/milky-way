@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar'
-import { ArrowLeft, Camera, AlertCircle, Check } from 'lucide-react'
+import { ArrowLeft, Camera, Check } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { userService } from '../../services/user'
 import { useUserStore } from '../../store/user'
 import { fileService } from '../../services/file'
 import type { UpdateUserRequest } from '../../services/user'
+import { showError, handleAndShowError } from '../../lib/globalErrorHandler'
 import styles from '../../css/settings/ProfilePage.module.css'
 
 interface ProfilePageProps {
@@ -29,8 +30,6 @@ interface FormErrors {
 export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
-  const [uploadError, setUploadError] = useState('')
   const [success, setSuccess] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({
     nickName: '',
@@ -70,8 +69,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   }, [])
 
   const loadUserInfo = async () => {
-    setError('')
-    
     try {
       await fetchUserInfo()
       
@@ -79,18 +76,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
         const profileData: ProfileFormData = {
           nickName: currentUser.nickName || '',
           avatar: currentUser.avatar || '',
-          individualSignature: currentUser.individualSignature || '', // 个性签名字段
+          individualSignature: currentUser.individualSignature || '',
           openId: currentUser.openId || ''
         }
         
-        setOriginalData(profileData)
         setFormData(profileData)
-      } else {
-        setError('获取用户信息失败')
+        setOriginalData(profileData)
       }
     } catch (err) {
-      console.error('获取用户信息失败:', err)
-      setError('获取用户信息失败，请稍后重试')
+      handleAndShowError(err)
     }
   }
 
@@ -109,36 +103,44 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     }
     
     // 清除API错误信息
-    if (error) {
-      setError('')
-    }
-    if (success) {
-      setSuccess(false)
-    }
+    // if (error) {
+    //   setError('')
+    // }
+    // if (success) {
+    //   setSuccess(false)
+    // }
   }
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type.startsWith('image/')) {
-      setUploading(true)
-      setUploadError('')
-      
-      try {
-        const fileInfo = await fileService.uploadAvatar(file)
-        
-        setFormData(prev => ({
-          ...prev,
-          avatar: fileInfo.fileAccessUrl
-        }))
-        
-        setUploadError('')
-      } catch (error) {
-        console.error('头像上传失败:', error)
-        const errorMessage = error instanceof Error ? error.message : '头像上传失败'
-        setUploadError(errorMessage)
-      } finally {
-        setUploading(false)
-      }
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // 文件大小限制 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showError('文件大小不能超过5MB')
+      return
+    }
+
+    // 文件类型限制
+    if (!file.type.startsWith('image/')) {
+      showError('请选择图片文件')
+      return
+    }
+
+    setUploading(true)
+
+    try {
+      const fileInfo = await fileService.uploadAvatar(file)
+      setFormData(prev => ({
+        ...prev,
+        avatar: fileInfo.fileAccessUrl
+      }))
+    } catch (err) {
+      handleAndShowError(err)
+    } finally {
+      setUploading(false)
+      // 清空文件输入，允许重新选择相同文件
+      event.target.value = ''
     }
   }
 
@@ -165,16 +167,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   }
 
   const handleSave = async () => {
-    if (!hasChanges) return
-    
     // 验证表单
     if (!validateForm()) {
       return
     }
 
     setSaving(true)
-    setError('')
-    
+
     try {
       const updateData: UpdateUserRequest = {
         openId: formData.openId,
@@ -182,45 +181,31 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
         avatar: formData.avatar,
         individualSignature: formData.individualSignature.trim()
       }
-      
+
       const response = await userService.updateUserInfo(updateData)
       
       if (response.success) {
-        // 更新全局状态
-        updateUserInfo({
-          nickName: updateData.nickName,
-          avatar: updateData.avatar,
-          individualSignature: updateData.individualSignature
-        })
+        // 更新本地用户信息
+        await updateUserInfo(updateData)
         
-        setOriginalData({ ...formData })
+        // 更新原始数据，防止重复提交
+        setOriginalData(formData)
+        
+        // 显示成功提示
         setSuccess(true)
-        
-        // 3秒后清除成功提示
-        setTimeout(() => {
-          setSuccess(false)
-        }, 3000)
+        // 成功提示已通过setSuccess状态显示
+        setTimeout(() => setSuccess(false), 2000)
       } else {
-        setError(response.msg || '保存失败')
+        showError(response.msg || '保存失败')
       }
     } catch (err) {
-      console.error('保存用户信息失败:', err)
-      setError('保存失败，请稍后重试')
+      handleAndShowError(err)
     } finally {
       setSaving(false)
     }
   }
 
-  // if (loading) {
-  //   return (
-  //     <div className={styles.container}>
-  //       <div className={styles.loading}>
-  //         <div className={styles.loadingSpinner} />
-  //         <p>加载中...</p>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  
 
   return (
     <div className={styles.container}>
@@ -241,13 +226,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
 
         {/* 表单内容 */}
         <div className={styles.content}>
-          {/* 错误/成功提示 */}
-          {error && (
-            <div className={styles.errorAlert}>
-              <AlertCircle className={styles.alertIcon} />
-              <span>{error}</span>
-            </div>
-          )}
+          {/* 错误/成功提示现在由全局处理 */}
           
           {success && (
             <div className={styles.successAlert}>
@@ -263,7 +242,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
               className={styles.avatarUpload}
               onClick={() => {
                 if (!saving && !uploading) {
-                  setUploadError('')
                   fileInputRef.current?.click()
                 }
               }}
@@ -284,9 +262,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
                 <span className={styles.uploadSubtext}>支持 JPG、PNG 格式</span>
               </div>
             </div>
-            {uploadError && (
-              <p className={styles.errorText}>{uploadError}</p>
-            )}
+            {/* 上传错误现在由全局处理 */}
             <input
               ref={fileInputRef}
               type="file"

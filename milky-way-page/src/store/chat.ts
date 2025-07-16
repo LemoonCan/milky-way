@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type MessageDTO } from '../services/chat'
 import { ConnectionStatus, type RetryInfo } from '../utils/websocket'
 import { useUserStore } from './user'
+import { handleAndShowError } from '../lib/globalErrorHandler'
 
 // 工具函数：比较消息ID，选择最新的
 const getNewestMessageId = (id1?: string, id2?: string): string | undefined => {
@@ -939,10 +940,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   setError: (error: string | null) => {
-    set({ error })
+    // 使用全局错误处理
+    if (error) {
+      handleAndShowError(error)
+    }
   },
 
   clearError: () => {
-    set({ error: null })
+    // 全局错误处理会自动清理，这里不需要做任何事
   }
 }))

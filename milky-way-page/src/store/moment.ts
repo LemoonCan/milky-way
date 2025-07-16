@@ -3,6 +3,7 @@ import { momentService } from '../services/moment'
 import { fileService, FilePermission } from '../services/file'
 import { useUserStore } from './user'
 import { getErrorMessage } from '../lib/error-handler'
+import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { 
   MomentDTO, 
   PublishParam, 
@@ -135,8 +136,9 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         })
       }
     } catch (error) {
+      // 使用全局错误处理
+      handleAndShowError(error)
       set({
-        error: getErrorMessage(error),
         loading: false,
         initialized: true,
         lastFetchTime: now

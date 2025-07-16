@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import { authService } from '../services/auth'
 import { tokenManager } from '../lib/http'
 import { getErrorMessage } from '../lib/error-handler'
+import { handleAndShowError } from '../lib/globalErrorHandler'
 import { useUserStore } from './user'
 import type { RegisterFormData } from '../components/auth/RegisterPage'
 import type { User } from '../types/api'
@@ -68,13 +69,12 @@ export const useAuthStore = create<AuthStore>()(
             return false
           }
         } catch (error) {
-          const errorMessage = getErrorMessage(error)
+          // 使用全局错误处理
+          handleAndShowError(error)
           set({
             isAuthenticated: false,
-            loading: false,
-            error: errorMessage
+            loading: false
           })
-          console.error('登录失败:', errorMessage)
           return false
         }
       },
@@ -106,12 +106,11 @@ export const useAuthStore = create<AuthStore>()(
             return false
           }
         } catch (error) {
-          const errorMessage = getErrorMessage(error)
+          // 使用全局错误处理
+          handleAndShowError(error)
           set({
-            loading: false,
-            error: errorMessage
+            loading: false
           })
-          console.error('注册失败:', errorMessage)
           return false
         }
       },

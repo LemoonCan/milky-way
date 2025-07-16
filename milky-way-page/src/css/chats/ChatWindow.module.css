@@ -504,9 +504,9 @@
 
 .cancelButton {
   padding: 8px 16px;
-  border: 1px solid var(--milky-border);
-  background-color: var(--milky-bg);
-  color: var(--milky-text);
+  background: none;
+  border: 1px solid rgba(232, 234, 237, 0.5);
+  color: var(--milky-text-light);
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -514,8 +514,8 @@
 }
 
 .cancelButton:hover {
-  background-color: var(--milky-hover-bg);
-  border-color: var(--milky-text-light);
+  border-color: rgba(232, 234, 237, 0.8);
+  background-color: rgba(232, 234, 237, 0.1);
 }
 
 .confirmButton {
@@ -531,6 +531,5 @@
 }
 
 .confirmButton:hover {
-  background-color: #45b085;
-  transform: translateY(-1px);
+  background: var(--milky-primary-hover);
 } 

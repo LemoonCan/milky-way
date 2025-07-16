@@ -4,6 +4,8 @@ import { useAuthStore } from './store/auth'
 import { LoginPage } from './components/auth/LoginPage'
 import { RegisterPage } from './components/auth/RegisterPage'
 import { RegisterSuccessDialog } from './components/auth/RegisterSuccessDialog'
+import { ErrorToast } from './components/ui/ErrorToast'
+import { useGlobalErrorStore } from './store/globalError'
 import type { RegisterFormData } from './components/auth/RegisterPage'
 import ChatApp from './ChatApp'
 // 受保护的路由组件
@@ -113,6 +115,30 @@ const RegisterPageWrapper: React.FC = () => {
   )
 }
 
+// 全局错误容器组件
+const GlobalErrorToastContainer: React.FC = () => {
+  const { errors, removeError } = useGlobalErrorStore()
+
+  return (
+    <>
+      {errors.map((error, index) => (
+        <ErrorToast
+          key={error.id}
+          message={error.message}
+          onClose={() => removeError(error.id)}
+          autoClose={false} // 自动关闭由 store 管理
+          position={error.position}
+          style={{
+            zIndex: 1000 + index,
+            marginTop: error.position?.includes('top') ? `${index * 60}px` : undefined,
+            marginBottom: error.position?.includes('bottom') ? `${index * 60}px` : undefined,
+          }}
+        />
+      ))}
+    </>
+  )
+}
+
 export const AppRouter: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const { isAuthenticated, checkAuthStatus } = useAuthStore()
@@ -133,7 +159,9 @@ export const AppRouter: React.FC = () => {
   }
 
   return (
-    <Routes>
+    <>
+      <GlobalErrorToastContainer />
+      <Routes>
       {/* 默认路由重定向 */}
       <Route 
         path="/" 
@@ -183,5 +211,6 @@ export const AppRouter: React.FC = () => {
         } 
       />
     </Routes>
+    </>
   )
 } 

@@ -197,26 +197,21 @@ export class ChatService {
    * @param pageSize 每页大小，默认20
    */
   async getChatList(lastId?: string, pageSize?: number): Promise<Slices<ChatInfoDTO>> {
-    try {
-      const params = new URLSearchParams()
-      if (lastId) {
-        params.append('lastId', lastId)
-      }
-      if (pageSize) {
-        params.append('pageSize', pageSize.toString())
-      }
-      
-      const url = `/chats${params.toString() ? `?${params.toString()}` : ''}`
-      const response = await http.get<ApiResponse<Slices<ChatInfoDTO>>>(url)
-      
-      if (response.data.success !== false && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '获取聊天列表失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 获取聊天列表失败:', error)
-      throw error
+    const params = new URLSearchParams()
+    if (lastId) {
+      params.append('lastId', lastId)
+    }
+    if (pageSize) {
+      params.append('pageSize', pageSize.toString())
+    }
+    
+    const url = `/chats${params.toString() ? `?${params.toString()}` : ''}`
+    const response = await http.get<ApiResponse<Slices<ChatInfoDTO>>>(url)
+    
+    if (response.data.success !== false && response.data.data) {
+      return response.data.data
+    } else {
+      throw new Error(response.data.msg || '获取聊天列表失败')
     }
   }
 

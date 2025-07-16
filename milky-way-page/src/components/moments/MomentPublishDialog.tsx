@@ -30,7 +30,7 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const { publishMoment, publishLoading, publishError } = useMomentStore()
+  const { publishMoment, publishLoading } = useMomentStore()
   const { currentUser } = useUserStore()
 
   // 处理文件选择
@@ -225,12 +225,6 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
           {/* 图片预览 */}
           {renderImagePreviews()}
 
-          {/* 错误提示 */}
-          {publishError && (
-            <div className={styles.error}>
-              {publishError}
-            </div>
-          )}
         </div>
 
         {/* 工具栏 */}
