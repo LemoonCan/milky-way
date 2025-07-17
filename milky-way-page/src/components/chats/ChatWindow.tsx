@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { Avatar } from '../Avatar'
-import { ProfileModal } from '../ProfileModal'
 
 import { ConfirmDialog } from '../ui/confirm-dialog'
-import { ImagePreviewModal } from '../ImagePreviewModal'
 import { ChatInput } from './ChatInput'
 
 import { Trash2 } from 'lucide-react'
-import { useChatStore, isMessageFromMe, type MessageWithStatus } from '@/store/chat'
+import { useChatStore, isMessageFromMe } from '@/store/chat'
 import { chatService } from '../../services/chat'
 import type { ChatUser } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
@@ -19,22 +17,16 @@ interface ChatWindowProps {
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const [inputValue, setInputValue] = useState('')
-  const [showProfileModal, setShowProfileModal] = useState(false)
-  const [modalUserId, setModalUserId] = useState<string | null>(null)
-  const [showActions, setShowActions] = useState(false)
-  const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
 
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [showDeleteChatDialog, setShowDeleteChatDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [showImagePreview, setShowImagePreview] = useState(false)
-  const [previewImageUrl, setPreviewImageUrl] = useState<string>('')
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previousUserIdRef = useRef<string | null>(null)
-  const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, updateMessageByClientId, removeChatUser } = useChatStore()
+  const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, removeChatUser } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -144,111 +136,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     return null
   }
 
-  // 处理头像点击
-  const handleAvatarClick = (isFromMe: boolean, element: HTMLElement, userId: string) => {
-    // 确保在设置弹框状态前，先设置触发元素
-    setAvatarElement(element)
-    
-    // 直接使用传入的userId
-    setModalUserId(userId)
-    setShowActions(!isFromMe) // 点击自己的头像不显示操作按钮，点击他人头像显示
-    
-    // 使用 setTimeout 确保 DOM 更新后再显示弹框
-    setTimeout(() => {
-      setShowProfileModal(true)
-    }, 0)
-  }
 
-  const handleCloseProfileModal = () => {
-    setShowProfileModal(false)
-  }
 
-  const handleMessage = () => {
-    setShowProfileModal(false)
-    // 已经在当前聊天中，不需要切换
-  }
 
-  const handleVoiceCall = () => {
-    setShowProfileModal(false)
-    console.log('发起语音通话:', modalUserId)
-  }
-
-  const handleVideoCall = () => {
-    setShowProfileModal(false)
-    console.log('发起视频通话:', modalUserId)
-  }
-
-  // 处理图片点击
-  const handleImageClick = (imageUrl: string) => {
-    setPreviewImageUrl(imageUrl)
-    setShowImagePreview(true)
-  }
-
-  // 关闭图片预览
-  const handleCloseImagePreview = () => {
-    setShowImagePreview(false)
-    setPreviewImageUrl('')
-  }
-
-  // 重发消息处理
-  const handleRetryMessage = async (messageId: string) => {
-    if (!currentUser) return
-
-    const targetMessage = messages.find(msg => msg.id === messageId)
-    if (!targetMessage) return
-
-    // 为重试消息生成新的 clientMsgId
-    const retryClientMsgId = `retry-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    
-    // 更新消息的 clientMsgId 并设置状态为发送中
-    const updateData: Partial<MessageWithStatus> = {
-      clientMsgId: retryClientMsgId,
-      sendStatus: 'sending'
-    }
-    
-    // 如果是文件消息，确保保持fileData
-    if (targetMessage.fileData?.originalFile) {
-      updateData.fileData = {
-        originalFile: targetMessage.fileData.originalFile,
-        isUploading: true,
-        uploadProgress: 0
-      }
-    }
-    
-    updateMessageByClientId(currentUser.id, targetMessage.clientMsgId || targetMessage.id, updateData)
-
-    // 根据消息类型进行重发
-    try {
-      const messageType = targetMessage.meta.type
-      
-      if (messageType === 'TEXT') {
-        // 文本消息重发
-        await chatService.sendMessage({
-          chatId: currentUser.id,
-          content: targetMessage.meta.content,
-          messageType: 'TEXT',
-          clientMsgId: retryClientMsgId
-        })
-      } else {
-        // 其他类型消息暂不支持重发
-        throw new Error('该消息类型暂不支持重发')
-      }
-
-      // 设置回执超时：如果15秒内没有收到回执，标记为失败
-      setTimeout(() => {
-        const currentMessages = getChatMessages(currentUser.id)
-        const retryMessage = currentMessages.find(msg => msg.clientMsgId === retryClientMsgId)
-        if (retryMessage && retryMessage.sendStatus === 'sending') {
-          updateMessageByClientId(currentUser.id, retryClientMsgId, { sendStatus: 'failed' })
-        }
-      }, 15000)
-
-    } catch (error) {
-      console.error('重发消息失败:', error)
-      // 重试失败，标记为失败状态
-      updateMessageByClientId(currentUser.id, retryClientMsgId, { sendStatus: 'failed' })
-    }
-  }
 
 
 
@@ -380,16 +270,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           <MessageBubble
             key={message.id}
             message={message}
-            onAvatarClick={handleAvatarClick}
-            onRetryMessage={handleRetryMessage}
-            onImageClick={handleImageClick}
+            chatId={currentUser.id}
           />
         ))}
         <div ref={messagesEndRef} />
       </div>
 
       {/* 输入工具栏 */}
-              <ChatInput
+      <ChatInput
           inputValue={inputValue}
           onInputChange={setInputValue}
           uploadingFiles={new Set()}
@@ -397,29 +285,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           currentChatId={currentUser?.id || null}
         />
 
-      {/* 个人信息弹框 */}
-      {modalUserId && (
-        <ProfileModal
-          userId={modalUserId}
-          isVisible={showProfileModal}
-          onClose={handleCloseProfileModal}
-          triggerElement={avatarElement}
-          showActions={showActions}
-          onMessage={handleMessage}
-          onVoiceCall={handleVoiceCall}
-          onVideoCall={handleVideoCall}
-        />
-      )}
 
-
-
-      {/* 图片预览弹框 */}
-      <ImagePreviewModal
-        isOpen={showImagePreview}
-        onClose={handleCloseImagePreview}
-        images={previewImageUrl ? [previewImageUrl] : []}
-        currentIndex={0}
-      />
 
       {/* 解散群聊确认弹框 */}
       <ConfirmDialog

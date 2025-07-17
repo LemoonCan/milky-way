@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type MessageDTO } from '../services/chat'
 import { ConnectionStatus, type RetryInfo } from '../utils/websocket'
 import { useUserStore } from './user'
+import { type ExtendedMessageDTO } from './messageManager'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 
 // 工具函数：比较消息ID，选择最新的
@@ -44,16 +45,8 @@ const hasNewMessagesToLoad = (chatState?: ChatMessagesState, chatUser?: ChatUser
   return !cachedNewestId || cachedNewestId !== actualNewestId
 }
 
-// 移除 Message 接口，直接使用 MessageDTO
-// 添加前端特有的扩展字段
-export interface MessageWithStatus extends MessageDTO {
-  sendStatus?: 'sending' | 'sent' | 'failed' // 添加发送状态
-  fileData?: {
-    originalFile?: File
-    isUploading?: boolean
-    uploadProgress?: number
-  }
-}
+// 使用 ExtendedMessageDTO，已在本包的 messageManager 中定义
+export type MessageWithStatus = ExtendedMessageDTO
 
 export interface ChatUser {
   id: string
@@ -93,17 +86,11 @@ export interface ChatStore {
   loadChatMessages: (chatId: string, refresh?: boolean) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
   addMessage: (chatId: string, message: Omit<MessageWithStatus, 'id'> & { id?: string }) => void
-  updateMessageSendStatus: (chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed') => void
-  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<MessageWithStatus>) => void
-  clearMessageSendStatus: (chatId: string, messageId: string) => void
   getChatMessages: (chatId: string) => MessageWithStatus[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
   removeChatUser: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
   initializeChatService: () => Promise<void>
-  sendMessageViaWebSocket: (chatId: string, content: string) => Promise<void>
-  handleWebSocketMessage: (messageDTO: MessageDTO) => void
-  handleMessageReceipt: (receipt: import('../utils/websocket').MessageReceipt) => void
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => void
   setConnectionStatus: (status: ConnectionStatus, error?: string) => void
   loadChatList: (refresh?: boolean) => Promise<void>
@@ -176,20 +163,20 @@ const convertChatInfoToUser = (chatInfo: ChatInfoDTO): ChatUser => {
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
-  currentChatId: null,
-  chatUsers: mockUsers,
-  chatMessagesMap: {},
-  connectionStatus: ConnectionStatus.DISCONNECTED,
-  connectionError: null,
-  isLoading: false,
-  hasMoreChats: true,
-  lastChatId: undefined,
-  retryInfo: {
-    currentAttempt: 0,
-    maxAttempts: 3,
-    status: ConnectionStatus.DISCONNECTED
-  },
-  error: null,
+    currentChatId: null,
+    chatUsers: mockUsers,
+    chatMessagesMap: {},
+    connectionStatus: ConnectionStatus.DISCONNECTED,
+    connectionError: null,
+    isLoading: false,
+    hasMoreChats: true,
+    lastChatId: undefined,
+    retryInfo: {
+      currentAttempt: 0,
+      maxAttempts: 3,
+      status: ConnectionStatus.DISCONNECTED
+    },
+    error: null,
   
   setCurrentChat: async (chatId: string) => {
     console.log(`[ChatStore] setCurrentChat 被调用，chatId: ${chatId}`)
@@ -395,88 +382,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     console.log(`[ChatStore] 消息添加完成，聊天 ${chatId} 现有 ${currentChatState.messages.length + 1} 条消息`)
   },
 
-  updateMessageSendStatus: (chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed') => {
-    const state = get()
-    const chatMessages = state.chatMessagesMap[chatId]
-    if (!chatMessages) return
 
-    const updatedMessages = chatMessages.messages.map(msg => 
-      msg.id === messageId ? { ...msg, sendStatus: status } : msg
-    )
-
-    set({
-      chatMessagesMap: {
-        ...state.chatMessagesMap,
-        [chatId]: {
-          ...chatMessages,
-          messages: updatedMessages
-        }
-      }
-    })
-  },
-
-  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<MessageWithStatus>) => {
-    console.log(`[ChatStore] updateMessageByClientId 被调用 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`, updates)
-    
-    const state = get()
-    const chatMessages = state.chatMessagesMap[chatId]
-    
-    if (!chatMessages) {
-      console.warn(`[ChatStore] 找不到聊天 ${chatId} 的消息缓存`)
-      return
-    }
-
-    console.log(`[ChatStore] 聊天 ${chatId} 共有 ${chatMessages.messages.length} 条消息`)
-    
-    // 查找目标消息
-    const targetMessageIndex = chatMessages.messages.findIndex(msg => msg.clientMsgId === clientMsgId)
-    if (targetMessageIndex === -1) {
-      console.warn(`[ChatStore] 找不到 clientMsgId 为 ${clientMsgId} 的消息`)
-      // 打印所有消息的clientMsgId用于调试
-      chatMessages.messages.forEach((msg, index) => {
-        console.log(`[ChatStore] 消息 ${index}: id=${msg.id}, clientMsgId=${msg.clientMsgId}, sendStatus=${msg.sendStatus}`)
-      })
-      return
-    }
-
-    console.log(`[ChatStore] 找到目标消息，索引: ${targetMessageIndex}, 当前ID: ${chatMessages.messages[targetMessageIndex].id}, 状态: ${chatMessages.messages[targetMessageIndex].sendStatus}`)
-
-    const updatedMessages = chatMessages.messages.map(msg => 
-      msg.clientMsgId === clientMsgId ? { ...msg, ...updates } : msg
-    )
-
-    set({
-      chatMessagesMap: {
-        ...state.chatMessagesMap,
-        [chatId]: {
-          ...chatMessages,
-          messages: updatedMessages
-        }
-      }
-    })
-    
-    console.log(`[ChatStore] 消息更新完成`)
-  },
-
-  clearMessageSendStatus: (chatId: string, messageId: string) => {
-    const state = get()
-    const currentChatState = state.chatMessagesMap[chatId]
-    if (!currentChatState) return
-
-    const updatedMessages = currentChatState.messages.map(msg => 
-      msg.id === messageId ? { ...msg, sendStatus: undefined } : msg
-    )
-
-    set({
-      chatMessagesMap: {
-        ...state.chatMessagesMap,
-        [chatId]: {
-          ...currentChatState,
-          messages: updatedMessages
-        }
-      }
-    })
-  },
   
   getChatMessages: (chatId: string) => {
     const state = get()
@@ -643,10 +549,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       await chatService.initialize()
       
       // 添加MessageDTO处理器
-      chatService.addMessageDTOHandler(get().handleWebSocketMessage)
+      const { messageManager } = await import('./messageManager')
+      chatService.addMessageDTOHandler(messageManager.handleWebSocketMessage.bind(messageManager))
       
       // 添加回执处理器
-      chatService.addReceiptHandler(get().handleMessageReceipt)
+      chatService.addReceiptHandler(messageManager.handleMessageReceipt.bind(messageManager))
       
       // 更新连接状态
       const currentRetryInfo = chatService.getRetryInfo()
@@ -666,112 +573,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  sendMessageViaWebSocket: async (chatId: string, content: string) => {
-    const clientMsgId = `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const tempMessageId = `temp-${clientMsgId}`
-    
-    console.log(`[ChatStore] 开始发送消息 - chatId: ${chatId}, clientMsgId: ${clientMsgId}, tempMessageId: ${tempMessageId}`)
-    
-    // 立即添加到本地消息列表，状态为发送中
-    get().addMessage(chatId, {
-      id: tempMessageId,
-      clientMsgId,
-      chatId,
-      sender: useUserStore.getState().currentUser ? {
-        id: useUserStore.getState().currentUser!.id,
-        openId: useUserStore.getState().currentUser!.openId,
-        nickName: useUserStore.getState().currentUser!.nickName,
-        avatar: useUserStore.getState().currentUser?.avatar
-      } : {
-        id: 'unknown',
-        openId: 'unknown',
-        nickName: '我',
-        avatar: undefined
-      },
-      meta: {
-        type: 'TEXT',
-        content: content,
-        media: null
-      },
-      sentTime: new Date().toISOString(),
-      read: false,
-      sendStatus: 'sending'
-    })
-    
-    console.log(`[ChatStore] 消息添加完成，准备发送到WebSocket`)
-    
-    // 发送消息到WebSocket
-    try {
-      await chatService.sendMessage({
-        chatId,
-        content,
-        clientMsgId
-      })
-      
-      console.log(`[ChatStore] 消息发送请求完成 - clientMsgId: ${clientMsgId}`)
-    } catch (error) {
-      console.error(`[ChatStore] 消息发送失败:`, error)
-      // 标记消息为发送失败
-      get().updateMessageByClientId(chatId, clientMsgId, {
-        sendStatus: 'failed'
-      })
-    }
-  },
 
-  handleWebSocketMessage: (messageDTO: MessageDTO) => {
-    console.log('[ChatStore] 收到WebSocket消息:', messageDTO)
-    get().addRealTimeMessage(messageDTO.chatId, messageDTO)
-  },
-
-  handleMessageReceipt: (receipt: import('../utils/websocket').MessageReceipt) => {
-    console.log('[ChatStore] 处理消息回执:', receipt)
-    
-    try {
-      // 回执数据结构是 Result<MessageDTO>
-      if (receipt.success && receipt.data) {
-        const messageData = receipt.data
-        const { chatId, clientMsgId, id } = messageData
-        
-        console.log(`[ChatStore] 回执数据解析 - chatId: ${chatId}, clientMsgId: ${clientMsgId}, serverId: ${id}`)
-        
-        if (chatId && clientMsgId) {
-          const state = get()
-          const chatMessages = state.chatMessagesMap[chatId]
-          
-          console.log(`[ChatStore] 查找聊天 ${chatId} 的消息缓存:`, chatMessages ? `找到，包含 ${chatMessages.messages.length} 条消息` : '未找到')
-          
-          if (chatMessages) {
-            const targetMessage = chatMessages.messages.find(msg => msg.clientMsgId === clientMsgId)
-            
-            if (targetMessage) {
-              console.log(`[ChatStore] 找到对应消息，clientMsgId: ${clientMsgId} -> serverId: ${id}`)
-              
-              // 更新消息为发送成功状态，并使用服务器返回的真实数据
-              get().updateMessageByClientId(chatId, clientMsgId, {
-                id: id, // 使用服务器返回的真实ID
-                sendStatus: 'sent',
-                sentTime: messageData.sentTime,
-                meta: messageData.meta, // 更新服务器返回的meta信息（包括封面图URL）
-                fileData: undefined // 清除本地文件数据
-              })
-              
-              console.log(`[ChatStore] 消息回执处理完成`)
-            } else {
-              console.warn(`[ChatStore] 找不到对应的消息，clientMsgId: ${clientMsgId}`)
-            }
-          } else {
-            console.warn(`[ChatStore] 找不到聊天 ${chatId} 的消息缓存`)
-          }
-        } else {
-          console.warn(`[ChatStore] 回执数据不完整:`, { chatId, clientMsgId, id })
-        }
-      } else {
-        console.warn('[ChatStore] 回执失败:', receipt)
-      }
-    } catch (error) {
-      console.error('[ChatStore] 处理消息回执时发生错误:', error)
-    }
-  },
 
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => {
     console.log(`[ChatStore] 添加实时消息到聊天 ${chatId}:`, messageDTO)
@@ -790,9 +592,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     
     // 检查消息是否已存在（避免重复添加）
     if (currentChatState) {
-      const existingMessage = currentChatState.messages.find(msg => msg.id === messageDTO.id)
+      const existingMessage = currentChatState.messages.find(msg => {
+        // 通过消息ID匹配
+        if (msg.id === messageDTO.id) {
+          return true
+        }
+        // 通过clientMsgId匹配（处理回执和推送时序问题）
+        if (messageDTO.clientMsgId && msg.clientMsgId === messageDTO.clientMsgId) {
+          return true
+        }
+        return false
+      })
+      
       if (existingMessage) {
-        console.log(`[ChatStore] 消息 ${messageDTO.id} 已存在，跳过添加`)
         return
       }
     }

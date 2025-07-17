@@ -1,5 +1,6 @@
 import http from '../lib/http'
 import { webSocketClient, type WebSocketMessage, type MessageDTOHandler, type RetryInfo, ConnectionStatus } from '../utils/websocket'
+import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { ApiResponse } from '../types/api'
 
 export interface ChatInfo {
@@ -285,18 +286,31 @@ export class ChatService {
    * 发送消息
    */
   async sendMessage(request: SendMessageRequest): Promise<void> {
-    if (!this.isReady()) {
-      throw new Error('聊天服务未就绪，请先初始化')
-    }
+    console.log('sendMessage', request)
+    
+    try {
+      if (!this.isReady()) {
+        throw new Error('聊天服务未就绪，请先初始化')
+      }
 
-    const message: WebSocketMessage = {
-      chatId: request.chatId,
-      content: request.content,
-      messageType: request.messageType || 'TEXT',
-      clientMsgId: request.clientMsgId // 确保传递客户端消息ID
-    }
+      const message: WebSocketMessage = {
+        chatId: request.chatId,
+        content: request.content,
+        messageType: request.messageType || 'TEXT',
+        clientMsgId: request.clientMsgId // 确保传递客户端消息ID
+      }
 
-    webSocketClient.sendMessage(message)
+      webSocketClient.sendMessage(message)
+    } catch (error) {
+      // 在服务层统一处理错误
+      console.error('[ChatService] 发送消息失败:', error)
+      
+      // 显示错误给用户
+      handleAndShowError(error)
+      
+      // 重新抛出错误，让调用层知道操作失败
+      throw error
+    }
   }
 
   /**

@@ -1,35 +1,88 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
 import { ImageMessage } from './ImageMessage'
 import { VideoMessage } from './VideoMessage'
 import { FileMessage } from './FileMessage'
+import { ProfileModal } from '../ProfileModal'
 import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
 import type { MessageWithStatus } from '@/store/chat'
 import { isMessageFromMe } from '@/store/chat'
 import { useUserStore } from '@/store/user'
+import { useMessageRetry } from '@/hooks/useMessageRetry'
 import styles from '../../css/chats/MessageBubble.module.css'
 
 interface MessageBubbleProps {
   message: MessageWithStatus
-  onAvatarClick?: (isFromMe: boolean, element: HTMLElement, userId: string) => void
-  onRetryMessage?: (messageId: string) => void // 重发消息回调
-  onImageClick?: (imageUrl: string) => void // 图片点击回调
+  chatId: string // 聊天ID，用于重发消息
 }
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
-  onAvatarClick,
-  onRetryMessage,
-  onImageClick,
+  chatId,
 }) => {
   const { currentUser } = useUserStore()
+  const { retryMessage } = useMessageRetry()
+  
+  // 个人信息弹框状态
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [modalUserId, setModalUserId] = useState<string | null>(null)
+  const [showActions, setShowActions] = useState(false)
+  const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
   
   const formatTime = (sentTime: string) => {
     return new Date(sentTime).toLocaleTimeString('zh-CN', {
       hour: '2-digit',
       minute: '2-digit',
     })
+  }
+
+  // 处理消息重发
+  const handleRetryMessage = async () => {
+    try {
+      await retryMessage(chatId, message.id)
+    } catch (error) {
+      // 服务层已经显示了错误
+      console.error('重发消息失败:', error)
+    }
+  }
+
+  // 处理头像点击
+  const handleAvatarClick = (isFromMe: boolean, element: HTMLElement, userId: string) => {
+    // 确保在设置弹框状态前，先设置触发元素
+    setAvatarElement(element)
+    
+    // 直接使用传入的userId
+    setModalUserId(userId)
+    setShowActions(!isFromMe) // 点击自己的头像不显示操作按钮，点击他人头像显示
+    
+    // 使用 setTimeout 确保 DOM 更新后再显示弹框
+    setTimeout(() => {
+      setShowProfileModal(true)
+    }, 0)
+  }
+
+  // 关闭个人信息弹框
+  const handleCloseProfileModal = () => {
+    setShowProfileModal(false)
+  }
+
+  // 处理发消息（个人信息弹框中）
+  const handleMessage = () => {
+    setShowProfileModal(false)
+    // 已经在当前聊天中，不需要切换
+  }
+
+  // 处理语音通话
+  const handleVoiceCall = () => {
+    setShowProfileModal(false)
+    console.log('发起语音通话:', modalUserId)
+  }
+
+  // 处理视频通话
+  const handleVideoCall = () => {
+    setShowProfileModal(false)
+    console.log('发起视频通话:', modalUserId)
   }
 
   const isFromMe = isMessageFromMe(message)
@@ -67,7 +120,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         return (
           <div 
             className={styles.sendStatusIconWrapper}
-            onClick={() => onRetryMessage?.(message.id)}
+            onClick={() => handleRetryMessage()}
             title="点击重发"
           >
             <AlertCircle 
@@ -95,10 +148,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         return (
           <ImageMessage 
             media={message.meta.media || ''} 
-            onLoad={() => {
-              // 图片加载完成后可以进行额外处理
-            }}
-            onClick={() => onImageClick?.(message.meta.media || '')}
           />
         )
       case 'VIDEO':
@@ -113,8 +162,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       case 'FILE': {
         // 只有在上传前预览时才从原始文件中读取文件名
         const getFileName = () => {
-          // 如果有原始文件且正在上传，使用原始文件名
-          if (message.fileData?.originalFile && message.fileData?.isUploading) {
+          // 如果有原始文件且正在发送，使用原始文件名
+          if (message.fileData?.originalFile && message.sendStatus === 'sending') {
             return message.fileData.originalFile.name
           }
           // 否则使用 meta.content 中的文件名（正常情况）
@@ -157,8 +206,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {!isFromMe && (
         <div 
           className={`${styles.avatarContainer} ${styles.avatarContainerLeft}`}
-          onClick={(e) => onAvatarClick?.(false, e.currentTarget, avatarInfo.userId)}
-          style={{ cursor: onAvatarClick ? 'pointer' : 'default' }}
+          onClick={(e) => handleAvatarClick(false, e.currentTarget, avatarInfo.userId)}
+          style={{ cursor: 'pointer' }}
         >
           <Avatar 
             size={32}
@@ -193,8 +242,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       {isFromMe && (
         <div 
           className={`${styles.avatarContainer} ${styles.avatarContainerRight}`}
-          onClick={(e) => onAvatarClick?.(true, e.currentTarget, avatarInfo.userId)}
-          style={{ cursor: onAvatarClick ? 'pointer' : 'default' }}
+          onClick={(e) => handleAvatarClick(true, e.currentTarget, avatarInfo.userId)}
+          style={{ cursor: 'pointer' }}
         >
           <Avatar 
             size={32}
@@ -203,6 +252,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           />
         </div>
       )}
+
+      {/* 个人信息弹框 */}
+      {modalUserId && (
+        <ProfileModal
+          userId={modalUserId}
+          isVisible={showProfileModal}
+          onClose={handleCloseProfileModal}
+          triggerElement={avatarElement}
+          showActions={showActions}
+          onMessage={handleMessage}
+          onVoiceCall={handleVoiceCall}
+          onVideoCall={handleVideoCall}
+        />
+      )}
+
+
     </div>
   )
 } 

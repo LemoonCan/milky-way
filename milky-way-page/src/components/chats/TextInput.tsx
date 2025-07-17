@@ -1,6 +1,6 @@
 import React from 'react'
 import { Send } from 'lucide-react'
-import { useChatStore } from '@/store/chat'
+import { messageManager } from '../../store/messageManager'
 import styles from '../../css/chats/ChatWindow.module.css'
 
 interface TextInputProps {
@@ -20,12 +20,14 @@ export const TextInput: React.FC<TextInputProps> = ({
   placeholder = "输入消息...",
   currentChatId
 }) => {
-  const { sendMessageViaWebSocket } = useChatStore()
+  // 直接使用全局messageManager
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // 检查是否在输入法编辑状态（composing）
+    // 如果在输入法编辑状态，回车键应该用于确认候选词，而不是发送消息
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
-      handleSendMessage()
+      await handleSendMessage()
     }
   }
 
@@ -43,12 +45,14 @@ export const TextInput: React.FC<TextInputProps> = ({
     if (!inputValue.trim() || !currentChatId) return
 
     try {
-      // 使用WebSocket发送文本消息
-      await sendMessageViaWebSocket(currentChatId, inputValue.trim())
+      // 直接使用全局messageManager发送消息
+      await messageManager.sendTextMessage(currentChatId, inputValue.trim())
       // 发送成功后清空输入框
       onInputChange('')
     } catch (error) {
+      // 服务层已经显示了错误，这里只需要处理UI状态
       console.error('发送文本消息失败:', error)
+      
       // 发送失败时也清空输入框
       onInputChange('')
     }

@@ -102,12 +102,7 @@
   gap: 6px;
 }
 
-/* 上传进度文字 */
-.uploadProgress {
-  color: white;
-  font-size: 12px;
-  font-weight: 500;
-}
+
 
 /* 旋转动画的加载指示器 */
 .spinner {

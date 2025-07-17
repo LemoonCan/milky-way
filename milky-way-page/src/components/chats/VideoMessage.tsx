@@ -8,8 +8,6 @@ interface VideoMessageProps {
   sendStatus?: 'sending' | 'sent' | 'failed'
   fileData?: {
     originalFile?: File
-    isUploading?: boolean
-    uploadProgress?: number
   }
 }
 
@@ -25,7 +23,7 @@ export const VideoMessage: React.FC<VideoMessageProps> = ({
 
   // 处理本地视频文件预览
   useEffect(() => {
-    if (fileData?.originalFile && (fileData.isUploading || sendStatus === 'failed' || sendStatus === 'sending')) {
+    if (fileData?.originalFile && (sendStatus === 'failed' || sendStatus === 'sending')) {
       const videoBlob = URL.createObjectURL(fileData.originalFile)
       setLocalVideoUrl(videoBlob)
       
@@ -38,7 +36,7 @@ export const VideoMessage: React.FC<VideoMessageProps> = ({
       // 只有发送成功时才清理本地视频
       setLocalVideoUrl(null)
     }
-  }, [fileData?.originalFile, fileData?.isUploading, sendStatus])
+  }, [fileData?.originalFile, sendStatus])
 
   const handleImageError = () => {
     setImageError(true)
@@ -57,7 +55,7 @@ export const VideoMessage: React.FC<VideoMessageProps> = ({
   }
 
   // 如果有本地视频（上传中、重新发送或失败），或者正在播放视频，直接显示视频播放器
-  if ((localVideoUrl && (fileData?.isUploading || sendStatus === 'sending' || sendStatus === 'failed')) || (isPlaying && (localVideoUrl || videoUrl))) {
+  if ((localVideoUrl && (sendStatus === 'sending' || sendStatus === 'failed')) || (isPlaying && (localVideoUrl || videoUrl))) {
     return (
       <div className={styles.videoMessage}>
         <video 

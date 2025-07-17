@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X, Image, Video, FileText } from 'lucide-react'
-import { chatService } from '../../services/chat'
-import { fileService, FilePermission } from '../../services/file'
-import { useChatStore } from '@/store/chat'
-import { useUserStore } from '@/store/user'
+import { messageManager } from '../../store/messageManager'
 import styles from '../../css/chats/ChatWindow.module.css'
 
 interface FileUploadDialogProps {
@@ -21,7 +18,7 @@ export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>(initialFiles)
   
-  const { updateMessageByClientId, addMessage, getChatMessages } = useChatStore()
+  // 直接使用全局messageManager
 
   // 当传入初始文件时，设置选中的文件
   useEffect(() => {
@@ -46,16 +43,7 @@ export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
-  // 根据文件类型确定消息类型
-  const getMessageTypeFromFile = (file: File): 'IMAGE' | 'VIDEO' | 'FILE' => {
-    if (file.type.startsWith('image/')) {
-      return 'IMAGE'
-    } else if (file.type.startsWith('video/')) {
-      return 'VIDEO'
-    } else {
-      return 'FILE'
-    }
-  }
+
 
   // 移除文件
   const handleRemoveFile = (index: number) => {
@@ -67,172 +55,21 @@ export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
   const confirmFileUpload = async () => {
     if (!currentChatId || selectedFiles.length === 0) return
 
-    // 立即为每个文件创建临时消息并显示在对话框中
-    const fileMessagesData = selectedFiles.map(file => {
-      const clientMsgId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      const tempMessageId = `temp-${clientMsgId}`
-      const messageType = getMessageTypeFromFile(file)
-      
-      // 创建文件预览URL（用于立即显示）
-      const previewUrl = URL.createObjectURL(file)
-      
-      const messageData = {
-        id: tempMessageId,
-        clientMsgId,
-        chatId: currentChatId,
-        sender: (() => {
-          // 从 useUserStore 获取真正的当前用户信息
-          const userStore = useUserStore.getState()
-          const realCurrentUser = userStore.currentUser
-          
-          if (realCurrentUser) {
-            return {
-              id: realCurrentUser.id,
-              openId: realCurrentUser.openId,
-              nickName: realCurrentUser.nickName,
-              avatar: realCurrentUser.avatar
-            }
-          } else {
-            return {
-              id: 'unknown',
-              openId: 'unknown',
-              nickName: '我',
-              avatar: undefined
-            }
-          }
-        })(),
-        meta: {
-          type: messageType,
-          content: file.name, // 设置文件名到content中
-          media: previewUrl // 使用预览URL立即显示
-        },
-        sentTime: new Date().toISOString(),
-        read: false,
-        sendStatus: 'sending' as const,
-        fileData: {
-          originalFile: file,
-          isUploading: true,
-          uploadProgress: 0
-        }
-      }
-      
-      return { messageData, clientMsgId, file }
-    })
-    
-    // 立即添加所有消息到对话框
-    fileMessagesData.forEach(({ messageData }) => {
-      addMessage(currentChatId, messageData)
-    })
-    
     // 关闭弹框
     onClose()
     
-    // 异步上传文件
-    for (const { clientMsgId, file } of fileMessagesData) {
-      handleSingleFileUpload(file, clientMsgId)
-    }
-  }
-
-  // 处理单个文件上传
-  const handleSingleFileUpload = async (file: File, clientMsgId: string) => {
-    if (!currentChatId) return
-    
-    try {
-      // 更新消息状态为上传中
-      updateMessageByClientId(currentChatId, clientMsgId, {
-        sendStatus: 'sending',
-        fileData: {
-          originalFile: file,
-          isUploading: true,
-          uploadProgress: 0
-        }
-      })
-
-      // 上传文件到服务器
-      const uploadResult = await fileService.uploadFile(file, {
-        permission: FilePermission.PRIVATE
-      })
-
-      // 根据文件类型确定消息类型
-      const messageType = getMessageTypeFromFile(file)
-      
-      // 上传成功后，更新消息的media URL为服务器URL
-      // 同时清理本地预览URL以防止内存泄漏
-      const currentMessages = getChatMessages(currentChatId)
-      const currentMessage = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
-      if (currentMessage && currentMessage.meta.media && currentMessage.meta.media.startsWith('blob:')) {
-        URL.revokeObjectURL(currentMessage.meta.media)
+    // 直接使用全局messageManager发送文件
+    for (const file of selectedFiles) {
+      try {
+        await messageManager.sendFileMessage(currentChatId, file)
+      } catch (error) {
+        console.error('发送文件失败:', error)
+        // 错误已经在messageManager中处理了
       }
-      
-      updateMessageByClientId(currentChatId, clientMsgId, {
-        meta: {
-          type: messageType,
-          content: file.name, // 保持文件名
-          media: uploadResult.fileAccessUrl
-        },
-        fileData: {
-          originalFile: file,
-          isUploading: false,
-          uploadProgress: 100
-        }
-      })
-
-      // 发送消息到服务器
-      await sendFileMessage(currentChatId, uploadResult.fileAccessUrl, messageType, clientMsgId)
-
-    } catch (error) {
-      console.error('文件上传失败:', error)
-      
-      // 上传失败时也要清理预览URL
-      const currentMessages = getChatMessages(currentChatId)
-      const currentMessage = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
-      if (currentMessage && currentMessage.meta.media && currentMessage.meta.media.startsWith('blob:')) {
-        URL.revokeObjectURL(currentMessage.meta.media)
-      }
-      
-      // 标记消息为发送失败
-      updateMessageByClientId(currentChatId, clientMsgId, {
-        sendStatus: 'failed',
-        fileData: {
-          originalFile: file,
-          isUploading: false,
-          uploadProgress: 0
-        }
-      })
     }
   }
 
-  // 发送文件消息
-  const sendFileMessage = async (chatId: string, fileUrl: string, messageType: 'IMAGE' | 'VIDEO' | 'FILE', clientMsgId: string) => {
-    try {
-      // 发送消息到服务器（不再创建新消息，而是更新现有消息）
-      await chatService.sendMessage({
-        chatId,
-        content: fileUrl,
-        messageType,
-        clientMsgId
-      })
-      
-      // 设置回执超时：如果15秒内没有收到回执，标记为失败
-      setTimeout(() => {
-        const currentMessages = getChatMessages(chatId)
-        const message = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
-        if (message && message.sendStatus === 'sending') {
-          updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
-        }
-      }, 15000)
-      
-    } catch (error) {
-      console.error('[FileUploadDialog] 发送文件消息失败:', error)
-      
-      // 标记消息为发送失败
-      updateMessageByClientId(chatId, clientMsgId, {
-        sendStatus: 'failed'
-      })
-      
-      throw error
-    }
-  }
+
 
   if (!isVisible) return null
 
