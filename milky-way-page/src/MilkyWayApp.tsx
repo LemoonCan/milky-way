@@ -14,6 +14,7 @@ import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
 import { useAuthStore } from './store/auth'
 import { useWebSocketNotifications } from './hooks/useWebSocketNotifications'
+import { connectionManager } from './store/connectionManager'
 import styles from './css/App.module.css'
 import chatWindowStyles from './css/chats/ChatWindow.module.css'
 
@@ -61,9 +62,9 @@ const SettingsPageWrapper = ({
   )
 }
 
-function ChatApp() {
+function MilkyWayApp() {
   const [showProfile, setShowProfile] = useState(false)
-  const { chatUsers, currentChatId, setCurrentChat, initializeChatService, isConnected } = useChatStore()
+  const { chatUsers, currentChatId, setCurrentChat } = useChatStore()
   const { fetchUserInfo } = useUserStore()
   const { isAuthenticated } = useAuthStore()
   const location = useLocation()
@@ -83,12 +84,18 @@ function ChatApp() {
   // 用户登录后初始化WebSocket连接 - 改进逻辑
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('[ChatApp] 用户已认证，初始化聊天服务，当前连接状态:', isConnected)
-      initializeChatService().catch(error => {
-        console.error('初始化聊天服务失败:', error)
+      console.log('[MilkyWayApp] 用户已认证，初始化聊天服务，当前连接状态:', connectionManager.isConnected())
+      
+      // 直接调用connectionManager的聊天应用初始化方法
+      connectionManager.initializeChatApp().catch(error => {
+        console.error('[MilkyWayApp] 初始化聊天应用失败:', error)
       })
+    } else {
+      // 用户未认证时确保断开WebSocket连接
+      console.log('[MilkyWayApp] 用户未认证，断开WebSocket连接')
+      connectionManager.destroy()
     }
-  }, [isAuthenticated, initializeChatService]) // 移除isConnected依赖，避免重复初始化
+  }, [isAuthenticated]) // 移除isConnected依赖，避免重复初始化
 
   // 根据当前路径确定激活的标签
   const getActiveTab = () => {
@@ -156,4 +163,4 @@ function ChatApp() {
   )
 }
 
-export default ChatApp 
+export default MilkyWayApp 

@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type MessageDTO } from '../services/chat'
-import { ConnectionStatus, type RetryInfo } from '../utils/websocket'
 import { useUserStore } from './user'
 import { type ExtendedMessageDTO } from './messageManager'
 import { handleAndShowError } from '../lib/globalErrorHandler'
@@ -75,12 +74,9 @@ export interface ChatStore {
   currentChatId: string | null
   chatUsers: ChatUser[]
   chatMessagesMap: Record<string, ChatMessagesState>
-  connectionStatus: ConnectionStatus
-  connectionError: string | null
   isLoading: boolean
   hasMoreChats: boolean
   lastChatId?: string
-  retryInfo: RetryInfo
   error: string | null
   setCurrentChat: (chatId: string) => Promise<void>
   loadChatMessages: (chatId: string, refresh?: boolean) => Promise<void>
@@ -90,18 +86,9 @@ export interface ChatStore {
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
   removeChatUser: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
-  initializeChatService: () => Promise<void>
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => void
-  setConnectionStatus: (status: ConnectionStatus, error?: string) => void
   loadChatList: (refresh?: boolean) => Promise<void>
   loadMoreChats: () => Promise<void>
-  resetConnection: () => Promise<void>
-  updateRetryInfo: (retryInfo: RetryInfo) => void
-  isConnected: () => boolean
-  isConnecting: () => boolean
-  isRetrying: () => boolean
-  isFailed: () => boolean
-  getConnectionDisplayText: () => string
   markAllSendingMessagesAsFailed: () => void
   setError: (error: string | null) => void
   clearError: () => void
@@ -166,16 +153,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     currentChatId: null,
     chatUsers: mockUsers,
     chatMessagesMap: {},
-    connectionStatus: ConnectionStatus.DISCONNECTED,
-    connectionError: null,
     isLoading: false,
     hasMoreChats: true,
     lastChatId: undefined,
-    retryInfo: {
-      currentAttempt: 0,
-      maxAttempts: 3,
-      status: ConnectionStatus.DISCONNECTED
-    },
     error: null,
   
   setCurrentChat: async (chatId: string) => {
@@ -519,59 +499,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  initializeChatService: async () => {
-    try {
-      console.log('[ChatStore] 初始化聊天服务...')
-      
-      // 设置状态变更回调
-      chatService.setStatusChangeCallback((retryInfo: RetryInfo) => {
-        console.log('[ChatStore] 连接状态更新:', retryInfo)
-        
-        // 获取之前的连接状态
-        const prevStatus = get().connectionStatus
-        
-        // 更新状态
-        set({ 
-          retryInfo,
-          connectionStatus: retryInfo.status,
-          connectionError: retryInfo.error || null
-        })
-        
-        // 如果连接断开（从已连接变为其他状态），标记所有发送中的消息为失败
-        if (prevStatus === ConnectionStatus.CONNECTED && 
-            retryInfo.status !== ConnectionStatus.CONNECTED) {
-          console.log('[ChatStore] 连接断开，标记所有发送中的消息为失败')
-          get().markAllSendingMessagesAsFailed()
-        }
-      })
-      
-      // 连接WebSocket
-      await chatService.initialize()
-      
-      // 添加MessageDTO处理器
-      const { messageManager } = await import('./messageManager')
-      chatService.addMessageDTOHandler(messageManager.handleWebSocketMessage.bind(messageManager))
-      
-      // 添加回执处理器
-      chatService.addReceiptHandler(messageManager.handleMessageReceipt.bind(messageManager))
-      
-      // 更新连接状态
-      const currentRetryInfo = chatService.getRetryInfo()
-      const currentStatus = chatService.getConnectionStatus()
-      set({ 
-        connectionStatus: currentStatus,
-        retryInfo: currentRetryInfo
-      })
-      
-      console.log('[ChatStore] 聊天服务初始化完成，状态:', currentStatus)
-    } catch (error) {
-      console.error('[ChatStore] 初始化聊天服务失败:', error)
-      set({ 
-        connectionStatus: ConnectionStatus.FAILED,
-        connectionError: error instanceof Error ? error.message : '初始化失败'
-      })
-    }
-  },
+
 
 
 
@@ -641,13 +569,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  setConnectionStatus: (status: ConnectionStatus, error?: string) => {
-    set({ 
-      connectionStatus: status,
-      connectionError: error || null
-    })
-  },
-
   loadChatList: async (refresh = false) => {
     const state = get()
     
@@ -682,52 +603,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     if (!state.hasMoreChats || state.isLoading) return
     
     await get().loadChatList(false)
-  },
-
-  resetConnection: async () => {
-    try {
-      await chatService.reconnect()
-    } catch (error) {
-      console.error('重连失败:', error)
-    }
-  },
-
-  updateRetryInfo: (retryInfo: RetryInfo) => {
-    set({ retryInfo })
-  },
-
-  isConnected: () => {
-    return get().connectionStatus === ConnectionStatus.CONNECTED
-  },
-
-  isConnecting: () => {
-    return get().connectionStatus === ConnectionStatus.CONNECTING
-  },
-
-  isRetrying: () => {
-    return get().connectionStatus === ConnectionStatus.RETRYING
-  },
-
-  isFailed: () => {
-    return get().connectionStatus === ConnectionStatus.FAILED
-  },
-
-  getConnectionDisplayText: () => {
-    const state = get()
-    switch (state.connectionStatus) {
-      case ConnectionStatus.CONNECTED:
-        return '已连接'
-      case ConnectionStatus.CONNECTING:
-        return '连接中...'
-      case ConnectionStatus.RETRYING:
-        return `重连中... (${state.retryInfo.currentAttempt}/${state.retryInfo.maxAttempts})`
-      case ConnectionStatus.FAILED:
-        return '连接失败'
-      case ConnectionStatus.DISCONNECTED:
-        return '未连接'
-      default:
-        return '未知状态'
-    }
   },
 
   markAllSendingMessagesAsFailed: () => {

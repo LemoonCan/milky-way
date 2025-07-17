@@ -1,6 +1,6 @@
 import React from 'react'
 import { WifiOff, RefreshCw, Wifi } from 'lucide-react'
-import { useChatStore } from '@/store/chat'
+import { useConnectionManagerStore, connectionManager } from '@/store/connectionManager'
 import { ConnectionStatus } from '@/utils/websocket'
 import styles from '../css/TitleBar.module.css'
 
@@ -14,27 +14,20 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   className = '' 
 }) => {
   const { 
-    connectionStatus,
-    resetConnection,
-    initializeChatService,
-    getConnectionDisplayText,
-    isConnected,
-    isConnecting,
-    isRetrying,
-    isFailed
-  } = useChatStore()
+    connectionStatus
+  } = useConnectionManagerStore()
 
   // 处理网络重连
   const handleRetryConnection = async () => {
     console.log('[TitleBar] handleRetryConnection 被调用')
     console.log('[TitleBar] 当前状态:', {
-      isRetrying: isRetrying(),
-      isConnecting: isConnecting(),
+      isRetrying: connectionManager.isRetrying(),
+      isConnecting: connectionManager.isConnecting(),
       connectionStatus,
-      isFailed: isFailed()
+      isFailed: connectionManager.isFailed()
     })
     
-    if (isRetrying() || isConnecting()) {
+    if (connectionManager.isRetrying() || connectionManager.isConnecting()) {
       console.log('[TitleBar] 连接正在进行中，跳过重试')
       return
     }
@@ -43,14 +36,14 @@ export const TitleBar: React.FC<TitleBarProps> = ({
       console.log('[TitleBar] 开始重新连接...')
       
       // 简化逻辑：只进行一次WebSocket重连尝试
-      if (isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) {
-        console.log('[TitleBar] 调用 initializeChatService')
-        await initializeChatService()
-        console.log('[TitleBar] initializeChatService 完成')
+      if (connectionManager.isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) {
+        console.log('[TitleBar] 调用 connectionManager.resetConnection')
+        await connectionManager.resetConnection()
+        console.log('[TitleBar] connectionManager.resetConnection 完成')
       } else {
-        console.log('[TitleBar] 调用 resetConnection')
-        await resetConnection()
-        console.log('[TitleBar] resetConnection 完成')
+        console.log('[TitleBar] 调用 connectionManager.resetConnection')
+        await connectionManager.resetConnection()
+        console.log('[TitleBar] connectionManager.resetConnection 完成')
       }
     } catch (error) {
       console.error('[TitleBar] 重新连接失败:', error)
@@ -59,7 +52,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
 
   // 获取连接状态图标
   const getStatusIcon = () => {
-    if (isConnected()) {
+    if (connectionManager.isConnected()) {
       return <Wifi className={styles.networkIcon} />
     } else {
       return <WifiOff className={styles.networkIcon} />
@@ -70,11 +63,11 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   const getStatusClassName = () => {
     let className = styles.networkStatus
     
-    if (isConnected()) {
+    if (connectionManager.isConnected()) {
       className += ` ${styles.networkConnected}`
-    } else if (isConnecting() || isRetrying()) {
+    } else if (connectionManager.isConnecting() || connectionManager.isRetrying()) {
       className += ` ${styles.networkConnecting}`
-    } else if (isFailed()) {
+    } else if (connectionManager.isFailed()) {
       className += ` ${styles.networkFailed}`
     } else {
       className += ` ${styles.networkDisconnected}`
@@ -85,7 +78,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
 
   // 是否显示重试按钮
   const showRetryButton = () => {
-    return (isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) && !isRetrying() && !isConnecting()
+    return (connectionManager.isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) && !connectionManager.isRetrying() && !connectionManager.isConnecting()
   }
 
   return (
@@ -103,9 +96,9 @@ export const TitleBar: React.FC<TitleBarProps> = ({
           >
             {getStatusIcon()}
             <span className={styles.networkText}>
-              {getConnectionDisplayText()}
+              {connectionManager.getConnectionDisplayText()}
             </span>
-            {(isConnecting() || isRetrying()) && (
+            {(connectionManager.isConnecting() || connectionManager.isRetrying()) && (
               <RefreshCw className={`${styles.retryIcon} ${styles.spinning}`} />
             )}
             {showRetryButton() && (

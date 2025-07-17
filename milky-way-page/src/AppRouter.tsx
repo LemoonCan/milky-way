@@ -7,7 +7,7 @@ import { RegisterSuccessDialog } from './components/auth/RegisterSuccessDialog'
 import { ErrorToast } from './components/ui/ErrorToast'
 import { useGlobalErrorStore } from './store/globalError'
 import type { RegisterFormData } from './components/auth/RegisterPage'
-import ChatApp from './ChatApp'
+import MilkyWayApp from './MilkyWayApp'
 // 受保护的路由组件
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuthStore()
@@ -196,7 +196,7 @@ export const AppRouter: React.FC = () => {
         path="/main/*" 
         element={
           <ProtectedRoute>
-            <ChatApp />
+            <MilkyWayApp />
           </ProtectedRoute>
         } 
       />

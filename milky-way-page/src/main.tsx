@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import './css/index.css'
-import App from './App.tsx'
+import { AppRouter } from './AppRouter'
 import { preloadCommonEmojis } from './utils/emojiCache'
 
 // 应用启动时预加载常用emoji
@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
         v7_relativeSplatPath: true
       }}
     >
-      <App />
+      <AppRouter />
     </BrowserRouter>
   </StrictMode>,
 )

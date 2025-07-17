@@ -131,6 +131,15 @@ export const useAuthStore = create<AuthStore>()(
           const userStore = useUserStore.getState()
           userStore.clearUser()
           
+          // 断开WebSocket连接
+          try {
+            const { connectionManager } = await import('../store/connectionManager')
+            connectionManager.destroy()
+            console.log('WebSocket连接已断开')
+          } catch (error) {
+            console.error('断开WebSocket连接失败:', error)
+          }
+          
           set({
             isAuthenticated: false,
             currentUser: null,

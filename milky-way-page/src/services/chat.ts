@@ -1,5 +1,5 @@
 import http from '../lib/http'
-import { webSocketClient, type WebSocketMessage, type MessageDTOHandler, type RetryInfo, ConnectionStatus } from '../utils/websocket'
+import { webSocketClient, type WebSocketMessage } from '../utils/websocket'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { ApiResponse } from '../types/api'
 
@@ -99,98 +99,6 @@ export interface ChatDTO {
 }
 
 export class ChatService {
-  private isInitialized = false
-
-  /**
-   * 初始化聊天服务
-   */
-  async initialize(): Promise<void> {
-    console.log('🔄 [ChatService] initialize() 开始...')
-    
-    // 检查是否真正连接，而不只是初始化标志
-    if (this.isInitialized && webSocketClient.isConnected()) {
-      console.log('✅ [ChatService] 服务已初始化且WebSocket已连接，跳过')
-      return
-    }
-
-    console.log('🔧 [ChatService] 重置初始化状态')
-    this.isInitialized = false
-
-    try {
-      console.log('🔗 [ChatService] 调用 webSocketClient.connect()')
-      // 建立WebSocket连接
-      await webSocketClient.connect()
-      this.isInitialized = true
-      console.log('🎉 [ChatService] 聊天服务初始化成功')
-    } catch (error) {
-      console.error('❌ [ChatService] 聊天服务初始化失败:', error)
-      this.isInitialized = false  // 失败时确保标志为false
-      throw error
-    }
-  }
-
-  /**
-   * 销毁聊天服务
-   */
-  destroy(): void {
-    webSocketClient.disconnect()
-    this.isInitialized = false
-    console.log('[ChatService] 聊天服务已销毁')
-  }
-
-  /**
-   * 检查服务是否已初始化
-   */
-  isReady(): boolean {
-    const ready = this.isInitialized && webSocketClient.isConnected()
-    console.log('🔍 [ChatService] isReady() 检查:', {
-      isInitialized: this.isInitialized,
-      isConnected: webSocketClient.isConnected(),
-      ready
-    })
-    return ready
-  }
-
-  /**
-   * 获取连接状态
-   */
-  getConnectionStatus(): ConnectionStatus {
-    return webSocketClient.getConnectionStatus()
-  }
-
-  /**
-   * 获取重试信息
-   */
-  getRetryInfo(): RetryInfo {
-    return webSocketClient.getRetryInfo()
-  }
-
-  /**
-   * 设置状态变更回调
-   */
-  setStatusChangeCallback(callback: (retryInfo: RetryInfo) => void): void {
-    webSocketClient.setStatusChangeCallback(callback)
-  }
-
-  /**
-   * 重新连接
-   */
-  async reconnect(): Promise<void> {
-    console.log('🔄 [ChatService] reconnect() 开始...')
-    console.log('🔧 [ChatService] 重置初始化状态')
-    this.isInitialized = false
-    
-    try {
-      console.log('🔗 [ChatService] 调用 webSocketClient.reset()')
-      await webSocketClient.reset()
-      this.isInitialized = true
-      console.log('🎉 [ChatService] 重连成功')
-    } catch (error) {
-      console.error('❌ [ChatService] 重连失败:', error)
-      this.isInitialized = false  // 失败时确保标志为false
-      throw error
-    }
-  }
 
   /**
    * 获取聊天列表
@@ -289,7 +197,7 @@ export class ChatService {
     console.log('sendMessage', request)
     
     try {
-      if (!this.isReady()) {
+      if (!webSocketClient.isConnected()) {
         throw new Error('聊天服务未就绪，请先初始化')
       }
 
@@ -348,47 +256,7 @@ export class ChatService {
     }
   }
 
-  /**
-   * 添加消息处理器
-   */
-  addMessageHandler(handler: (message: WebSocketMessage) => void): void {
-    webSocketClient.addMessageHandler(handler)
-  }
 
-  /**
-   * 移除消息处理器
-   */
-  removeMessageHandler(handler: (message: WebSocketMessage) => void): void {
-    webSocketClient.removeMessageHandler(handler)
-  }
-
-  /**
-   * 添加MessageDTO处理器
-   */
-  addMessageDTOHandler(handler: MessageDTOHandler): void {
-    webSocketClient.addMessageDTOHandler(handler)
-  }
-
-  /**
-   * 移除MessageDTO处理器
-   */
-  removeMessageDTOHandler(handler: MessageDTOHandler): void {
-    webSocketClient.removeMessageDTOHandler(handler)
-  }
-
-  /**
-   * 添加回执处理器
-   */
-  addReceiptHandler(handler: (receipt: import('../utils/websocket').MessageReceipt) => void): void {
-    webSocketClient.addReceiptHandler(handler)
-  }
-
-  /**
-   * 移除回执处理器
-   */
-  removeReceiptHandler(handler: (receipt: import('../utils/websocket').MessageReceipt) => void): void {
-    webSocketClient.removeReceiptHandler(handler)
-  }
 
   /**
    * 创建群聊
