@@ -87,7 +87,7 @@ function MilkyWayApp() {
       console.log('[MilkyWayApp] 用户已认证，初始化聊天服务，当前连接状态:', connectionManager.isConnected())
       
       // 直接调用connectionManager的聊天应用初始化方法
-      connectionManager.initializeChatApp().catch(error => {
+      connectionManager.initializeApp().catch(error => {
         console.error('[MilkyWayApp] 初始化聊天应用失败:', error)
       })
     } else {

@@ -52,7 +52,7 @@ export interface ConnectionManagerStore {
     onSuccess?: (retryInfo: RetryInfo) => void
     onError?: (error: Error) => void
   }) => Promise<void>
-  initializeChatApp: () => Promise<void>
+  initializeApp: () => Promise<void>
 }
 
 export const useConnectionManagerStore = create<ConnectionManagerStore>((set, get) => ({
@@ -103,7 +103,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
       case ConnectionStatus.CONNECTING:
         return '连接中...'
       case ConnectionStatus.RETRYING:
-        return `重连中... (${state.retryInfo.currentAttempt}/${state.retryInfo.maxAttempts})`
+        return `重连中...`
       case ConnectionStatus.FAILED:
         return '连接失败'
       case ConnectionStatus.DISCONNECTED:
@@ -285,28 +285,13 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     }
   },
 
-  initializeChatApp: async () => {
-    try {
-      console.log('[ConnectionManager] 初始化聊天应用...')
-      
+  initializeApp: async () => {
+    try {      
       await get().initializeChatService({
-        statusChangeCallback: (retryInfo: RetryInfo) => {
-          console.log('[ConnectionManager] 连接状态更新:', retryInfo)
-          
+        statusChangeCallback: (retryInfo: RetryInfo) => {          
           // 更新连接状态
           const store = get()
-          const prevStatus = store.connectionStatus
           store.updateConnectionState(retryInfo)
-          
-          // 如果连接断开，标记所有发送中的消息为失败
-          if (prevStatus === ConnectionStatus.CONNECTED && 
-              retryInfo.status !== ConnectionStatus.CONNECTED) {
-            console.log('[ConnectionManager] 连接断开，标记所有发送中的消息为失败')
-            // 动态导入避免循环依赖
-            import('./chat').then(({ useChatStore }) => {
-              useChatStore.getState().markAllSendingMessagesAsFailed()
-            })
-          }
         },
         messageHandlers: {
           messageDTO: messageManager.handleWebSocketMessage.bind(messageManager),
