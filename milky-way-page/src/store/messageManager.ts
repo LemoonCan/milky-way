@@ -1,26 +1,8 @@
-import { chatService, type MessageDTO } from '../services/chat'
+import { chatService, type MessageDTO, type MessageMeta, type FileData, type ClientMessageDTO } from '../services/chat'
 import { fileService, FilePermission } from '../services/file'
 import { useChatStore } from './chat'
 import { useUserStore } from './user'
 import type { MessageReceipt } from '../utils/websocket'
-
-export interface MessageMeta {
-  type: 'TEXT' | 'IMAGE' | 'VIDEO' | 'FILE'
-  content: string
-  media?: string | null
-}
-
-export interface FileData {
-  originalFile?: File
-}
-
-
-
-// 扩展的消息类型，包含UI状态字段
-export interface ExtendedMessageDTO extends MessageDTO {
-  sendStatus?: 'sending' | 'sent' | 'failed'
-  fileData?: FileData
-}
 
 /**
  * 全局消息管理器单例
@@ -159,7 +141,7 @@ class MessageManager {
   /**
    * 根据客户端消息ID更新消息
    */
-  updateMessageByClientId(chatId: string, clientMsgId: string, updates: Partial<ExtendedMessageDTO>): void {
+  updateMessageByClientId(chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): void {
     console.log(`[MessageManager] updateMessageByClientId 被调用 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`, updates)
     
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
@@ -224,7 +206,6 @@ class MessageManager {
   }
 
 
-
   /**
    * 发送文本消息
    */
@@ -272,26 +253,9 @@ class MessageManager {
     
     // 2. 后台上传文件
     try {
-      const uploadResult = await fileService.uploadFile(file, {
-        permission: FilePermission.PRIVATE
-      })
-      
-      // 3. 上传成功，更新消息内容为服务器URL
-      URL.revokeObjectURL(previewUrl) // 清理本地预览URL
-      
-      const finalMeta: MessageMeta = {
-        type: messageType,
-        content: uploadResult.fileAccessUrl,
-        media: uploadResult.fileAccessUrl
-      }
-      
-      this.updateMessageByClientId(chatId, clientMsgId, {
-        meta: finalMeta,
-        fileData: undefined // 上传成功后移除文件数据
-      })
-      
+      const fileAccessUrl = await this.uploadFile(file, previewUrl, messageType, chatId, clientMsgId)
       // 4. 发送到WebSocket
-      await this.sendToWebSocket(chatId, uploadResult.fileAccessUrl, messageType, clientMsgId)
+      await this.sendToWebSocket(chatId, fileAccessUrl, messageType, clientMsgId)
       
     } catch (error) {
       console.error(`[MessageManager] 文件上传失败:`, error)
@@ -303,6 +267,31 @@ class MessageManager {
       
       throw error
     }
+  }
+
+  async uploadFile(file: File, 
+    previewUrl: string, 
+    messageType: 'IMAGE' | 'VIDEO' | 'FILE',
+    chatId: string,
+    clientMsgId: string): Promise<string> {
+    const uploadResult = await fileService.uploadFile(file, {
+      permission: FilePermission.PRIVATE
+    })
+    
+
+    URL.revokeObjectURL(previewUrl) // 清理本地预览URL
+    
+    const finalMeta: MessageMeta = {
+      type: messageType,
+      content: uploadResult.fileAccessUrl,
+      media: uploadResult.fileAccessUrl
+    }
+    
+    this.updateMessageByClientId(chatId, clientMsgId, {
+      meta: finalMeta,
+      fileData: undefined // 上传成功后移除文件数据
+    })
+    return uploadResult.fileAccessUrl
   }
 
   /**

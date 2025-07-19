@@ -1,7 +1,10 @@
 import http from '../lib/http'
 import { webSocketClient, type WebSocketMessage } from '../utils/websocket'
 import { handleAndShowError } from '../lib/globalErrorHandler'
-import type { ApiResponse } from '../types/api'
+import type { ApiResponse, Slices } from '../types/api'
+
+// 重新导出常用类型
+export type { Slices } from '../types/api'
 
 export interface ChatInfo {
   id: string
@@ -28,21 +31,29 @@ export interface ChatInfoDTO {
   online: boolean
 }
 
+// 消息元数据类型
+export interface MessageMeta {
+  type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
+  content: string
+  media?: string | null
+  videoUrl?: string // 真实视频URL，用于视频消息类型
+}
+
 // 添加消息DTO类型，对应后端的 MessageDTO
 export interface MessageDTO {
   id: string
   clientMsgId?: string // 客户端消息ID，用于回执匹配
   chatId: string
   sender: SimpleUserDTO
-  meta: {
-    type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
-    content: string
-    media?: string | null
-    videoUrl?: string // 真实视频URL，用于视频消息类型
-  }
+  meta: MessageMeta
   sentTime: string
   read?: boolean
   readTime?: string
+}
+
+// 文件数据接口
+export interface FileData {
+  originalFile?: File
 }
 
 // 简单用户信息DTO
@@ -53,12 +64,10 @@ export interface SimpleUserDTO {
   avatar?: string
 }
 
-// 添加分页返回类型，对应后端的 Slices
-export interface Slices<T> {
-  items: T[]
-  hasNext: boolean
-  lastId?: string
-  size: number
+// 客户端消息类型，包含UI状态字段
+export interface ClientMessageDTO extends MessageDTO {
+  sendStatus?: 'sending' | 'sent' | 'failed'
+  fileData?: FileData
 }
 
 // 聊天消息查询参数
@@ -282,4 +291,4 @@ export class ChatService {
 export const chatService = new ChatService()
 
 // 导出默认实例
-export default chatService 
+export default chatService

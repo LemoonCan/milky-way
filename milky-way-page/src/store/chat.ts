@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type MessageDTO } from '../services/chat'
+import { type ClientMessageDTO } from '../services/chat'
 import { useUserStore } from './user'
-import { type ExtendedMessageDTO } from './messageManager'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 
 // 工具函数：比较消息ID，选择最新的
@@ -44,9 +44,6 @@ const hasNewMessagesToLoad = (chatState?: ChatMessagesState, chatUser?: ChatUser
   return !cachedNewestId || cachedNewestId !== actualNewestId
 }
 
-// 使用 ExtendedMessageDTO，已在本包的 messageManager 中定义
-export type MessageWithStatus = ExtendedMessageDTO
-
 export interface ChatUser {
   id: string
   name: string
@@ -61,7 +58,7 @@ export interface ChatUser {
 
 // 修改聊天消息状态接口
 export interface ChatMessagesState {
-  messages: MessageWithStatus[]
+  messages: ClientMessageDTO[]
   isLoading: boolean
   hasMore: boolean
   hasMoreOlder: boolean
@@ -81,8 +78,8 @@ export interface ChatStore {
   setCurrentChat: (chatId: string) => Promise<void>
   loadChatMessages: (chatId: string, refresh?: boolean) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
-  addMessage: (chatId: string, message: Omit<MessageWithStatus, 'id'> & { id?: string }) => void
-  getChatMessages: (chatId: string) => MessageWithStatus[]
+  addMessage: (chatId: string, message: Omit<ClientMessageDTO, 'id'> & { id?: string }) => void
+  getChatMessages: (chatId: string) => ClientMessageDTO[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
   removeChatUser: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
@@ -100,7 +97,7 @@ const mockUsers: ChatUser[] = []
 // Mock messages are now loaded from API
 
 // 移除转换函数，添加工具函数用于组件中的判断
-export const isMessageFromMe = (message: MessageDTO | MessageWithStatus): boolean => {
+export const isMessageFromMe = (message: MessageDTO | ClientMessageDTO): boolean => {
   const currentUserStore = useUserStore.getState()
   const currentUserId = currentUserStore.currentUser?.id
   
@@ -221,7 +218,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         // 不传before和after，默认获取最新消息
       })
       
-      const messages = result.items.map(dto => dto as MessageWithStatus)
+      const messages = result.items.map(dto => dto as ClientMessageDTO)
       
       // 计算最新消息ID：优先使用已存在的 newestMessageId（可能是通过WebSocket更新的）
       const loadedNewestId = messages.length > 0 ? messages[messages.length - 1].id : undefined
@@ -230,7 +227,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const finalNewestMessageId = getNewestMessageId(existingNewestId, loadedNewestId)
       
       // 如果是refresh，需要保留正在发送的临时消息
-      let finalMessages: MessageWithStatus[]
+      let finalMessages: ClientMessageDTO[]
       if (refresh && currentChatState?.messages) {
         // 过滤出正在发送的临时消息（有clientMsgId且状态为sending）
         const pendingMessages = currentChatState.messages.filter(msg => 
@@ -299,7 +296,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         pageSize: 20
       })
       
-      const messages = result.items.map(dto => dto as MessageWithStatus)
+      const messages = result.items.map(dto => dto as ClientMessageDTO)
       
       set({
         chatMessagesMap: {
@@ -330,7 +327,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   
-  addMessage: (chatId: string, message: Omit<MessageWithStatus, 'id'> & { id?: string }) => {
+  addMessage: (chatId: string, message: Omit<ClientMessageDTO, 'id'> & { id?: string }) => {
     console.log(`[ChatStore] addMessage 被调用 - chatId: ${chatId}, clientMsgId: ${message.clientMsgId}`)
     
     const state = get()
@@ -498,10 +495,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.log(`[ChatStore] 已本地添加新聊天 ${chatInfo.id}`)
     }
   },
-
-
-
-
 
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => {
     console.log(`[ChatStore] 添加实时消息到聊天 ${chatId}:`, messageDTO)

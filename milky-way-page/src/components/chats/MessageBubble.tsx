@@ -6,14 +6,14 @@ import { VideoMessage } from './VideoMessage'
 import { FileMessage } from './FileMessage'
 import { ProfileModal } from '../ProfileModal'
 import { RotateCw, AlertCircle, CheckCheck } from 'lucide-react'
-import type { MessageWithStatus } from '@/store/chat'
+import { type ClientMessageDTO } from '@/services/chat'
 import { isMessageFromMe } from '@/store/chat'
 import { useUserStore } from '@/store/user'
 import { useMessageRetry } from '@/hooks/useMessageRetry'
 import styles from '../../css/chats/MessageBubble.module.css'
 
 interface MessageBubbleProps {
-  message: MessageWithStatus
+  message: ClientMessageDTO
   chatId: string // 聊天ID，用于重发消息
 }
 
