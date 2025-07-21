@@ -1,42 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Play } from 'lucide-react'
 import styles from '../../css/chats/VideoMessage.module.css'
 
 interface VideoMessageProps {
-  coverUrl: string // 视频封面图URL
+  coverUrl?: string // 视频封面图URL
   videoUrl?: string // 视频文件URL
   sendStatus?: 'sending' | 'sent' | 'failed'
-  fileData?: {
-    originalFile?: File
-  }
 }
 
 export const VideoMessage: React.FC<VideoMessageProps> = ({
   coverUrl,
   videoUrl,
-  sendStatus,
-  fileData
+  sendStatus
 }) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [imageError, setImageError] = useState(false)
-  const [localVideoUrl, setLocalVideoUrl] = useState<string | null>(null)
-
-  // 处理本地视频文件预览
-  useEffect(() => {
-    if (fileData?.originalFile && (sendStatus === 'failed' || sendStatus === 'sending')) {
-      const videoBlob = URL.createObjectURL(fileData.originalFile)
-      setLocalVideoUrl(videoBlob)
-      
-      // 清理URL对象
-      return () => {
-        URL.revokeObjectURL(videoBlob)
-        setLocalVideoUrl(null)
-      }
-    } else if (sendStatus === 'sent') {
-      // 只有发送成功时才清理本地视频
-      setLocalVideoUrl(null)
-    }
-  }, [fileData?.originalFile, sendStatus])
 
   const handleImageError = () => {
     setImageError(true)
@@ -48,18 +26,17 @@ export const VideoMessage: React.FC<VideoMessageProps> = ({
 
   const handleCoverClick = () => {
     // 优先使用本地视频，其次使用服务器视频
-    const availableVideoUrl = localVideoUrl || videoUrl
-    if (availableVideoUrl && sendStatus !== 'sending') {
+    if (videoUrl && sendStatus !== 'sending') {
       setIsPlaying(true)
     }
   }
 
   // 如果有本地视频（上传中、重新发送或失败），或者正在播放视频，直接显示视频播放器
-  if ((localVideoUrl && (sendStatus === 'sending' || sendStatus === 'failed')) || (isPlaying && (localVideoUrl || videoUrl))) {
+  if ((sendStatus === 'sending' || sendStatus === 'failed') || (isPlaying && videoUrl)) {
     return (
       <div className={styles.videoMessage}>
         <video 
-          src={localVideoUrl || videoUrl} 
+          src={videoUrl} 
           controls 
           className={styles.messageVideo}
           preload="metadata"

@@ -153,10 +153,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       case 'VIDEO':
         return (
           <VideoMessage 
-            coverUrl={message.meta.media || ''} 
-            videoUrl={message.meta.videoUrl}
+            coverUrl={message.meta.media || undefined}
+            videoUrl={message.meta.videoUrl || undefined}
             sendStatus={message.sendStatus}
-            fileData={message.fileData}
           />
         )
       case 'FILE': {
@@ -181,7 +180,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       default:
         return (
           <p className={styles.messageText}>
-            <EmojiText text={message.meta.content} size="1.2em" />
+            <EmojiText text={message.meta.content || ''} size="1.2em" />
           </p>
         )
     }
@@ -192,7 +191,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     return (
       <div className={styles.systemMessageContainer}>
         <div className={styles.systemMessage}>
-          <EmojiText text={message.meta.content} size="0.9em" />
+          <EmojiText text={message.meta.content || ''} size="0.9em" />
         </div>
         <div className={styles.systemMessageTime}>
           {formatTime(message.sentTime)}

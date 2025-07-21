@@ -78,7 +78,7 @@ export interface ChatStore {
   setCurrentChat: (chatId: string) => Promise<void>
   loadChatMessages: (chatId: string, refresh?: boolean) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
-  addMessage: (chatId: string, message: Omit<ClientMessageDTO, 'id'> & { id?: string }) => void
+  addMessage: (message: ClientMessageDTO) => void
   getChatMessages: (chatId: string) => ClientMessageDTO[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
   removeChatUser: (chatId: string) => void
@@ -327,36 +327,31 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   
-  addMessage: (chatId: string, message: Omit<ClientMessageDTO, 'id'> & { id?: string }) => {
-    console.log(`[ChatStore] addMessage 被调用 - chatId: ${chatId}, clientMsgId: ${message.clientMsgId}`)
+  addMessage: (message: ClientMessageDTO) => {
+    console.log(`[ChatStore] addMessage 被调用 - chatId: ${message.chatId}, clientMsgId: ${message.clientMsgId}`)
     
     const state = get()
-    const currentChatState = state.chatMessagesMap[chatId] || {
+    const currentChatState = state.chatMessagesMap[message.chatId] || {
       messages: [],
       isLoading: false,
       hasMore: true,
       hasMoreOlder: false
     }
     
-    const newMessage = {
-      ...message,
-      id: message.id || `${chatId}-${Date.now()}`,
-    }
-    
-    console.log(`[ChatStore] 消息添加到聊天 ${chatId}，消息ID: ${newMessage.id}, clientMsgId: ${newMessage.clientMsgId}, 状态: ${newMessage.sendStatus}`)
+    console.log(`[ChatStore] 消息添加到聊天 ${message.chatId}，消息ID: ${message.id}, clientMsgId: ${message.clientMsgId}, 状态: ${message.sendStatus}`)
     
     set({
       chatMessagesMap: {
         ...state.chatMessagesMap,
-        [chatId]: {
+        [message.chatId]: {
           ...currentChatState,
-          messages: [...currentChatState.messages, newMessage],
-          newestMessageId: newMessage.id
+          messages: [...currentChatState.messages, message],
+          newestMessageId: message.id
         }
       }
     })
     
-    console.log(`[ChatStore] 消息添加完成，聊天 ${chatId} 现有 ${currentChatState.messages.length + 1} 条消息`)
+    console.log(`[ChatStore] 消息添加完成，聊天 ${message.chatId} 现有 ${currentChatState.messages.length + 1} 条消息`)
   },
 
 
@@ -531,7 +526,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
     
     // 添加消息到当前聊天
-    get().addMessage(chatId, messageDTO)
+    get().addMessage(messageDTO)
     
     // 更新聊天用户信息
     if (chatUser) {

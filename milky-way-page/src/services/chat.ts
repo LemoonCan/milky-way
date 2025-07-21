@@ -34,9 +34,45 @@ export interface ChatInfoDTO {
 // 消息元数据类型
 export interface MessageMeta {
   type: 'SYSTEM' | 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO'
-  content: string
+  content?: string | null
   media?: string | null
-  videoUrl?: string // 真实视频URL，用于视频消息类型
+  videoUrl?: string | null// 真实视频URL，用于视频消息类型
+}
+
+// MessageMeta URL处理工具类
+export class MessageMetaHelper {
+  /**
+   * 根据媒体类型设置真实URL
+   * @param meta MessageMeta对象
+   * @param realUrl 真实URL
+   */
+  static setRealUrl(meta: MessageMeta, realUrl: string): void {
+    if(meta.type==='FILE'||meta.type==='IMAGE'){
+      meta.media = realUrl;
+    }else if(meta.type==='VIDEO'){
+      meta.videoUrl = realUrl;
+    }
+  }
+
+  /**
+   * 根据媒体类型获取真实URL
+   * @param meta MessageMeta对象
+   * @returns 真实URL或null
+   */
+  static getRealUrl(meta: MessageMeta): string | null| undefined {
+    if(meta.type==='FILE'||meta.type==='IMAGE'){
+      return meta.media;
+    }else if(meta.type==='VIDEO'){
+      return meta.videoUrl;
+    }
+    return null;
+  }
+
+  static getMessageTypeFromFile = (file: File): "IMAGE" | "VIDEO" | "FILE" => {
+    if (file.type.startsWith("image/")) return "IMAGE";
+    if (file.type.startsWith("video/")) return "VIDEO";
+    return "FILE";
+  }
 }
 
 // 添加消息DTO类型，对应后端的 MessageDTO
@@ -292,3 +328,36 @@ export const chatService = new ChatService()
 
 // 导出默认实例
 export default chatService
+
+/* 
+MessageMetaHelper 使用示例:
+
+// 方式1: 使用静态方法
+const meta: MessageMeta = {
+  type: 'IMAGE',
+  content: '发送了一张图片',
+  media: null,
+  videoUrl: null
+}
+
+// 设置图片的真实URL
+MessageMetaHelper.setRealUrl(meta, 'https://example.com/image.jpg')
+
+// 获取图片的真实URL
+const imageUrl = MessageMetaHelper.getRealUrl(meta) // 返回 'https://example.com/image.jpg'
+
+// 方式2: 使用带方法的对象
+const metaWithMethods = MessageMetaHelper.createWithUrlMethods('VIDEO', '发送了一个视频')
+
+// 直接调用对象上的方法
+metaWithMethods.setRealUrl('https://example.com/video.mp4')
+const videoUrl = metaWithMethods.getRealUrl() // 返回 'https://example.com/video.mp4'
+
+// 发送消息时使用
+const sendRequest: SendMessageRequest = {
+  chatId: 'chat123',
+  content: metaWithMethods.content || '',
+  messageType: metaWithMethods.type,
+  clientMsgId: 'client-msg-123'
+}
+*/

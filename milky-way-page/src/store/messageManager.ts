@@ -1,4 +1,4 @@
-import { chatService, type MessageDTO, type MessageMeta, type FileData, type ClientMessageDTO } from '../services/chat'
+import { chatService, MessageMetaHelper, type MessageDTO, type MessageMeta, type FileData, type ClientMessageDTO } from '../services/chat'
 import { fileService, FilePermission } from '../services/file'
 import { useChatStore } from './chat'
 import { useUserStore } from './user'
@@ -51,10 +51,10 @@ class MessageManager {
     clientMsgId: string, 
     meta: MessageMeta, 
     fileData?: FileData
-  ): string {
+  ): ClientMessageDTO {
     const currentUser = this.validateUser()
     
-    useChatStore.getState().addMessage(chatId, {
+    const message: ClientMessageDTO = {
       id: clientMsgId, // 直接使用 clientMsgId 作为消息ID
       clientMsgId,
       chatId,
@@ -62,17 +62,18 @@ class MessageManager {
         id: currentUser.id,
         openId: currentUser.openId,
         nickName: currentUser.nickName,
-        avatar: currentUser.avatar
+        avatar: currentUser.avatar,
       },
       meta,
       sentTime: new Date().toISOString(),
       read: false,
-      sendStatus: 'sending',
-      ...(fileData && { fileData })
-    })
+      sendStatus: "sending",
+      ...(fileData && { fileData }),
+    };
+    useChatStore.getState().addMessage(message);
     
     console.log(`[MessageManager] 消息已添加到本地列表 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
-    return clientMsgId
+    return message
   }
 
   /**
@@ -153,9 +154,9 @@ class MessageManager {
 
     console.log(`[MessageManager] 聊天 ${chatId} 共有 ${chatMessages.messages.length} 条消息`)
     
-    // 查找目标消息
-    const targetMessageIndex = chatMessages.messages.findIndex(msg => msg.clientMsgId === clientMsgId)
-    if (targetMessageIndex === -1) {
+    // 直接查找目标消息
+    const originalMessage = chatMessages.messages.find(msg => msg.clientMsgId === clientMsgId)
+    if (!originalMessage) {
       console.warn(`[MessageManager] 找不到 clientMsgId 为 ${clientMsgId} 的消息`)
       // 打印所有消息的clientMsgId用于调试
       chatMessages.messages.forEach((msg, index) => {
@@ -164,10 +165,11 @@ class MessageManager {
       return
     }
 
-    console.log(`[MessageManager] 找到目标消息，索引: ${targetMessageIndex}, 当前ID: ${chatMessages.messages[targetMessageIndex].id}, 状态: ${chatMessages.messages[targetMessageIndex].sendStatus}`)
-
+    console.log(`[MessageManager] 找到目标消息，当前ID: ${originalMessage.id}, 状态: ${originalMessage.sendStatus}`)
+    const updatedMessage = { ...originalMessage, ...updates }
+    
     const updatedMessages = chatMessages.messages.map(msg => 
-      msg.clientMsgId === clientMsgId ? { ...msg, ...updates } : msg
+      msg.clientMsgId === clientMsgId ? updatedMessage : msg
     )
 
     useChatStore.setState({
@@ -184,114 +186,134 @@ class MessageManager {
   }
 
   /**
-   * 清除消息发送状态
+   * 将消息移动到最新位置
    */
-  clearMessageSendStatus(chatId: string, messageId: string): void {
+  moveMessageToLatest(chatId: string, clientMsgId: string): ClientMessageDTO {
+    console.log(`[MessageManager] 移动消息到最新位置 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
+    
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
-    if (!chatMessages) return
-
-    const updatedMessages = chatMessages.messages.map(msg => 
-      msg.id === messageId ? { ...msg, sendStatus: undefined } : msg
-    )
-
+    
+    if (!chatMessages) {
+      console.warn(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
+      throw new Error(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
+    }
+    
+    // 找到目标消息
+    const targetMessage = chatMessages.messages.find(msg => msg.clientMsgId === clientMsgId)
+    if (!targetMessage) {
+      console.warn(`[MessageManager] 找不到 clientMsgId 为 ${clientMsgId} 的消息`)
+      throw new Error(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
+    }
+    
+    // 移除原位置的消息
+    const otherMessages = chatMessages.messages.filter(msg => msg.clientMsgId !== clientMsgId)
+    
+    // 将消息添加到最后
+    const reorderedMessages = [...otherMessages, targetMessage]
+    
     useChatStore.setState({
       chatMessagesMap: {
         ...useChatStore.getState().chatMessagesMap,
         [chatId]: {
           ...chatMessages,
-          messages: updatedMessages
+          messages: reorderedMessages,
+          newestMessageId: targetMessage.id
         }
       }
     })
+    
+    console.log(`[MessageManager] 消息已移动到最新位置`)
+    return targetMessage
   }
 
 
   /**
    * 发送文本消息
    */
-  async sendTextMessage(chatId: string, content: string): Promise<void> {
-    const clientMsgId = this.generateClientMsgId()
-    
-    console.log(`[MessageManager] 发送文本消息 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
-    
-    // 1. 添加消息到本地列表
-    const meta: MessageMeta = {
-      type: 'TEXT',
-      content
+  async sendTextMessage(chatId: string, content: string, message?: ClientMessageDTO): Promise<void> {
+    if (!message){
+      // 新消息：添加到本地列表
+      const meta: MessageMeta = {
+        type: "TEXT",
+        content,
+      };
+      message = this.addMessageToLocal(chatId, this.generateClientMsgId(), meta);
     }
-    this.addMessageToLocal(chatId, clientMsgId, meta)
-    
-    // 2. 发送到WebSocket
-    await this.sendToWebSocket(chatId, content, 'TEXT', clientMsgId)
+
+    // 发送到WebSocket
+    await this.sendToWebSocket(chatId,message.meta.content!,"TEXT",message.clientMsgId!);
   }
 
   /**
    * 发送文件消息
    */
-  async sendFileMessage(chatId: string, file: File): Promise<void> {
-    const clientMsgId = this.generateClientMsgId()
-    
-    // 根据文件类型确定消息类型
-    const getMessageTypeFromFile = (file: File): 'IMAGE' | 'VIDEO' | 'FILE' => {
-      if (file.type.startsWith('image/')) return 'IMAGE'
-      if (file.type.startsWith('video/')) return 'VIDEO'
-      return 'FILE'
+  async sendFileMessage(chatId: string, file?: File, message?: ClientMessageDTO): Promise<void> {
+    if (!message) {
+      // 新消息：立即添加消息到本地列表（使用本地预览URL）
+      if (!file) {
+        throw new Error("文件为空");
+      }
+      const previewUrl = URL.createObjectURL(file);
+      const initialMeta: MessageMeta = {
+        type: MessageMetaHelper.getMessageTypeFromFile(file),
+        content: file.name,
+      };
+      MessageMetaHelper.setRealUrl(initialMeta, previewUrl);
+      message = this.addMessageToLocal(
+        chatId,
+        this.generateClientMsgId(),
+        initialMeta,
+        { originalFile: file }
+      );
     }
-    
-    const messageType = getMessageTypeFromFile(file)
-    const previewUrl = URL.createObjectURL(file)
-    
-    console.log(`[MessageManager] 发送文件消息 - chatId: ${chatId}, clientMsgId: ${clientMsgId}, 类型: ${messageType}`)
-    
-    // 1. 立即添加消息到本地列表（使用本地预览URL）
-    const initialMeta: MessageMeta = {
-      type: messageType,
-      content: file.name,
-      media: previewUrl
+
+    // 后台上传文件（重发时也需要重新上传）
+    if (file) {
+      // 需要上传文件
+      await this.uploadFile(message);
     }
-    this.addMessageToLocal(chatId, clientMsgId, initialMeta, { originalFile: file })
+    // 发送到WebSocket
+    await this.sendToWebSocket(
+      chatId,
+      MessageMetaHelper.getRealUrl(message.meta)!,
+      message.meta.type,
+      message.clientMsgId!
+    );
     
-    // 2. 后台上传文件
-    try {
-      const fileAccessUrl = await this.uploadFile(file, previewUrl, messageType, chatId, clientMsgId)
-      // 4. 发送到WebSocket
-      await this.sendToWebSocket(chatId, fileAccessUrl, messageType, clientMsgId)
-      
-    } catch (error) {
-      console.error(`[MessageManager] 文件上传失败:`, error)
-      
-      // 上传失败，标记消息为失败状态（保留本地预览和文件数据用于重试）
-      this.updateMessageByClientId(chatId, clientMsgId, {
-        sendStatus: 'failed'
-      })
-      
-      throw error
-    }
   }
 
-  async uploadFile(file: File, 
-    previewUrl: string, 
-    messageType: 'IMAGE' | 'VIDEO' | 'FILE',
-    chatId: string,
-    clientMsgId: string): Promise<string> {
-    const uploadResult = await fileService.uploadFile(file, {
-      permission: FilePermission.PRIVATE
-    })
-    
-
-    URL.revokeObjectURL(previewUrl) // 清理本地预览URL
-    
-    const finalMeta: MessageMeta = {
-      type: messageType,
-      content: uploadResult.fileAccessUrl,
-      media: uploadResult.fileAccessUrl
+  async uploadFile(message: ClientMessageDTO): Promise<void> {
+    if (!message.fileData?.originalFile) {
+      throw new Error("文件为空");
     }
-    
-    this.updateMessageByClientId(chatId, clientMsgId, {
-      meta: finalMeta,
-      fileData: undefined // 上传成功后移除文件数据
-    })
-    return uploadResult.fileAccessUrl
+    try {
+      const uploadResult = await fileService.uploadFile(
+        message.fileData.originalFile,
+        {
+          permission: FilePermission.PRIVATE,
+        }
+      );
+
+      const previewUrl = MessageMetaHelper.getRealUrl(message.meta);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl); // 清理本地预览URL
+      }
+
+      MessageMetaHelper.setRealUrl(message.meta, uploadResult.fileAccessUrl);
+
+      this.updateMessageByClientId(message.chatId, message.clientMsgId!, {
+        meta: message.meta,
+        fileData: undefined, // 上传成功后移除文件数据
+      });
+    } catch (error) {
+      if (message.clientMsgId) {
+        // 上传失败，标记消息为失败状态（保留本地预览和文件数据用于重试）
+        this.updateMessageByClientId(message.chatId, message.clientMsgId, {
+          sendStatus: "failed",
+        });
+      }
+      throw error;
+    }
   }
 
   /**
@@ -331,7 +353,9 @@ class MessageManager {
           this.updateMessageByClientId(messageDTO.chatId, messageDTO.clientMsgId!, {
             id: messageDTO.id, // 更新为服务器ID
             sendStatus: 'sent', // 标记为发送成功
-            sentTime: messageDTO.sentTime
+            sentTime: messageDTO.sentTime,
+            meta: messageDTO.meta, // 更新媒体信息（封面图、视频URL等）
+            fileData: undefined // 清除本地文件数据，因为已经上传成功
           })
         } else {
           console.warn(`[MessageManager] 未找到对应的本地消息:`, messageDTO.clientMsgId)
@@ -349,26 +373,21 @@ class MessageManager {
    * 重试发送消息
    */
   async retryMessage(chatId: string, clientMsgId: string): Promise<void> {
-    const messages = useChatStore.getState().getChatMessages(chatId)
-    const message = messages.find(msg => msg.clientMsgId === clientMsgId)
-    
-    if (!message) {
-      throw new Error('未找到要重试的消息')
-    }
+    this.updateMessageByClientId(chatId, clientMsgId, {
+      sentTime: new Date().toISOString(),
+      sendStatus: 'sending'
+    })
+    // 将消息移动到最新位置
+    const message = this.moveMessageToLatest(chatId, clientMsgId)
 
-    if (message.sendStatus !== 'failed') {
-      throw new Error('只能重试失败的消息')
-    }
 
     // 根据消息类型重试
     if (message.meta.type === 'TEXT') {
-      return this.sendTextMessage(chatId, message.meta.content)
-    } else if (message.fileData?.originalFile) {
-      // 文件消息，重新上传和发送
-      return this.sendFileMessage(chatId, message.fileData.originalFile)
+      return this.sendTextMessage(chatId, message.meta.content!, message)
     } else {
-      throw new Error('无法重试此消息：缺少必要数据')
-    }
+      // 文件消息，重新上传和发送
+      return this.sendFileMessage(chatId, message.fileData?.originalFile, message)
+    } 
   }
 }
 
