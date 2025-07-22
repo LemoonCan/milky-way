@@ -4,3 +4,5 @@ spring:
   profiles:
     active: local
     include: datasource,security,openapi
+  jackson:
+    default-property-inclusion: non_null

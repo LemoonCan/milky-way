@@ -142,30 +142,20 @@ class MessageManager {
   /**
    * 根据客户端消息ID更新消息
    */
-  updateMessageByClientId(chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): void {
-    console.log(`[MessageManager] updateMessageByClientId 被调用 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`, updates)
-    
+  updateMessageByClientId(chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): void {    
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
     
     if (!chatMessages) {
       console.warn(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
       return
     }
-
-    console.log(`[MessageManager] 聊天 ${chatId} 共有 ${chatMessages.messages.length} 条消息`)
     
     // 直接查找目标消息
     const originalMessage = chatMessages.messages.find(msg => msg.clientMsgId === clientMsgId)
     if (!originalMessage) {
-      console.warn(`[MessageManager] 找不到 clientMsgId 为 ${clientMsgId} 的消息`)
-      // 打印所有消息的clientMsgId用于调试
-      chatMessages.messages.forEach((msg, index) => {
-        console.log(`[MessageManager] 消息 ${index}: id=${msg.id}, clientMsgId=${msg.clientMsgId}, sendStatus=${msg.sendStatus}`)
-      })
       return
     }
 
-    console.log(`[MessageManager] 找到目标消息，当前ID: ${originalMessage.id}, 状态: ${originalMessage.sendStatus}`)
     const updatedMessage = { ...originalMessage, ...updates }
     
     const updatedMessages = chatMessages.messages.map(msg => 
@@ -181,35 +171,31 @@ class MessageManager {
         }
       }
     })
-    
-    console.log(`[MessageManager] 消息更新完成`)
   }
 
   /**
    * 将消息移动到最新位置
    */
-  moveMessageToLatest(chatId: string, clientMsgId: string): ClientMessageDTO {
-    console.log(`[MessageManager] 移动消息到最新位置 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
-    
+  moveAndUpdateMessageToLatest(chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): ClientMessageDTO {    
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
     
     if (!chatMessages) {
-      console.warn(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
       throw new Error(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
     }
     
     // 找到目标消息
     const targetMessage = chatMessages.messages.find(msg => msg.clientMsgId === clientMsgId)
     if (!targetMessage) {
-      console.warn(`[MessageManager] 找不到 clientMsgId 为 ${clientMsgId} 的消息`)
       throw new Error(`[MessageManager] 找不到聊天 ${chatId} 的消息缓存`)
     }
+
+    const updatedMessage = { ...targetMessage, ...updates }
     
     // 移除原位置的消息
     const otherMessages = chatMessages.messages.filter(msg => msg.clientMsgId !== clientMsgId)
     
     // 将消息添加到最后
-    const reorderedMessages = [...otherMessages, targetMessage]
+    const reorderedMessages = [...otherMessages, updatedMessage]
     
     useChatStore.setState({
       chatMessagesMap: {
@@ -222,7 +208,6 @@ class MessageManager {
       }
     })
     
-    console.log(`[MessageManager] 消息已移动到最新位置`)
     return targetMessage
   }
 
@@ -321,7 +306,6 @@ class MessageManager {
    */
   handleWebSocketMessage(messageDTO: MessageDTO): void {
     console.log('[MessageManager] 收到WebSocket消息:', messageDTO)
-    
     // 使用 addRealTimeMessage 处理，它包含了重复检查和群聊逻辑
     useChatStore.getState().addRealTimeMessage(messageDTO.chatId, messageDTO)
   }
@@ -334,7 +318,7 @@ class MessageManager {
     
     try {
       // 回执数据结构是 Result<MessageDTO>
-      if (receipt.data) {
+      if (receipt.success) {
         const messageDTO = receipt.data
         
         // 查找对应的本地消息
@@ -360,9 +344,12 @@ class MessageManager {
         } else {
           console.warn(`[MessageManager] 未找到对应的本地消息:`, messageDTO.clientMsgId)
         }
-      } else if (!receipt.success) {
-        console.error(`[MessageManager] 消息发送失败:`, receipt.msg)
+      } else {
+        const failMessage = receipt.data;
         // 可以根据错误信息更新对应消息的状态
+        this.updateMessageByClientId(failMessage.chatId, failMessage.clientMsgId!, {
+          sendStatus: "failed",
+        });
       }
     } catch (error) {
       console.error('[MessageManager] 处理消息回执时出错:', error)
@@ -373,13 +360,11 @@ class MessageManager {
    * 重试发送消息
    */
   async retryMessage(chatId: string, clientMsgId: string): Promise<void> {
-    this.updateMessageByClientId(chatId, clientMsgId, {
+    // 将消息更新并移动到最新位置
+    const message = this.moveAndUpdateMessageToLatest(chatId, clientMsgId, {
       sentTime: new Date().toISOString(),
       sendStatus: 'sending'
     })
-    // 将消息移动到最新位置
-    const message = this.moveMessageToLatest(chatId, clientMsgId)
-
 
     // 根据消息类型重试
     if (message.meta.type === 'TEXT') {

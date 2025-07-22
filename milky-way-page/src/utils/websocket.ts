@@ -36,7 +36,7 @@ export interface MessageReceipt {
   success: boolean
   code: string
   msg: string
-  data?: MessageDTO
+  data: MessageDTO
 }
 
 // 连接状态枚举

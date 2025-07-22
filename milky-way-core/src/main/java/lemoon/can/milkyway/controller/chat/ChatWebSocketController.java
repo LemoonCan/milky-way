@@ -37,8 +37,6 @@ public class ChatWebSocketController {
     public void sendMessage(@Payload MessageSendParam param, Principal principal) {
         // 调用消息服务处理消息并推送给接收方
         // MessageService内部会保存消息并通过ChatProcessorManager推送
-//        log.info("sendMessage");
-//        throw new RuntimeException("hhhh");
         try {
             param.setSenderUserId(principal.getName());
             MessageDTO messageDTO = messageService.sendMessage(param);
@@ -47,7 +45,6 @@ public class ChatWebSocketController {
                     Result.success(messageDTO));
         } catch (Exception e) {
             log.error("消息发送失败", e);
-
             // 创建一个包含基本信息的失败回执用MessageDTO
             MessageDTO failedMessageDTO = new MessageDTO();
             failedMessageDTO.setChatId(param.getChatId());
