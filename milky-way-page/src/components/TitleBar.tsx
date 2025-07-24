@@ -1,7 +1,7 @@
 import React from 'react'
 import { WifiOff, RefreshCw, Wifi } from 'lucide-react'
 import { useConnectionManagerStore, connectionManager } from '@/store/connectionManager'
-import { ConnectionStatus } from '@/utils/websocket'
+import { ConnectionStatus } from '@/services/websocket'
 import styles from '../css/TitleBar.module.css'
 
 interface TitleBarProps {

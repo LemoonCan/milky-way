@@ -2,7 +2,7 @@ import { chatService, MessageMetaHelper, type MessageDTO, type MessageMeta, type
 import { fileService, FilePermission } from '../services/file'
 import { useChatStore } from './chat'
 import { useUserStore } from './user'
-import type { MessageReceipt } from '../utils/websocket'
+import type { MessageReceipt } from '../services/websocket'
 
 /**
  * 全局消息管理器单例

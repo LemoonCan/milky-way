@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { ConnectionStatus, type RetryInfo, type MessageDTOHandler, type WebSocketMessage } from '../utils/websocket'
-import { webSocketClient } from '../utils/websocket'
+import { ConnectionStatus, type RetryInfo, type MessageDTOHandler } from '../services/websocket'
+import { webSocketClient } from '../services/websocket'
 import { messageManager } from './messageManager'
 
 /**
@@ -12,20 +12,17 @@ export interface ConnectionManagerStore {
   connectionError: string | null
   retryInfo: RetryInfo
   isInitialized: boolean
-  statusChangeCallback?: (retryInfo: RetryInfo) => void
 
   // 状态查询方法
   isConnected: () => boolean
   isConnecting: () => boolean
   isRetrying: () => boolean
   isFailed: () => boolean
-  isReady: () => boolean
   getConnectionDisplayText: () => string
 
   // 状态更新方法
   updateConnectionState: (retryInfo: RetryInfo) => void
   setConnectionStatus: (status: ConnectionStatus, error?: string) => void
-  clearError: () => void
 
   // 连接管理方法
   initialize: () => Promise<void>
@@ -33,21 +30,21 @@ export interface ConnectionManagerStore {
   reconnect: () => Promise<void>
   resetConnection: () => Promise<void>
 
+  // 私有方法（内部使用）
+  _attemptConnection: () => Promise<void>
+  _connectWithRetry: () => Promise<void>
+
   // 消息处理器管理
-  addMessageHandler: (handler: (message: WebSocketMessage) => void) => void
-  removeMessageHandler: (handler: (message: WebSocketMessage) => void) => void
   addMessageDTOHandler: (handler: MessageDTOHandler) => void
   removeMessageDTOHandler: (handler: MessageDTOHandler) => void
-  addReceiptHandler: (handler: (receipt: import('../utils/websocket').MessageReceipt) => void) => void
-  removeReceiptHandler: (handler: (receipt: import('../utils/websocket').MessageReceipt) => void) => void
+  addReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => void
+  removeReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => void
 
   // 高级初始化方法
-  setStatusChangeCallback: (callback: (retryInfo: RetryInfo) => void) => void
   initializeChatService: (options?: {
-    statusChangeCallback?: (retryInfo: RetryInfo) => void
     messageHandlers?: {
       messageDTO?: MessageDTOHandler
-      receipt?: (receipt: import('../utils/websocket').MessageReceipt) => void
+      receipt?: (receipt: import('../services/websocket').MessageReceipt) => void
     }
     onSuccess?: (retryInfo: RetryInfo) => void
     onError?: (error: Error) => void
@@ -55,17 +52,59 @@ export interface ConnectionManagerStore {
   initializeApp: () => Promise<void>
 }
 
+// 内部函数：设置WebSocket状态回调
+const setupStatusHandler = (get: () => ConnectionManagerStore) => {
+  webSocketClient.setStatusChangeHandler((status, error) => {
+    console.log('📡 [ConnectionManager] 收到WebSocket状态变更:', { status, error })
+    
+    const currentState = get()
+    
+    // 只处理WebSocket能确定的状态，避免与重试逻辑冲突
+    if (status === ConnectionStatus.CONNECTED) {
+      // 连接成功，重置重试信息
+      get().updateConnectionState({
+        currentAttempt: 0,
+        maxAttempts: currentState.retryInfo.maxAttempts,
+        status: ConnectionStatus.CONNECTED,
+        error: undefined
+      })
+    } else if (status === ConnectionStatus.DISCONNECTED) {
+      // 连接断开，但不覆盖正在进行的重试状态
+      if (currentState.connectionStatus !== ConnectionStatus.RETRYING && 
+          currentState.connectionStatus !== ConnectionStatus.CONNECTING) {
+        get().updateConnectionState({
+          ...currentState.retryInfo,
+          status: ConnectionStatus.DISCONNECTED,
+          error: error || '连接断开'
+        })
+      } else {
+        console.log('[ConnectionManager] 正在重试中，忽略WebSocket断开状态')
+      }
+    }
+    // 忽略WebSocket的FAILED、CONNECTING、RETRYING状态，这些完全由connectionManager控制
+    console.log('[ConnectionManager] 当前状态管理由connectionManager控制:', currentState.connectionStatus)
+  })
+}
+
+// 重试配置
+const RETRY_CONFIG = {
+  maxAttempts: 2,
+  delays: [3000, 15000] // 3秒, 15秒
+}
+
+// 延迟函数
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 export const useConnectionManagerStore = create<ConnectionManagerStore>((set, get) => ({
   // 初始状态
   connectionStatus: ConnectionStatus.DISCONNECTED,
   connectionError: null,
   retryInfo: {
     currentAttempt: 0,
-    maxAttempts: 3,
+    maxAttempts: RETRY_CONFIG.maxAttempts,
     status: ConnectionStatus.DISCONNECTED
   },
   isInitialized: false,
-  statusChangeCallback: undefined,
 
   // 状态查询方法
   isConnected: () => {
@@ -84,16 +123,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     return get().connectionStatus === ConnectionStatus.FAILED
   },
 
-  isReady: () => {
-    const state = get()
-    const ready = state.isInitialized && webSocketClient.isConnected()
-    console.log('🔍 [ConnectionManager] isReady() 检查:', {
-      isInitialized: state.isInitialized,
-      isConnected: webSocketClient.isConnected(),
-      ready
-    })
-    return ready
-  },
+ 
 
   getConnectionDisplayText: () => {
     const state = get()
@@ -123,25 +153,107 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
   },
 
   setConnectionStatus: (status: ConnectionStatus, error?: string) => {
-    set({
+    set(state => ({
       connectionStatus: status,
-      connectionError: error || null
-    })
-    
-    // 如果有状态变更回调，调用它
-    const state = get()
-    if (state.statusChangeCallback) {
-      const retryInfo: RetryInfo = {
+      connectionError: error || null,
+      retryInfo: {
         ...state.retryInfo,
         status,
         error
       }
-      state.statusChangeCallback(retryInfo)
+    }))
+  },
+
+  // 私有方法：单次连接尝试
+  _attemptConnection: async (): Promise<void> => {
+    try {
+      await webSocketClient.connect()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '连接失败'
+      throw new Error(message)
     }
   },
 
-  clearError: () => {
-    set({ connectionError: null })
+  // 私有方法：带重试的连接
+  _connectWithRetry: async (): Promise<void> => {
+    console.log('🔄 [ConnectionManager] 开始带重试的连接尝试')
+    
+    // 重置重试状态
+    set(state => ({
+      retryInfo: {
+        ...state.retryInfo,
+        currentAttempt: 0,
+        error: undefined
+      }
+    }))
+
+    // 总尝试次数 = 1次初始 + maxAttempts次重试
+    const totalAttempts = RETRY_CONFIG.maxAttempts + 1
+    
+    for (let attempt = 0; attempt < totalAttempts; attempt++) {
+      console.log(`[ConnectionManager] 连接尝试 ${attempt + 1}/${totalAttempts}`)
+      
+      // 更新重试状态
+      const status = attempt === 0 ? ConnectionStatus.CONNECTING : ConnectionStatus.RETRYING
+      set(state => ({
+        connectionStatus: status,
+        retryInfo: {
+          ...state.retryInfo,
+          currentAttempt: attempt,
+          status
+        }
+      }))
+
+      try {
+        await get()._attemptConnection()
+        console.log('🎉 [ConnectionManager] 连接成功')
+        
+        // 连接成功，重置重试计数
+        set(state => ({
+          connectionStatus: ConnectionStatus.CONNECTED,
+          retryInfo: {
+            ...state.retryInfo,
+            currentAttempt: 0,
+            status: ConnectionStatus.CONNECTED,
+            error: undefined
+          }
+        }))
+        return
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : '连接失败'
+        console.error(`[ConnectionManager] 第${attempt + 1}次连接失败:`, errorMessage)
+        
+        // 更新错误信息
+        set(state => ({
+          retryInfo: {
+            ...state.retryInfo,
+            currentAttempt: attempt + 1,
+            error: errorMessage
+          }
+        }))
+
+        // 如果这不是最后一次尝试，等待后重试
+        if (attempt < totalAttempts - 1) {
+          // 确保延迟数组索引不越界
+          const delayIndex = Math.min(attempt, RETRY_CONFIG.delays.length - 1)
+          const delayMs = RETRY_CONFIG.delays[delayIndex]
+          console.log(`[ConnectionManager] ${delayMs/1000}秒后进行第${attempt + 2}次尝试`)
+          await delay(delayMs)
+        }
+      }
+    }
+    
+    // 所有尝试都失败了
+    console.error(`[ConnectionManager] 所有连接尝试都失败了`)
+    set(state => ({
+      connectionStatus: ConnectionStatus.FAILED,
+      retryInfo: {
+        ...state.retryInfo,
+        status: ConnectionStatus.FAILED,
+        error: `所有重试都失败`
+      }
+    }))
+    throw new Error(`连接失败，已重试${RETRY_CONFIG.maxAttempts}次`)
   },
 
   // 连接管理方法
@@ -158,10 +270,13 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     console.log('🔧 [ConnectionManager] 重置初始化状态')
     set({ isInitialized: false })
 
+    // 设置状态变更回调，让WebSocket通过这个回调更新状态
+    setupStatusHandler(get)
+
     try {
-      console.log('🔗 [ConnectionManager] 调用 webSocketClient.connect()')
-      // 建立WebSocket连接
-      await webSocketClient.connect()
+      console.log('🔗 [ConnectionManager] 调用带重试的连接')
+      // 使用带重试的连接方法
+      await get()._connectWithRetry()
       set({ isInitialized: true })
       console.log('🎉 [ConnectionManager] 连接初始化成功')
     } catch (error) {
@@ -175,7 +290,13 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     webSocketClient.disconnect()
     set({ 
       isInitialized: false,
-      statusChangeCallback: undefined
+      connectionStatus: ConnectionStatus.DISCONNECTED,
+      connectionError: null,
+      retryInfo: {
+        currentAttempt: 0,
+        maxAttempts: RETRY_CONFIG.maxAttempts,
+        status: ConnectionStatus.DISCONNECTED
+      }
     })
     console.log('[ConnectionManager] 连接已销毁')
   },
@@ -184,10 +305,16 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     console.log('🔄 [ConnectionManager] reconnect() 开始...')
     console.log('🔧 [ConnectionManager] 重置初始化状态')
     set({ isInitialized: false })
+
+    // 重新设置状态变更回调，确保重连后状态能正确同步
+    setupStatusHandler(get)
     
     try {
-      console.log('🔗 [ConnectionManager] 调用 webSocketClient.reset()')
-      await webSocketClient.reset()
+      console.log('🔌 [ConnectionManager] 先断开现有连接')
+      webSocketClient.disconnect()
+      
+      console.log('🔗 [ConnectionManager] 调用带重试的连接')
+      await get()._connectWithRetry()
       set({ isInitialized: true })
       console.log('🎉 [ConnectionManager] 重连成功')
     } catch (error) {
@@ -205,14 +332,6 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     }
   },
 
-  // 消息处理器管理
-  addMessageHandler: (handler: (message: WebSocketMessage) => void) => {
-    webSocketClient.addMessageHandler(handler)
-  },
-
-  removeMessageHandler: (handler: (message: WebSocketMessage) => void) => {
-    webSocketClient.removeMessageHandler(handler)
-  },
 
   addMessageDTOHandler: (handler: MessageDTOHandler) => {
     webSocketClient.addMessageDTOHandler(handler)
@@ -222,36 +341,25 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     webSocketClient.removeMessageDTOHandler(handler)
   },
 
-  addReceiptHandler: (handler: (receipt: import('../utils/websocket').MessageReceipt) => void) => {
+  addReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => {
     webSocketClient.addReceiptHandler(handler)
   },
 
-  removeReceiptHandler: (handler: (receipt: import('../utils/websocket').MessageReceipt) => void) => {
+  removeReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => {
     webSocketClient.removeReceiptHandler(handler)
   },
 
   // 高级初始化方法
-  setStatusChangeCallback: (callback: (retryInfo: RetryInfo) => void) => {
-    set({ statusChangeCallback: callback })
-    webSocketClient.setStatusChangeCallback(callback)
-  },
-
   initializeChatService: async (options?: {
-    statusChangeCallback?: (retryInfo: RetryInfo) => void
     messageHandlers?: {
       messageDTO?: MessageDTOHandler
-      receipt?: (receipt: import('../utils/websocket').MessageReceipt) => void
+      receipt?: (receipt: import('../services/websocket').MessageReceipt) => void
     }
     onSuccess?: (retryInfo: RetryInfo) => void
     onError?: (error: Error) => void
   }) => {
     try {
       console.log('[ConnectionManager] 初始化聊天服务...')
-      
-      // 设置状态变更回调
-      if (options?.statusChangeCallback) {
-        get().setStatusChangeCallback(options.statusChangeCallback)
-      }
       
       // 连接WebSocket
       await get().initialize()
@@ -265,14 +373,14 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
         get().addReceiptHandler(options.messageHandlers.receipt)
       }
       
-      const currentRetryInfo = webSocketClient.getRetryInfo()
+      const currentRetryInfo = get().retryInfo
       
       // 调用成功回调
       if (options?.onSuccess) {
         options.onSuccess(currentRetryInfo)
       }
       
-      console.log('[ConnectionManager] 聊天服务初始化完成，状态:', webSocketClient.getConnectionStatus())
+      console.log('[ConnectionManager] 聊天服务初始化完成')
     } catch (error) {
       console.error('[ConnectionManager] 初始化聊天服务失败:', error)
       
@@ -288,11 +396,6 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
   initializeApp: async () => {
     try {      
       await get().initializeChatService({
-        statusChangeCallback: (retryInfo: RetryInfo) => {          
-          // 更新连接状态
-          const store = get()
-          store.updateConnectionState(retryInfo)
-        },
         messageHandlers: {
           messageDTO: messageManager.handleWebSocketMessage.bind(messageManager),
           receipt: messageManager.handleMessageReceipt.bind(messageManager)

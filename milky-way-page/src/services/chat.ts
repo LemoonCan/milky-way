@@ -1,5 +1,5 @@
 import http from '../lib/http'
-import { webSocketClient, type WebSocketMessage } from '../utils/websocket'
+import { webSocketClient, type WebSocketMessage } from './websocket'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { ApiResponse, Slices } from '../types/api'
 
@@ -328,36 +328,3 @@ export const chatService = new ChatService()
 
 // 导出默认实例
 export default chatService
-
-/* 
-MessageMetaHelper 使用示例:
-
-// 方式1: 使用静态方法
-const meta: MessageMeta = {
-  type: 'IMAGE',
-  content: '发送了一张图片',
-  media: null,
-  videoUrl: null
-}
-
-// 设置图片的真实URL
-MessageMetaHelper.setRealUrl(meta, 'https://example.com/image.jpg')
-
-// 获取图片的真实URL
-const imageUrl = MessageMetaHelper.getRealUrl(meta) // 返回 'https://example.com/image.jpg'
-
-// 方式2: 使用带方法的对象
-const metaWithMethods = MessageMetaHelper.createWithUrlMethods('VIDEO', '发送了一个视频')
-
-// 直接调用对象上的方法
-metaWithMethods.setRealUrl('https://example.com/video.mp4')
-const videoUrl = metaWithMethods.getRealUrl() // 返回 'https://example.com/video.mp4'
-
-// 发送消息时使用
-const sendRequest: SendMessageRequest = {
-  chatId: 'chat123',
-  content: metaWithMethods.content || '',
-  messageType: metaWithMethods.type,
-  clientMsgId: 'client-msg-123'
-}
-*/

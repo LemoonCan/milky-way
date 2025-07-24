@@ -1,4 +1,4 @@
-import { Client, StompConfig } from '@stomp/stompjs'
+import { Client, StompConfig, ActivationState } from '@stomp/stompjs'
 import type { IMessage, StompSubscription } from '@stomp/stompjs'
 import { tokenManager } from '../lib/http'
 import type { MessageDTO, MessageNotifyDTO } from '../types/api'
@@ -56,6 +56,11 @@ export interface RetryInfo {
   error?: string
 }
 
+// 状态变更回调接口
+export interface StatusChangeHandler {
+  (status: ConnectionStatus, error?: string): void
+}
+
 export class WebSocketClient {
   private client: Client | null = null
   private subscriptions: Map<string, StompSubscription> = new Map()
@@ -64,55 +69,32 @@ export class WebSocketClient {
   private receiptHandlers: Set<MessageReceiptHandler> = new Set()
   private notificationHandlers: Set<NotificationHandler> = new Set()
   
-  // 简化状态管理
-  private status: ConnectionStatus = ConnectionStatus.DISCONNECTED
-  private retryInfo: RetryInfo = {
-    currentAttempt: 0,
-    maxAttempts: 2,
-    status: ConnectionStatus.DISCONNECTED
-  }
-  
-  private retryTimeoutId: number | null = null
-  private statusChangeCallback: ((retryInfo: RetryInfo) => void) | null = null
-  private connectionCheckInterval: number | null = null
-  
-  // 重试延迟配置（毫秒）
-  private readonly retryDelays = [3000, 15000] // 修改：因为只有2次重试，所以只配置2个延迟值：3秒, 15秒
+  // 移除重试相关状态，只保留状态回调
+  private statusChangeHandler: StatusChangeHandler | null = null
 
   constructor() {
-    // 构造函数保持简单，不自动连接
     console.log('[WebSocket] WebSocket客户端实例已创建')
-    this.startConnectionCheck()
   }
 
   /**
    * 设置状态变更回调
    */
-  public setStatusChangeCallback(callback: (retryInfo: RetryInfo) => void) {
-    this.statusChangeCallback = callback
+  public setStatusChangeHandler(handler: StatusChangeHandler) {
+    this.statusChangeHandler = handler
   }
 
   /**
    * 通知状态变更
    */
-  private notifyStatusChange() {
-    if (this.statusChangeCallback) {
-      this.statusChangeCallback({ ...this.retryInfo })
-    }
-  }
-
-  /**
-   * 更新状态
-   */
-  private updateStatus(status: ConnectionStatus, error?: string) {
-    console.log(`[WebSocket] 状态更新: ${this.status} -> ${status}, 重试次数: ${this.retryInfo.currentAttempt}/${this.retryInfo.maxAttempts}`)
-    this.status = status
-    this.retryInfo.status = status
+  private notifyStatusChange(status: ConnectionStatus, error?: string) {
+    console.log(`[WebSocket] 状态更新: ${status}`)
     if (error) {
-      this.retryInfo.error = error
       console.log(`[WebSocket] 错误信息: ${error}`)
     }
-    this.notifyStatusChange()
+    
+    if (this.statusChangeHandler) {
+      this.statusChangeHandler(status, error)
+    }
   }
 
   /**
@@ -144,9 +126,7 @@ export class WebSocketClient {
       },
       onDisconnect: (frame) => {
         console.log('[WebSocket] 连接断开', frame)
-        if (this.status !== ConnectionStatus.FAILED) {
-          this.onDisconnected('连接意外断开')
-        }
+        this.onDisconnected('连接意外断开')
       },
       onWebSocketError: (error) => {
         console.error('[WebSocket] WebSocket错误:', error)
@@ -155,7 +135,18 @@ export class WebSocketClient {
       onStompError: (frame) => {
         console.error('[WebSocket] STOMP错误:', frame)
         this.onConnectionError('STOMP协议错误')
-      }
+      },
+      onWebSocketClose: (event) => {
+        console.warn('[WebSocket] WebSocket连接关闭', event)
+        this.onDisconnected('WebSocket连接关闭')
+      },
+      
+      onChangeState: (state) => {
+        console.log('[WebSocket] 状态变更:', state)
+        if (state === ActivationState.INACTIVE) {
+          this.onDisconnected('状态变为 INACTIVE')
+        }
+      },
     }
 
     return new Client(config)
@@ -165,15 +156,9 @@ export class WebSocketClient {
    * 连接成功处理
    */
   private onConnected() {
-    this.retryInfo.currentAttempt = 0
-    this.updateStatus(ConnectionStatus.CONNECTED)
-    this.clearRetryTimeout()
+    this.notifyStatusChange(ConnectionStatus.CONNECTED)
     
     console.log('🎉 [WebSocket] 连接成功建立，开始订阅各种消息队列')
-    
-    // 重新启动连接状态检查
-    this.stopConnectionCheck()
-    this.startConnectionCheck()
     
     // 订阅消息
     this.subscribeToPersonalMessages()
@@ -188,101 +173,32 @@ export class WebSocketClient {
    * 连接断开处理
    */
   private onDisconnected(reason: string) {
-    console.log(`[WebSocket] 处理连接断开: ${reason}, 当前状态: ${this.status}`)
-    
-    // 停止连接状态检查
-    this.stopConnectionCheck()
-    
-    // 清除任何正在进行的重试
-    this.clearRetryTimeout()
-    
-    // 重置重试计数器
-    this.retryInfo.currentAttempt = 0
-    
-    // 设置为未连接状态（除非已经是失败状态）
-    if (this.status !== ConnectionStatus.FAILED) {
-      this.updateStatus(ConnectionStatus.DISCONNECTED, reason)
-    }
+    console.log(`[WebSocket] 处理连接断开: ${reason}`)
+    // 设置为未连接状态
+    this.notifyStatusChange(ConnectionStatus.DISCONNECTED, reason)
   }
 
   /**
    * 连接错误处理
    */
   private onConnectionError(error: string) {
-    if (this.status === ConnectionStatus.CONNECTING) {
-      // 首次连接失败
-      this.startRetry(error)
-    } else if (this.status === ConnectionStatus.RETRYING) {
-      // 重试连接失败
-      this.handleRetryFailure(error)
-    }
+    console.error('[WebSocket] 连接错误:', error)
+    this.notifyStatusChange(ConnectionStatus.FAILED, error)
   }
 
   /**
-   * 开始重试
+   * 单次连接尝试（不重试）
    */
-  private startRetry(error: string) {
-    if (this.retryInfo.currentAttempt >= this.retryInfo.maxAttempts) {
-      this.updateStatus(ConnectionStatus.FAILED, `连接失败: ${error}`)
+  public async connect(): Promise<void> {
+    console.log('🔄 [WebSocket] connect() 被调用')
+    
+    if (this.isConnected()) {
+      console.log('✅ [WebSocket] 已连接，无需重复连接')
       return
     }
 
-    this.retryInfo.currentAttempt++
-    this.updateStatus(ConnectionStatus.RETRYING, error)
+    this.notifyStatusChange(ConnectionStatus.CONNECTING)
 
-    const delay = this.retryDelays[this.retryInfo.currentAttempt - 1]
-    console.log(`[WebSocket] 第${this.retryInfo.currentAttempt}次重试，${delay/1000}秒后执行`)
-
-    this.retryTimeoutId = window.setTimeout(() => {
-      this.performRetry()
-    }, delay)
-  }
-
-  /**
-   * 执行重试
-   */
-  private async performRetry() {
-    this.clearRetryTimeout()
-    console.log(`[WebSocket] 执行第${this.retryInfo.currentAttempt}次重试`)
-
-    try {
-      await this.connectInternal()
-    } catch (error) {
-      console.error(`[WebSocket] 第${this.retryInfo.currentAttempt}次重试失败:`, error)
-      this.handleRetryFailure(error instanceof Error ? error.message : '重试连接失败')
-    }
-  }
-
-  /**
-   * 处理重试失败
-   */
-  private handleRetryFailure(error: string) {
-    if (this.retryInfo.currentAttempt >= this.retryInfo.maxAttempts) {
-      console.log(`[WebSocket] 已达到最大重试次数 (${this.retryInfo.maxAttempts})，停止重试`)
-      this.updateStatus(ConnectionStatus.FAILED, `所有重试都失败: ${error}`)
-      // 确保清理所有定时器和状态检查
-      this.clearRetryTimeout()
-      this.stopConnectionCheck()
-    } else {
-      // 继续下一次重试
-      this.startRetry(error)
-    }
-  }
-
-  /**
-   * 清除重试定时器
-   */
-  private clearRetryTimeout() {
-    if (this.retryTimeoutId) {
-      clearTimeout(this.retryTimeoutId)
-      this.retryTimeoutId = null
-    }
-  }
-
-  /**
-   * 内部连接方法
-   */
-  private async connectInternal(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (this.client) {
         this.client.deactivate()
@@ -310,51 +226,10 @@ export class WebSocketClient {
   }
 
   /**
-   * 公共连接方法
-   */
-  public async connect(): Promise<void> {
-    console.log('🔄 [WebSocket] connect() 被调用，当前状态:', this.status)
-    
-    if (this.status === ConnectionStatus.CONNECTING || this.status === ConnectionStatus.RETRYING) {
-      console.log('⏳ [WebSocket] 连接已在进行中，忽略重复调用')
-      return
-    }
-
-    if (this.isConnected()) {
-      console.log('✅ [WebSocket] 已连接，无需重复连接')
-      return
-    }
-
-    // 修改：只在以下情况重置重试计数器：
-    // 1. 当前状态是 DISCONNECTED（初次连接或主动断开后）
-    // 2. 当前状态是 FAILED 但重试次数已达上限，需要用户主动触发重连
-    if (this.status === ConnectionStatus.DISCONNECTED || 
-        (this.status === ConnectionStatus.FAILED && this.retryInfo.currentAttempt >= this.retryInfo.maxAttempts)) {
-      console.log('🚀 [WebSocket] 重置重试计数器，开始新的连接尝试')
-      this.retryInfo.currentAttempt = 0
-      this.retryInfo.error = undefined
-    } else {
-      console.log('🔄 [WebSocket] 继续当前的连接尝试，不重置计数器')
-    }
-    
-    this.updateStatus(ConnectionStatus.CONNECTING)
-
-    try {
-      console.log('🔗 [WebSocket] 调用 connectInternal()')
-      await this.connectInternal()
-      console.log('✅ [WebSocket] connectInternal() 完成')
-    } catch (error) {
-      console.error('❌ [WebSocket] 首次连接失败:', error)
-      this.onConnectionError(error instanceof Error ? error.message : '连接失败')
-    }
-  }
-
-  /**
    * 断开连接
    */
   public disconnect(): void {
-    console.log('[WebSocket] 主动断开连接，当前状态:', this.status)
-    this.clearRetryTimeout()
+    console.log('[WebSocket] 主动断开连接')
     
     if (this.client) {
       this.subscriptions.forEach((subscription) => {
@@ -364,60 +239,23 @@ export class WebSocketClient {
       this.client.deactivate()
     }
     
-    this.retryInfo.currentAttempt = 0
-    this.updateStatus(ConnectionStatus.DISCONNECTED)
-    this.stopConnectionCheck()
-  }
-
-  /**
-   * 重置连接
-   */
-  public async reset(): Promise<void> {
-    console.log('🔄 [WebSocket] reset() 开始，当前状态:', this.status)
-    console.log('🔌 [WebSocket] 先断开现有连接')
-    this.disconnect()
-    console.log('🔗 [WebSocket] 重新建立连接')
-    await this.connect()
-    console.log('✅ [WebSocket] reset() 完成，最终状态:', this.status)
+    this.notifyStatusChange(ConnectionStatus.DISCONNECTED)
   }
 
   /**
    * 检查连接状态
    */
   public isConnected(): boolean {
-    const actuallyConnected = this.client?.connected || false
-    const statusConnected = this.status === ConnectionStatus.CONNECTED
-    
-    // 如果当前状态是 FAILED，不进行状态同步，避免触发重连
-    if (this.status === ConnectionStatus.FAILED) {
-      console.log(`[WebSocket] 当前状态为 FAILED，不进行状态同步`)
-      return false
-    }
-    
-    // 如果实际连接状态和我们的状态不一致，需要同步
-    if (actuallyConnected !== statusConnected) {
-      console.log(`[WebSocket] 状态不同步 - 实际连接: ${actuallyConnected}, 状态: ${this.status}`)
-      if (!actuallyConnected && statusConnected) {
-        // 实际断开但状态显示连接，更新状态
-        this.onDisconnected('检测到连接已断开')
-      }
-    }
-    
-    return actuallyConnected
+    return this.client?.connected || false
   }
 
   /**
-   * 获取连接状态
+   * 获取当前连接信息（简化版）
    */
-  public getConnectionStatus(): ConnectionStatus {
-    return this.status
-  }
-
-  /**
-   * 获取重试信息
-   */
-  public getRetryInfo(): RetryInfo {
-    return { ...this.retryInfo }
+  public getConnectionInfo() {
+    return {
+      connected: this.isConnected()
+    }
   }
 
   /**
@@ -562,7 +400,6 @@ export class WebSocketClient {
         `/topic/groupChat/${chatId}`,
         (message: IMessage) => {
           try {
-            // 修复: 群聊消息应该解析为MessageDTO类型，与单聊保持一致
             const messageData: MessageDTO = JSON.parse(message.body)
             this.handleMessageDTO(messageData)
           } catch (error) {
@@ -718,25 +555,6 @@ export class WebSocketClient {
     })
   }
 
-  /**
-   * 启动连接状态检查
-   */
-  private startConnectionCheck() {
-    // 每5秒检查一次连接状态，但不自动重连
-    this.connectionCheckInterval = window.setInterval(() => {
-      this.isConnected() // 调用isConnected会自动同步状态
-    }, 5000)
-  }
-
-  /**
-   * 停止连接状态检查
-   */
-  private stopConnectionCheck() {
-    if (this.connectionCheckInterval) {
-      clearInterval(this.connectionCheckInterval)
-      this.connectionCheckInterval = null
-    }
-  }
 }
 
 // 创建全局WebSocket客户端实例

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { webSocketClient } from '../utils/websocket'
+import { webSocketClient } from '../services/websocket'
 import { useNotificationStore } from '../store/notification'
 import { useFriendStore } from '../store/friend'
 import { useChatStore } from '../store/chat'
