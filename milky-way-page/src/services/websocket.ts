@@ -13,12 +13,8 @@ export interface WebSocketMessage {
   timestamp?: string
 }
 
-export interface MessageDTOHandler {
+export interface NewMessageHandler {
   (message: MessageDTO): void
-}
-
-export interface MessageHandler {
-  (message: WebSocketMessage): void
 }
 
 // 消息回执处理器接口
@@ -64,8 +60,7 @@ export interface StatusChangeHandler {
 export class WebSocketClient {
   private client: Client | null = null
   private subscriptions: Map<string, StompSubscription> = new Map()
-  private messageHandlers: Set<MessageHandler> = new Set()
-  private messageDTOHandlers: Set<MessageDTOHandler> = new Set()
+  private newMessageHandlers: Set<NewMessageHandler> = new Set()
   private receiptHandlers: Set<MessageReceiptHandler> = new Set()
   private notificationHandlers: Set<NotificationHandler> = new Set()
   
@@ -272,7 +267,7 @@ export class WebSocketClient {
         (message: IMessage) => {
           try {
             const messageData: MessageDTO = JSON.parse(message.body)
-            this.handleMessageDTO(messageData)
+            this.handleNewMessage(messageData)
           } catch (error) {
             console.error('解析个人消息失败:', error)
           }
@@ -401,7 +396,7 @@ export class WebSocketClient {
         (message: IMessage) => {
           try {
             const messageData: MessageDTO = JSON.parse(message.body)
-            this.handleMessageDTO(messageData)
+            this.handleNewMessage(messageData)
           } catch (error) {
             console.error('解析群聊消息失败:', error)
           }
@@ -458,31 +453,17 @@ export class WebSocketClient {
   }
 
   /**
-   * 添加消息处理器
+   * 添加NewMessage处理器
    */
-  public addMessageHandler(handler: MessageHandler): void {
-    this.messageHandlers.add(handler)
+  public addNewMessageHandler(handler: NewMessageHandler): void {
+    this.newMessageHandlers.add(handler)
   }
 
   /**
-   * 移除消息处理器
+   * 移除NewMessage处理器
    */
-  public removeMessageHandler(handler: MessageHandler): void {
-    this.messageHandlers.delete(handler)
-  }
-
-  /**
-   * 添加MessageDTO处理器
-   */
-  public addMessageDTOHandler(handler: MessageDTOHandler): void {
-    this.messageDTOHandlers.add(handler)
-  }
-
-  /**
-   * 移除MessageDTO处理器
-   */
-  public removeMessageDTOHandler(handler: MessageDTOHandler): void {
-    this.messageDTOHandlers.delete(handler)
+  public removeNewMessageHandler(handler: NewMessageHandler): void {
+    this.newMessageHandlers.delete(handler)
   }
 
   /**
@@ -514,15 +495,15 @@ export class WebSocketClient {
   }
 
   /**
-   * 处理接收到的MessageDTO
+   * 处理接收到的NewMessage
    */
-  private handleMessageDTO(message: MessageDTO): void {
-    console.log('[WebSocket] 收到MessageDTO:', message)
-    this.messageDTOHandlers.forEach(handler => {
+  private handleNewMessage(message: MessageDTO): void {
+    console.log('[WebSocket] 收到NewMessage:', message)
+    this.newMessageHandlers.forEach(handler => {
       try {
         handler(message)
       } catch (error) {
-        console.error('[WebSocket] 处理MessageDTO时出错:', error)
+        console.error('[WebSocket] 处理NewMessage时出错:', error)
       }
     })
   }

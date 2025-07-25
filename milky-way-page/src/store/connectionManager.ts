@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { ConnectionStatus, type RetryInfo, type MessageDTOHandler } from '../services/websocket'
+import { ConnectionStatus, type RetryInfo, type NewMessageHandler, type MessageReceipt } from '../services/websocket'
 import { webSocketClient } from '../services/websocket'
 import { messageManager } from './messageManager'
 
@@ -35,16 +35,16 @@ export interface ConnectionManagerStore {
   _connectWithRetry: () => Promise<void>
 
   // 消息处理器管理
-  addMessageDTOHandler: (handler: MessageDTOHandler) => void
-  removeMessageDTOHandler: (handler: MessageDTOHandler) => void
-  addReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => void
-  removeReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => void
+  addNewMessageHandler: (handler: NewMessageHandler) => void
+  removeNewMessageHandler: (handler: NewMessageHandler) => void
+  addReceiptHandler: (handler: (receipt: MessageReceipt) => void) => void
+  removeReceiptHandler: (handler: (receipt: MessageReceipt) => void) => void
 
   // 高级初始化方法
   initializeChatService: (options?: {
     messageHandlers?: {
-      messageDTO?: MessageDTOHandler
-      receipt?: (receipt: import('../services/websocket').MessageReceipt) => void
+      newMessage?: NewMessageHandler
+      receipt?: (receipt: MessageReceipt) => void
     }
     onSuccess?: (retryInfo: RetryInfo) => void
     onError?: (error: Error) => void
@@ -333,27 +333,27 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
   },
 
 
-  addMessageDTOHandler: (handler: MessageDTOHandler) => {
-    webSocketClient.addMessageDTOHandler(handler)
+  addNewMessageHandler: (handler: NewMessageHandler) => {
+    webSocketClient.addNewMessageHandler(handler)
   },
 
-  removeMessageDTOHandler: (handler: MessageDTOHandler) => {
-    webSocketClient.removeMessageDTOHandler(handler)
+  removeNewMessageHandler: (handler: NewMessageHandler) => {
+    webSocketClient.removeNewMessageHandler(handler)
   },
 
-  addReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => {
+  addReceiptHandler: (handler: (receipt: MessageReceipt) => void) => {
     webSocketClient.addReceiptHandler(handler)
   },
 
-  removeReceiptHandler: (handler: (receipt: import('../services/websocket').MessageReceipt) => void) => {
+  removeReceiptHandler: (handler: (receipt: MessageReceipt) => void) => {
     webSocketClient.removeReceiptHandler(handler)
   },
 
   // 高级初始化方法
   initializeChatService: async (options?: {
     messageHandlers?: {
-      messageDTO?: MessageDTOHandler
-      receipt?: (receipt: import('../services/websocket').MessageReceipt) => void
+      newMessage?: NewMessageHandler
+      receipt?: (receipt: MessageReceipt) => void
     }
     onSuccess?: (retryInfo: RetryInfo) => void
     onError?: (error: Error) => void
@@ -365,8 +365,8 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
       await get().initialize()
       
       // 添加消息处理器
-      if (options?.messageHandlers?.messageDTO) {
-        get().addMessageDTOHandler(options.messageHandlers.messageDTO)
+      if (options?.messageHandlers?.newMessage) {
+        get().addNewMessageHandler(options.messageHandlers.newMessage)
       }
       
       if (options?.messageHandlers?.receipt) {
@@ -397,7 +397,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     try {      
       await get().initializeChatService({
         messageHandlers: {
-          messageDTO: messageManager.handleWebSocketMessage.bind(messageManager),
+          newMessage: messageManager.handleWebSocketMessage.bind(messageManager),
           receipt: messageManager.handleMessageReceipt.bind(messageManager)
         },
         onSuccess: (retryInfo: RetryInfo) => {
