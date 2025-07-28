@@ -7,6 +7,7 @@ import { handleAndShowError } from '../lib/globalErrorHandler'
 import { useUserStore } from './user'
 import type { RegisterFormData } from '../components/auth/RegisterPage'
 import type { User } from '../types/api'
+import { useConnectionManagerStore } from './connectionManager'
 
 export interface AuthStore {
   // 状态
@@ -133,8 +134,7 @@ export const useAuthStore = create<AuthStore>()(
           
           // 断开WebSocket连接
           try {
-            const { connectionManager } = await import('../store/connectionManager')
-            connectionManager.destroy()
+            useConnectionManagerStore.getState().destroy()
             console.log('WebSocket连接已断开')
           } catch (error) {
             console.error('断开WebSocket连接失败:', error)

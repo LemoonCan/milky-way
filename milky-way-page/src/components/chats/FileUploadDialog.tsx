@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { X, Image, Video, FileText } from 'lucide-react'
-import { messageManager } from '../../store/messageManager'
+import { useMessageManagerStore } from '../../store/messageManager'
 import styles from '../../css/chats/ChatWindow.module.css'
 
 interface FileUploadDialogProps {
@@ -18,8 +18,6 @@ export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
 }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>(initialFiles)
   
-  // 直接使用全局messageManager
-
   // 当传入初始文件时，设置选中的文件
   useEffect(() => {
     setSelectedFiles(initialFiles)
@@ -58,13 +56,12 @@ export const FileUploadDialog: React.FC<FileUploadDialogProps> = ({
     // 关闭弹框
     onClose()
     
-    // 直接使用全局messageManager发送文件
+    // 发送文件
     for (const file of selectedFiles) {
       try {
-        await messageManager.sendFileMessage(currentChatId, file)
+        await useMessageManagerStore.getState().sendFileMessage(currentChatId, file)
       } catch (error) {
         console.error('发送文件失败:', error)
-        // 错误已经在messageManager中处理了
       }
     }
   }

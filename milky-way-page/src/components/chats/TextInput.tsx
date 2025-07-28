@@ -1,6 +1,6 @@
 import React from 'react'
 import { Send } from 'lucide-react'
-import { messageManager } from '../../store/messageManager'
+import { useMessageManagerStore } from '../../store/messageManager'
 import styles from '../../css/chats/ChatWindow.module.css'
 
 interface TextInputProps {
@@ -20,7 +20,6 @@ export const TextInput: React.FC<TextInputProps> = ({
   placeholder = "输入消息...",
   currentChatId
 }) => {
-  // 直接使用全局messageManager
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // 检查是否在输入法编辑状态（composing）
@@ -45,8 +44,7 @@ export const TextInput: React.FC<TextInputProps> = ({
     if (!inputValue.trim() || !currentChatId) return
 
     try {
-      // 直接使用全局messageManager发送消息
-      await messageManager.sendTextMessage(currentChatId, inputValue.trim())
+      await useMessageManagerStore.getState().sendTextMessage(currentChatId, inputValue.trim())
       // 发送成功后清空输入框
       onInputChange('')
     } catch (error) {

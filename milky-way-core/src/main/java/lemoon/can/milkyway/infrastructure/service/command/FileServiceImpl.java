@@ -157,7 +157,13 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String getVideoCoverImageAccessUrl(String temporaryAccessUrl) {
-        AccessToken accessToken = getAccessToken(temporaryAccessUrl);
+        AccessToken accessToken;
+        try {
+            accessToken = getAccessToken(temporaryAccessUrl);
+        } catch (Exception e) {
+            log.error("解析临时访问链接失败: {}", temporaryAccessUrl, e);
+            return null;
+        }
         if(!StringUtils.hasLength(accessToken.getObjectId())){
             return null;
         }

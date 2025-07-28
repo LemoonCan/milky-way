@@ -1,3 +1,4 @@
+import { create } from 'zustand'
 import { chatService, MessageMetaHelper, type MessageDTO, type MessageMeta, type FileData, type ClientMessageDTO } from '../services/chat'
 import { fileService, FilePermission } from '../services/file'
 import { useChatStore } from './chat'
@@ -5,35 +6,53 @@ import { useUserStore } from './user'
 import type { MessageReceipt } from '../services/websocket'
 
 /**
- * 全局消息管理器单例
+ * 消息管理器状态接口
+ */
+export interface MessageManagerStore {
+  // 状态（如果需要的话，目前主要是行为方法）
+  
+  // 方法
+  generateClientMsgId: () => string
+  validateUser: () => { id: string; openId: string; nickName: string; avatar?: string }
+  addMessageToLocal: (
+    chatId: string, 
+    clientMsgId: string, 
+    meta: MessageMeta, 
+    fileData?: FileData
+  ) => ClientMessageDTO
+  sendToWebSocket: (
+    chatId: string, 
+    content: string, 
+    messageType: MessageMeta['type'], 
+    clientMsgId: string
+  ) => Promise<void>
+  updateMessageSendStatus: (chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed') => void
+  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>) => void
+  moveAndUpdateMessageToLatest: (chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>) => ClientMessageDTO
+  sendTextMessage: (chatId: string, content: string, message?: ClientMessageDTO) => Promise<void>
+  sendFileMessage: (chatId: string, file?: File, message?: ClientMessageDTO) => Promise<void>
+  uploadFile: (message: ClientMessageDTO) => Promise<void>
+  handleWebSocketMessage: (messageDTO: MessageDTO) => void
+  handleMessageReceipt: (receipt: MessageReceipt) => void
+  retryMessage: (chatId: string, clientMsgId: string) => Promise<void>
+}
+
+/**
+ * 消息管理器 Zustand Store
  * 统一处理消息发送、状态更新等操作
  */
-class MessageManager {
-  private static instance: MessageManager | null = null
-
-  private constructor() {}
-
-  /**
-   * 获取全局单例实例
-   */
-  static getInstance(): MessageManager {
-    if (!MessageManager.instance) {
-      MessageManager.instance = new MessageManager()
-    }
-    return MessageManager.instance
-  }
-
+export const useMessageManagerStore = create<MessageManagerStore>()((set, get) => ({
   /**
    * 生成客户端消息ID
    */
-  private generateClientMsgId(): string {
+  generateClientMsgId: (): string => {
     return `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-  }
+  },
 
   /**
    * 检查用户登录状态
    */
-  private validateUser(): { id: string; openId: string; nickName: string; avatar?: string } {
+  validateUser: (): { id: string; openId: string; nickName: string; avatar?: string } => {
     const currentUser = useUserStore.getState().currentUser
     if (!currentUser) {
       const errorMsg = '用户未登录，无法发送消息'
@@ -41,18 +60,18 @@ class MessageManager {
       throw new Error(errorMsg)
     }
     return currentUser
-  }
+  },
 
   /**
    * 添加消息到本地列表
    */
-  private addMessageToLocal(
+  addMessageToLocal: (
     chatId: string, 
     clientMsgId: string, 
     meta: MessageMeta, 
     fileData?: FileData
-  ): ClientMessageDTO {
-    const currentUser = this.validateUser()
+  ): ClientMessageDTO => {
+    const currentUser = get().validateUser()
     
     const message: ClientMessageDTO = {
       id: clientMsgId, // 直接使用 clientMsgId 作为消息ID
@@ -74,17 +93,17 @@ class MessageManager {
     
     console.log(`[MessageManager] 消息已添加到本地列表 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
     return message
-  }
+  },
 
   /**
    * 发送消息到 WebSocket（通用发送逻辑）
    */
-  private async sendToWebSocket(
+  sendToWebSocket: async (
     chatId: string, 
     content: string, 
     messageType: MessageMeta['type'], 
     clientMsgId: string
-  ): Promise<void> {
+  ): Promise<void> => {
     console.log(`[MessageManager] 开始发送到WebSocket - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
     
     try {
@@ -100,7 +119,7 @@ class MessageManager {
         const currentMessages = useChatStore.getState().getChatMessages(chatId)
         const message = currentMessages.find(msg => msg.clientMsgId === clientMsgId)
         if (message && message.sendStatus === 'sending') {
-          this.updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
+          get().updateMessageByClientId(chatId, clientMsgId, { sendStatus: 'failed' })
         }
       }, 15000)
       
@@ -109,18 +128,18 @@ class MessageManager {
       console.error(`[MessageManager] WebSocket发送失败:`, error)
       
       // 标记消息为发送失败
-      this.updateMessageByClientId(chatId, clientMsgId, {
+      get().updateMessageByClientId(chatId, clientMsgId, {
         sendStatus: 'failed'
       })
       
       throw error
     }
-  }
+  },
 
   /**
    * 更新消息发送状态
    */
-  updateMessageSendStatus(chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed'): void {
+  updateMessageSendStatus: (chatId: string, messageId: string, status: 'sending' | 'sent' | 'failed'): void => {
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
     if (!chatMessages) return
 
@@ -137,12 +156,12 @@ class MessageManager {
         }
       }
     })
-  }
+  },
 
   /**
    * 根据客户端消息ID更新消息
    */
-  updateMessageByClientId(chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): void {    
+  updateMessageByClientId: (chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): void => {    
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
     
     if (!chatMessages) {
@@ -171,12 +190,12 @@ class MessageManager {
         }
       }
     })
-  }
+  },
 
   /**
    * 将消息移动到最新位置
    */
-  moveAndUpdateMessageToLatest(chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): ClientMessageDTO {    
+  moveAndUpdateMessageToLatest: (chatId: string, clientMsgId: string, updates: Partial<ClientMessageDTO>): ClientMessageDTO => {    
     const chatMessages = useChatStore.getState().chatMessagesMap[chatId]
     
     if (!chatMessages) {
@@ -209,30 +228,29 @@ class MessageManager {
     })
     
     return targetMessage
-  }
-
+  },
 
   /**
    * 发送文本消息
    */
-  async sendTextMessage(chatId: string, content: string, message?: ClientMessageDTO): Promise<void> {
+  sendTextMessage: async (chatId: string, content: string, message?: ClientMessageDTO): Promise<void> => {
     if (!message){
       // 新消息：添加到本地列表
       const meta: MessageMeta = {
         type: "TEXT",
         content,
       };
-      message = this.addMessageToLocal(chatId, this.generateClientMsgId(), meta);
+      message = get().addMessageToLocal(chatId, get().generateClientMsgId(), meta);
     }
 
     // 发送到WebSocket
-    await this.sendToWebSocket(chatId,message.meta.content!,"TEXT",message.clientMsgId!);
-  }
+    await get().sendToWebSocket(chatId, message.meta.content!, "TEXT", message.clientMsgId!);
+  },
 
   /**
    * 发送文件消息
    */
-  async sendFileMessage(chatId: string, file?: File, message?: ClientMessageDTO): Promise<void> {
+  sendFileMessage: async (chatId: string, file?: File, message?: ClientMessageDTO): Promise<void> => {
     if (!message) {
       // 新消息：立即添加消息到本地列表（使用本地预览URL）
       if (!file) {
@@ -244,9 +262,9 @@ class MessageManager {
         content: file.name,
       };
       MessageMetaHelper.setRealUrl(initialMeta, previewUrl);
-      message = this.addMessageToLocal(
+      message = get().addMessageToLocal(
         chatId,
-        this.generateClientMsgId(),
+        get().generateClientMsgId(),
         initialMeta,
         { originalFile: file }
       );
@@ -255,19 +273,18 @@ class MessageManager {
     // 后台上传文件（重发时也需要重新上传）
     if (file) {
       // 需要上传文件
-      await this.uploadFile(message);
+      await get().uploadFile(message);
     }
     // 发送到WebSocket
-    await this.sendToWebSocket(
+    await get().sendToWebSocket(
       chatId,
       MessageMetaHelper.getRealUrl(message.meta)!,
       message.meta.type,
       message.clientMsgId!
     );
-    
-  }
+  },
 
-  async uploadFile(message: ClientMessageDTO): Promise<void> {
+  uploadFile: async (message: ClientMessageDTO): Promise<void> => {
     if (!message.fileData?.originalFile) {
       throw new Error("文件为空");
     }
@@ -286,34 +303,34 @@ class MessageManager {
 
       MessageMetaHelper.setRealUrl(message.meta, uploadResult.fileAccessUrl);
 
-      this.updateMessageByClientId(message.chatId, message.clientMsgId!, {
+      get().updateMessageByClientId(message.chatId, message.clientMsgId!, {
         meta: message.meta,
         fileData: undefined, // 上传成功后移除文件数据
       });
     } catch (error) {
       if (message.clientMsgId) {
         // 上传失败，标记消息为失败状态（保留本地预览和文件数据用于重试）
-        this.updateMessageByClientId(message.chatId, message.clientMsgId, {
+        get().updateMessageByClientId(message.chatId, message.clientMsgId, {
           sendStatus: "failed",
         });
       }
       throw error;
     }
-  }
+  },
 
   /**
    * 处理WebSocket消息
    */
-  handleWebSocketMessage(messageDTO: MessageDTO): void {
+  handleWebSocketMessage: (messageDTO: MessageDTO): void => {
     console.log('[MessageManager] 收到WebSocket消息:', messageDTO)
     // 使用 addRealTimeMessage 处理，它包含了重复检查和群聊逻辑
     useChatStore.getState().addRealTimeMessage(messageDTO.chatId, messageDTO)
-  }
+  },
 
   /**
    * 处理消息回执
    */
-  handleMessageReceipt(receipt: MessageReceipt): void {
+  handleMessageReceipt: (receipt: MessageReceipt): void => {
     console.log('[MessageManager] 处理消息回执:', receipt)
     
     try {
@@ -334,7 +351,7 @@ class MessageManager {
           })
           
           // 更新本地消息为服务器返回的完整消息
-          this.updateMessageByClientId(messageDTO.chatId, messageDTO.clientMsgId!, {
+          get().updateMessageByClientId(messageDTO.chatId, messageDTO.clientMsgId!, {
             id: messageDTO.id, // 更新为服务器ID
             sendStatus: 'sent', // 标记为发送成功
             sentTime: messageDTO.sentTime,
@@ -347,34 +364,32 @@ class MessageManager {
       } else {
         const failMessage = receipt.data;
         // 可以根据错误信息更新对应消息的状态
-        this.updateMessageByClientId(failMessage.chatId, failMessage.clientMsgId!, {
+        get().updateMessageByClientId(failMessage.chatId, failMessage.clientMsgId!, {
           sendStatus: "failed",
         });
       }
     } catch (error) {
       console.error('[MessageManager] 处理消息回执时出错:', error)
     }
-  }
+  },
 
   /**
    * 重试发送消息
    */
-  async retryMessage(chatId: string, clientMsgId: string): Promise<void> {
+  retryMessage: async (chatId: string, clientMsgId: string): Promise<void> => {
     // 将消息更新并移动到最新位置
-    const message = this.moveAndUpdateMessageToLatest(chatId, clientMsgId, {
+    const message = get().moveAndUpdateMessageToLatest(chatId, clientMsgId, {
       sentTime: new Date().toISOString(),
       sendStatus: 'sending'
     })
 
     // 根据消息类型重试
     if (message.meta.type === 'TEXT') {
-      return this.sendTextMessage(chatId, message.meta.content!, message)
+      return get().sendTextMessage(chatId, message.meta.content!, message)
     } else {
       // 文件消息，重新上传和发送
-      return this.sendFileMessage(chatId, message.fileData?.originalFile, message)
+      return get().sendFileMessage(chatId, message.fileData?.originalFile, message)
     } 
   }
-}
+}))
 
-// 导出全局单例实例
-export const messageManager = MessageManager.getInstance() 

@@ -1,4 +1,4 @@
-import { messageManager } from '@/store/messageManager'
+import { useMessageManagerStore } from '@/store/messageManager'
 import { useChatStore } from '@/store/chat'
 import { type ClientMessageDTO } from '@/services/chat'
 
@@ -15,7 +15,7 @@ export const useMessageRetry = () => {
     }
 
     // 使用 messageManager 的重试方法
-    return messageManager.retryMessage(chatId, targetMessage.clientMsgId)
+    return useMessageManagerStore.getState().retryMessage(chatId, targetMessage.clientMsgId)
   }
 
   return { retryMessage }

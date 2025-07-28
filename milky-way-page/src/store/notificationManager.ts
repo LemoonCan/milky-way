@@ -1,17 +1,14 @@
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import { webSocketClient } from '../services/websocket'
-import { useNotificationStore } from '../store/notification'
-import { useFriendStore } from '../store/friend'
-import { useChatStore } from '../store/chat'
-import { useMomentStore } from '../store/moment'
+import { create } from 'zustand'
+import { useNotificationStore } from './notification'
+import { useFriendStore } from './friend'
+import { useChatStore } from './chat'
+import { useMomentStore } from './moment'
 import type { 
   MessageNotifyDTO,
   FriendApplicationDTO,
   FriendApplication,
   FriendRelation,
   ChatInfoDTO as NotificationChatInfoDTO,
-  // 重新导入需要的类型
   LikeDTO,
   CommentWithMomentDTO,
   UnlikeDTO,
@@ -26,8 +23,8 @@ const convertNotificationChatInfoToServiceChatInfo = (dto: NotificationChatInfoD
     chatType: dto.chatType,
     title: dto.title,
     avatar: dto.avatar,
-    lastMessage: dto.lastMessage || '', // 提供默认值
-    lastMessageTime: dto.lastMessageTime || new Date().toISOString(), // 提供默认值
+    lastMessage: dto.lastMessage || '',
+    lastMessageTime: dto.lastMessageTime || new Date().toISOString(),
     unreadCount: dto.unreadCount,
     online: dto.online
   }
@@ -37,7 +34,6 @@ const convertNotificationChatInfoToServiceChatInfo = (dto: NotificationChatInfoD
 const convertDTOToApplication = (dto: FriendApplicationDTO): FriendApplication => {
   console.log('开始转换DTO:', dto)
   
-  // 处理toUser为null的情况
   const toUser = dto.toUser || {
     id: 'unknown',
     openId: null,
@@ -65,45 +61,69 @@ const convertDTOToApplication = (dto: FriendApplicationDTO): FriendApplication =
     applyChannel: dto.applyChannel,
     status: dto.status,
     createTime: dto.createTime,
-    updateTime: dto.createTime // 使用createTime作为updateTime的默认值
+    updateTime: dto.createTime
   }
   
   console.log('转换完成:', converted)
   return converted
 }
 
-export const useWebSocketNotifications = () => {
-  const location = useLocation()
-  const {
-    addNotification,
-  } = useNotificationStore()
+export interface NotificationManagerStore {
+  // 状态
+  activePages: Set<string> // 当前活跃的页面路径
+  
+  // 方法
+  setActivePage: (path: string) => void
+  removeActivePage: (path: string) => void
+  isPageActive: (path: string) => boolean
+  handleNotification: (notification: MessageNotifyDTO<unknown>) => void
+}
 
-  // 获取各个store的刷新方法
-  const { addFriendApplicationLocally, addFriendLocally } = useFriendStore()
-  const { addChatLocally, removeChatUser } = useChatStore()
-  const { refreshMoments, addLikeLocally, addCommentLocally, removeLikeLocally, addMomentLocally, removeMomentLocally } = useMomentStore()
-  // 所有本地更新方法都已导入
+/**
+ * 通知管理器 Store
+ * 统一处理所有 WebSocket 通知，无UI层依赖
+ */
+export const useNotificationManagerStore = create<NotificationManagerStore>()((set, get) => ({
+  // 初始状态
+  activePages: new Set<string>(),
 
-  // 通知处理器
-  const handleNotification = (notification: MessageNotifyDTO<unknown>) => {
+  // 页面状态管理方法
+  setActivePage: (path: string) => {
+    set(state => ({
+      activePages: new Set([...state.activePages, path])
+    }))
+  },
+
+  removeActivePage: (path: string) => {
+    set(state => {
+      const newActivePages = new Set(state.activePages)
+      newActivePages.delete(path)
+      return { activePages: newActivePages }
+    })
+  },
+
+  isPageActive: (path: string) => {
+    return get().activePages.has(path)
+  },
+
+  // 通知处理器 - 无UI依赖版本
+  handleNotification: (notification: MessageNotifyDTO<unknown>) => {
     console.log('收到通知:', notification)
     
     const { notifyType, content } = notification
 
-    // 添加到通知系统（只调用一次）
-    addNotification(notification)
+    // 添加到通知系统
+    useNotificationStore.getState().addNotification(notification)
 
-    // 根据通知类型处理业务逻辑（不再重复添加通知）
+    // 根据通知类型处理业务逻辑
     switch (notifyType) {
       case 'FRIEND_APPLY':
-        // 好友申请通知
         if (content && typeof content === 'object' && 'fromUser' in content) {
           try {
             console.log('处理好友申请通知:', content)
-            // 只处理业务逻辑，不再重复添加通知
             const application = content as FriendApplicationDTO
             const convertedApplication = convertDTOToApplication(application)
-            addFriendApplicationLocally(convertedApplication)
+            useFriendStore.getState().addFriendApplicationLocally(convertedApplication)
             console.log('好友申请已添加到本地列表')
           } catch (error) {
             console.error('处理好友申请通知失败:', error)
@@ -114,22 +134,15 @@ export const useWebSocketNotifications = () => {
         break
 
       case 'NEW_FRIEND':
-        // 新好友通知
         if (content && typeof content === 'object' && 'friend' in content) {
           try {
             console.log('处理新好友通知:', content)
             const friendRelation = content as FriendRelation
             
-            // 检查当前是否在好友页面
-            const isOnFriendPage = location.pathname.includes('/friends')
-            console.log('当前页面路径:', location.pathname, '是否在好友页面:', isOnFriendPage)
-            
-            if (isOnFriendPage) {
-              addFriendLocally(friendRelation)
-              console.log('新好友已添加到本地列表（用户在好友页面）')
-            } else {
-              console.log('用户不在好友页面，跳过更新好友列表')
-            }
+            // 移除页面判断逻辑，总是更新好友列表
+            // UI层可以根据需要决定是否刷新显示
+            useFriendStore.getState().addFriendLocally(friendRelation)
+            console.log('新好友已添加到本地列表')
           } catch (error) {
             console.error('处理新好友通知失败:', error)
           }
@@ -139,71 +152,54 @@ export const useWebSocketNotifications = () => {
         break
 
       case 'CHAT_CREATE':
-        // 群聊创建通知
         if (content && typeof content === 'object' && 'id' in content) {
           const chatInfo = content as NotificationChatInfoDTO
-          // 只处理业务逻辑，不再重复添加通知
           const serviceChatInfo = convertNotificationChatInfoToServiceChatInfo(chatInfo)
-          addChatLocally(serviceChatInfo)
+          useChatStore.getState().addChatLocally(serviceChatInfo)
         }
         break
 
       case 'CHAT_DELETE':
-        // 群聊解散通知
         if (typeof content === 'string') {
-          // 只处理业务逻辑，不再重复添加通知
-          removeChatUser(content)
+          useChatStore.getState().removeChatUser(content)
         }
         break
 
       case 'MOMENT_CREATE':
-        // 动态发布通知
         if (content && typeof content === 'object' && 'user' in content) {
-          // 使用本地更新而不是重新请求接口
           const momentData = content as MomentDTO
-          addMomentLocally(momentData)
+          useMomentStore.getState().addMomentLocally(momentData)
         }
         break
 
       case 'MOMENT_DELETE':
-        // 动态删除通知
         if (typeof content === 'string') {
-          // 使用本地更新而不是重新请求接口
-          removeMomentLocally(content)
+          useMomentStore.getState().removeMomentLocally(content)
         }
         break
 
       case 'LIKE':
-        // 点赞通知 - 使用新的LikeDTO结构
         if (content && typeof content === 'object' && 'user' in content && 'momentDescription' in content) {
-          // 使用本地更新而不是重新请求接口
           const likeData = content as LikeDTO
-          // 检查当前是否在朋友圈页面
-          const isOnMomentsPage = location.pathname.includes('/moments')
-          if (isOnMomentsPage && likeData.momentDescription.id) {
-            addLikeLocally(likeData.momentDescription.id, likeData.user)
+          // 移除页面判断，总是更新数据
+          if (likeData.momentDescription.id) {
+            useMomentStore.getState().addLikeLocally(likeData.momentDescription.id, likeData.user)
           }
         }
         break
 
       case 'UNLIKE':
-        // 取消点赞通知
         if (content && typeof content === 'object' && 'momentId' in content && 'userId' in content) {
-          // 使用本地更新而不是重新请求接口
           const unlikeData = content as UnlikeDTO
-          removeLikeLocally(unlikeData.momentId, unlikeData.userId)
+          useMomentStore.getState().removeLikeLocally(unlikeData.momentId, unlikeData.userId)
         }
         break
 
       case 'COMMENT':
-        // 评论通知 - 使用新的CommentWithMomentDTO结构
         if (content && typeof content === 'object' && 'user' in content && 'momentDescription' in content) {
-          // 使用本地更新而不是重新请求接口
           const commentData = content as CommentWithMomentDTO
-          // 检查当前是否在朋友圈页面
-          const isOnMomentsPage = location.pathname.includes('/moments')
-          if (isOnMomentsPage && commentData.momentDescription.id) {
-            // 转换为CommentDTO格式用于本地更新
+          // 移除页面判断，总是更新数据
+          if (commentData.momentDescription.id) {
             const localCommentData = {
               id: commentData.id,
               momentId: commentData.momentDescription.id,
@@ -213,16 +209,14 @@ export const useWebSocketNotifications = () => {
               createTime: commentData.createTime,
               replyUser: commentData.replyUser
             }
-            addCommentLocally(commentData.momentDescription.id, localCommentData)
+            useMomentStore.getState().addCommentLocally(commentData.momentDescription.id, localCommentData)
           }
         }
         break
 
       case 'COMMENT_DELETE':
-        // 删除评论通知
         if (typeof content === 'string') {
-          // 只处理业务逻辑，不再重复添加通知
-          refreshMoments()
+          useMomentStore.getState().refreshMoments()
         }
         break
 
@@ -230,40 +224,4 @@ export const useWebSocketNotifications = () => {
         console.warn('未知的通知类型:', notifyType)
     }
   }
-
-  useEffect(() => {
-    console.log('[Notifications] 使用全局WebSocket客户端，添加通知处理器')
-    
-    // 使用全局WebSocket客户端实例
-    webSocketClient.addNotificationHandler(handleNotification)
-
-    // 清理函数
-    return () => {
-      console.log('[Notifications] 移除通知处理器')
-      webSocketClient.removeNotificationHandler(handleNotification)
-    }
-  }, [
-    location.pathname,
-    addNotification,
-    addFriendApplicationLocally,
-    addFriendLocally,
-    addChatLocally,
-    removeChatUser,
-    refreshMoments,
-    addLikeLocally,
-    addCommentLocally,
-    removeLikeLocally,
-    addMomentLocally,
-    removeMomentLocally
-  ])
-
-  // 返回全局WebSocket客户端实例
-  return {
-    wsClient: webSocketClient
-  }
-}
-
-// 导出WebSocket客户端实例获取函数
-export const getWebSocketClient = () => {
-  return webSocketClient
-} 
+}))

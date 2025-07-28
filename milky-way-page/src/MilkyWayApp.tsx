@@ -13,8 +13,7 @@ import { MomentDetailPage } from './components/moments/MomentDetailPage'
 import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
 import { useAuthStore } from './store/auth'
-import { useWebSocketNotifications } from './hooks/useWebSocketNotifications'
-import { connectionManager } from './store/connectionManager'
+import { useConnectionManagerStore } from './store/connectionManager'
 import styles from './css/App.module.css'
 import chatWindowStyles from './css/chats/ChatWindow.module.css'
 
@@ -70,9 +69,6 @@ function MilkyWayApp() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // 初始化WebSocket通知系统
-  useWebSocketNotifications()
-
   // 应用启动时获取用户信息 - 只执行一次
   useEffect(() => {
     fetchUserInfo().catch(error => {
@@ -84,16 +80,16 @@ function MilkyWayApp() {
   // 用户登录后初始化WebSocket连接 - 改进逻辑
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('[MilkyWayApp] 用户已认证，初始化聊天服务，当前连接状态:', connectionManager.isConnected())
+      console.log('[MilkyWayApp] 用户已认证，初始化聊天服务，当前连接状态:', useConnectionManagerStore.getState().isConnected())
       
       // 直接调用connectionManager的聊天应用初始化方法
-      connectionManager.initializeApp().catch(error => {
+      useConnectionManagerStore.getState().initializeApp().catch(error => {
         console.error('[MilkyWayApp] 初始化聊天应用失败:', error)
       })
     } else {
       // 用户未认证时确保断开WebSocket连接
       console.log('[MilkyWayApp] 用户未认证，断开WebSocket连接')
-      connectionManager.destroy()
+      useConnectionManagerStore.getState().destroy()
     }
   }, [isAuthenticated]) // 移除isConnected依赖，避免重复初始化
 

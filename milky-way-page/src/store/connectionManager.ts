@@ -1,7 +1,8 @@
 import { create } from 'zustand'
-import { ConnectionStatus, type RetryInfo, type NewMessageHandler, type MessageReceipt } from '../services/websocket'
+import { ConnectionStatus, type RetryInfo } from '../services/websocket'
 import { webSocketClient } from '../services/websocket'
-import { messageManager } from './messageManager'
+import { useMessageManagerStore } from './messageManager'
+import { useNotificationManagerStore } from './notificationManager'
 
 /**
  * 连接管理Store - 统一管理WebSocket连接状态和操作
@@ -34,21 +35,7 @@ export interface ConnectionManagerStore {
   _attemptConnection: () => Promise<void>
   _connectWithRetry: () => Promise<void>
 
-  // 消息处理器管理
-  addNewMessageHandler: (handler: NewMessageHandler) => void
-  removeNewMessageHandler: (handler: NewMessageHandler) => void
-  addReceiptHandler: (handler: (receipt: MessageReceipt) => void) => void
-  removeReceiptHandler: (handler: (receipt: MessageReceipt) => void) => void
-
-  // 高级初始化方法
-  initializeChatService: (options?: {
-    messageHandlers?: {
-      newMessage?: NewMessageHandler
-      receipt?: (receipt: MessageReceipt) => void
-    }
-    onSuccess?: (retryInfo: RetryInfo) => void
-    onError?: (error: Error) => void
-  }) => Promise<void>
+  // 初始化聊天服务
   initializeApp: () => Promise<void>
 }
 
@@ -332,97 +319,30 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     }
   },
 
-
-  addNewMessageHandler: (handler: NewMessageHandler) => {
-    webSocketClient.addNewMessageHandler(handler)
-  },
-
-  removeNewMessageHandler: (handler: NewMessageHandler) => {
-    webSocketClient.removeNewMessageHandler(handler)
-  },
-
-  addReceiptHandler: (handler: (receipt: MessageReceipt) => void) => {
-    webSocketClient.addReceiptHandler(handler)
-  },
-
-  removeReceiptHandler: (handler: (receipt: MessageReceipt) => void) => {
-    webSocketClient.removeReceiptHandler(handler)
-  },
-
-  // 高级初始化方法
-  initializeChatService: async (options?: {
-    messageHandlers?: {
-      newMessage?: NewMessageHandler
-      receipt?: (receipt: MessageReceipt) => void
-    }
-    onSuccess?: (retryInfo: RetryInfo) => void
-    onError?: (error: Error) => void
-  }) => {
+  initializeApp: async () => {
     try {
       console.log('[ConnectionManager] 初始化聊天服务...')
-      
       // 连接WebSocket
       await get().initialize()
       
       // 添加消息处理器
-      if (options?.messageHandlers?.newMessage) {
-        get().addNewMessageHandler(options.messageHandlers.newMessage)
-      }
+      webSocketClient.addNewMessageHandler(useMessageManagerStore.getState().handleWebSocketMessage)
+      webSocketClient.addReceiptHandler(useMessageManagerStore.getState().handleMessageReceipt)
       
-      if (options?.messageHandlers?.receipt) {
-        get().addReceiptHandler(options.messageHandlers.receipt)
-      }
+      // 添加通知处理器
+      webSocketClient.addNotificationHandler(useNotificationManagerStore.getState().handleNotification)
       
       const currentRetryInfo = get().retryInfo
-      
-      // 调用成功回调
-      if (options?.onSuccess) {
-        options.onSuccess(currentRetryInfo)
-      }
+      get().updateConnectionState(currentRetryInfo)
       
       console.log('[ConnectionManager] 聊天服务初始化完成')
     } catch (error) {
       console.error('[ConnectionManager] 初始化聊天服务失败:', error)
       
       // 调用错误回调
-      if (options?.onError && error instanceof Error) {
-        options.onError(error)
-      }
+      get().setConnectionStatus(ConnectionStatus.FAILED, error instanceof Error ? error.message : '未知错误')
       
-      throw error
-    }
-  },
-
-  initializeApp: async () => {
-    try {      
-      await get().initializeChatService({
-        messageHandlers: {
-          newMessage: messageManager.handleWebSocketMessage.bind(messageManager),
-          receipt: messageManager.handleMessageReceipt.bind(messageManager)
-        },
-        onSuccess: (retryInfo: RetryInfo) => {
-          // 更新连接状态
-          get().updateConnectionState(retryInfo)
-        },
-        onError: (error: Error) => {
-          // 更新错误状态
-          get().setConnectionStatus(ConnectionStatus.FAILED, error.message)
-        }
-      })
-      
-      console.log('[ConnectionManager] 聊天应用初始化完成')
-    } catch (error) {
-      console.error('[ConnectionManager] 初始化聊天应用失败:', error)
       throw error
     }
   }
 }))
-
-// 导出单例实例供非React组件使用
-export const connectionManager = {
-  ...useConnectionManagerStore.getState(),
-  // 更新方法需要获取最新状态
-  getState: () => useConnectionManagerStore.getState(),
-  setState: useConnectionManagerStore.setState,
-  subscribe: useConnectionManagerStore.subscribe
-} 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { WifiOff, RefreshCw, Wifi } from 'lucide-react'
-import { useConnectionManagerStore, connectionManager } from '@/store/connectionManager'
+import { useConnectionManagerStore } from '@/store/connectionManager'
 import { ConnectionStatus } from '@/services/websocket'
 import styles from '../css/TitleBar.module.css'
 
@@ -14,20 +14,26 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   className = '' 
 }) => {
   const { 
-    connectionStatus
+    connectionStatus,
+    isRetrying,
+    isConnecting,
+    isFailed,
+    isConnected,
+    getConnectionDisplayText,
+    resetConnection
   } = useConnectionManagerStore()
 
   // 处理网络重连
   const handleRetryConnection = async () => {
     console.log('[TitleBar] handleRetryConnection 被调用')
     console.log('[TitleBar] 当前状态:', {
-      isRetrying: connectionManager.isRetrying(),
-      isConnecting: connectionManager.isConnecting(),
+      isRetrying: isRetrying(),
+      isConnecting: isConnecting(),
       connectionStatus,
-      isFailed: connectionManager.isFailed()
+      isFailed: isFailed()
     })
     
-    if (connectionManager.isRetrying() || connectionManager.isConnecting()) {
+    if (isRetrying() || isConnecting()) {
       console.log('[TitleBar] 连接正在进行中，跳过重试')
       return
     }
@@ -36,13 +42,13 @@ export const TitleBar: React.FC<TitleBarProps> = ({
       console.log('[TitleBar] 开始重新连接...')
       
       // 简化逻辑：只进行一次WebSocket重连尝试
-      if (connectionManager.isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) {
+      if (isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) {
         console.log('[TitleBar] 调用 connectionManager.resetConnection')
-        await connectionManager.resetConnection()
+        await resetConnection()
         console.log('[TitleBar] connectionManager.resetConnection 完成')
       } else {
         console.log('[TitleBar] 调用 connectionManager.resetConnection')
-        await connectionManager.resetConnection()
+        await resetConnection()
         console.log('[TitleBar] connectionManager.resetConnection 完成')
       }
     } catch (error) {
@@ -52,7 +58,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
 
   // 获取连接状态图标
   const getStatusIcon = () => {
-    if (connectionManager.isConnected()) {
+    if (isConnected()) {
       return <Wifi className={styles.networkIcon} />
     } else {
       return <WifiOff className={styles.networkIcon} />
@@ -63,11 +69,11 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   const getStatusClassName = () => {
     let className = styles.networkStatus
     
-    if (connectionManager.isConnected()) {
+    if (isConnected()) {
       className += ` ${styles.networkConnected}`
-    } else if (connectionManager.isConnecting() || connectionManager.isRetrying()) {
+    } else if (isConnecting() || isRetrying()) {
       className += ` ${styles.networkConnecting}`
-    } else if (connectionManager.isFailed()) {
+    } else if (isFailed()) {
       className += ` ${styles.networkFailed}`
     } else {
       className += ` ${styles.networkDisconnected}`
@@ -78,7 +84,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
 
   // 是否显示重试按钮
   const showRetryButton = () => {
-    return (connectionManager.isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) && !connectionManager.isRetrying() && !connectionManager.isConnecting()
+    return (isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) && !isRetrying() && !isConnecting()
   }
 
   return (
@@ -96,9 +102,9 @@ export const TitleBar: React.FC<TitleBarProps> = ({
           >
             {getStatusIcon()}
             <span className={styles.networkText}>
-              {connectionManager.getConnectionDisplayText()}
+              {getConnectionDisplayText()}
             </span>
-            {(connectionManager.isConnecting() || connectionManager.isRetrying()) && (
+            {(isConnecting() || isRetrying()) && (
               <RefreshCw className={`${styles.retryIcon} ${styles.spinning}`} />
             )}
             {showRetryButton() && (
