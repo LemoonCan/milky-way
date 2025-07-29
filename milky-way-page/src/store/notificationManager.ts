@@ -161,7 +161,7 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()((s
 
       case 'CHAT_DELETE':
         if (typeof content === 'string') {
-          useChatStore.getState().removeChatUser(content)
+          useChatStore.getState().removeChat(content)
         }
         break
 

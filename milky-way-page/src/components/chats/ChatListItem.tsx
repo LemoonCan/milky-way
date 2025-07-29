@@ -1,11 +1,11 @@
 import React from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
-import type { ChatUser } from '@/store/chat'
+import type { Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatListItem.module.css'
 
 interface ChatListItemProps {
-  user: ChatUser
+  user: Chat
   isActive: boolean
   onClick: () => void
 }

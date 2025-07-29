@@ -3,15 +3,13 @@ import { Button } from '../ui/button'
 import { User, LogOut, ChevronRight, Bell, Palette, Shield } from 'lucide-react'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { useAuthStore } from '../../store/auth'
+import { ProfilePage } from './ProfilePage'
 import styles from '../../css/settings/SettingsPage.module.css'
 
-interface SettingsPageProps {
-  onNavigateToProfile: () => void
-}
-
-export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigateToProfile }) => {
+export const SettingsPage: React.FC = () => {
   const { logout } = useAuthStore()
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   const handleLogout = () => {
     setShowLogoutDialog(true)
@@ -27,13 +25,26 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigateToProfile 
     setShowLogoutDialog(false)
   }
 
+  const handleNavigateToProfile = () => {
+    setShowProfile(true)
+  }
+
+  const handleBackFromProfile = () => {
+    setShowProfile(false)
+  }
+
+  // 如果显示个人资料页面，直接返回 ProfilePage
+  if (showProfile) {
+    return <ProfilePage onBack={handleBackFromProfile} />
+  }
+
   const settingsItems = [
     {
       id: 'profile',
       icon: User,
       label: '个人信息',
       description: '管理头像、昵称等个人资料',
-      onClick: onNavigateToProfile
+      onClick: handleNavigateToProfile
     }
   ]
 

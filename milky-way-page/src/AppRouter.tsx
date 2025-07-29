@@ -33,7 +33,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 // 登录页面组件包装器
 const LoginPageWrapper: React.FC = () => {
   const navigate = useNavigate()
-  const { login, clearError, loading } = useAuthStore()
+  const { login, loading } = useAuthStore()
 
   // 处理登录
   const handleLogin = async (username: string, password: string) => {
@@ -55,7 +55,6 @@ const LoginPageWrapper: React.FC = () => {
 
   // 导航到注册页
   const handleNavigateToRegister = () => {
-    clearError()
     navigate('/register')
   }
 
@@ -71,7 +70,7 @@ const LoginPageWrapper: React.FC = () => {
 const RegisterPageWrapper: React.FC = () => {
   const navigate = useNavigate()
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
-  const { register, clearError } = useAuthStore()
+  const { register } = useAuthStore()
 
   // 处理注册
   const handleRegister = async (formData: RegisterFormData) => {
@@ -94,7 +93,6 @@ const RegisterPageWrapper: React.FC = () => {
 
   // 导航到登录页
   const handleNavigateToLogin = () => {
-    clearError()
     navigate('/login')
   }
 

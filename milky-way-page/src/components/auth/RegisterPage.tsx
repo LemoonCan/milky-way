@@ -19,7 +19,7 @@ export interface RegisterFormData {
 }
 
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNavigateToLogin }) => {
-  const { loading, error, clearError } = useAuthStore()
+  const { loading } = useAuthStore()
   const [formData, setFormData] = useState<RegisterFormData>({
     username: '',
     password: '',
@@ -46,11 +46,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
         ...prev,
         [field]: ''
       }))
-    }
-    
-    // 清除API错误
-    if (error) {
-      clearError()
     }
     
   }

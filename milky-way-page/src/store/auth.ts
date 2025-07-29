@@ -6,23 +6,18 @@ import { getErrorMessage } from '../lib/error-handler'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 import { useUserStore } from './user'
 import type { RegisterFormData } from '../components/auth/RegisterPage'
-import type { User } from '../types/api'
 import { useConnectionManagerStore } from './connectionManager'
 
 export interface AuthStore {
   // 状态
   isAuthenticated: boolean
-  currentUser: User | null
   loading: boolean
-  error: string | null
   
   // 方法
   login: (openId: string, password: string) => Promise<boolean>
   register: (formData: RegisterFormData) => Promise<boolean>
   logout: () => Promise<void>
-  clearError: () => void
   checkAuthStatus: () => void
-  getCurrentUser: () => User | null
 }
 
 export const useAuthStore = create<AuthStore>()(
@@ -30,9 +25,7 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       // 初始状态
       isAuthenticated: tokenManager.isAuthenticated(),
-      currentUser: null,
       loading: false,
-      error: null,
 
       // 登录方法
       login: async (openId: string, password: string) => {
@@ -44,7 +37,7 @@ export const useAuthStore = create<AuthStore>()(
           return false
         }
 
-        set({ loading: true, error: null })
+        set({ loading: true})
         
         try {
           const result = await authService.loginByOpenId({ openId, password })
@@ -55,19 +48,9 @@ export const useAuthStore = create<AuthStore>()(
               loading: false
             })
             
-            // TODO: 可以在这里获取用户信息
-            // 如果后端在登录响应中返回用户信息，可以直接设置
-            // 或者调用getUserInfo接口获取用户信息
-            
-            console.log('登录成功')
             return true
           } else {
-            set({
-              isAuthenticated: false,
-              loading: false,
-              error: result.msg || '登录失败'
-            })
-            return false
+            throw new Error(result.msg || '登录失败')
           }
         } catch (error) {
           // 使用全局错误处理
@@ -82,7 +65,7 @@ export const useAuthStore = create<AuthStore>()(
 
       // 注册方法
       register: async (formData: RegisterFormData) => {
-        set({ loading: true, error: null })
+        set({ loading: true })
         
         try {
           const registerData = {
@@ -100,11 +83,7 @@ export const useAuthStore = create<AuthStore>()(
             console.log('注册成功')
             return true
           } else {
-            set({
-              loading: false,
-              error: result.msg || '注册失败'
-            })
-            return false
+            throw new Error(result.msg || '注册失败')
           }
         } catch (error) {
           // 使用全局错误处理
@@ -142,17 +121,10 @@ export const useAuthStore = create<AuthStore>()(
           
           set({
             isAuthenticated: false,
-            currentUser: null,
             loading: false,
-            error: null
           })
           console.log('用户已退出登录')
         }
-      },
-
-      // 清除错误
-      clearError: () => {
-        set({ error: null })
       },
 
       // 检查认证状态
@@ -169,23 +141,15 @@ export const useAuthStore = create<AuthStore>()(
         if (!isAuth) {
           set({ 
             isAuthenticated: false,
-            currentUser: null,
-            error: null
           })
         }
-      },
-
-      // 获取当前用户
-      getCurrentUser: () => {
-        return get().currentUser
       }
     }),
     {
       name: 'milky-way-auth', // 持久化存储的key
       partialize: (state) => ({
         // 只持久化必要的状态，不持久化loading和error
-        isAuthenticated: state.isAuthenticated,
-        currentUser: state.currentUser
+        isAuthenticated: state.isAuthenticated
       })
     }
   )

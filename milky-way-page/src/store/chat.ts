@@ -21,8 +21,8 @@ const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
 }
 
 // 工具函数：检查是否有新消息需要加载
-const hasNewMessagesToLoad = (chatState?: ChatMessagesState, chatUser?: ChatUser): boolean => {
-  if (!chatState || !chatUser || !chatUser.lastMessageId) {
+const hasNewMessagesToLoad = (chatState?: ChatMessagesState, chat?: Chat): boolean => {
+  if (!chatState || !chat || !chat.lastMessageId) {
     return false
   }
   
@@ -38,13 +38,13 @@ const hasNewMessagesToLoad = (chatState?: ChatMessagesState, chatUser?: ChatUser
   
   // 如果聊天缓存中的最新消息ID与聊天列表中的最新消息ID不一致，说明有新消息
   const cachedNewestId = chatState.newestMessageId
-  const actualNewestId = chatUser.lastMessageId
+  const actualNewestId = chat.lastMessageId
   
   // 如果缓存中没有最新消息ID，或者与实际最新消息ID不同，需要重新加载
   return !cachedNewestId || cachedNewestId !== actualNewestId
 }
 
-export interface ChatUser {
+export interface Chat {
   id: string
   name: string
   avatar: string
@@ -69,7 +69,7 @@ export interface ChatMessagesState {
 
 export interface ChatStore {
   currentChatId: string | null
-  chatUsers: ChatUser[]
+  chats: Chat[]
   chatMessagesMap: Record<string, ChatMessagesState>
   isLoading: boolean
   hasMoreChats: boolean
@@ -81,7 +81,7 @@ export interface ChatStore {
   addMessage: (message: ClientMessageDTO) => void
   getChatMessages: (chatId: string) => ClientMessageDTO[]
   markChatAsRead: (chatId: string, force?: boolean) => Promise<void>
-  removeChatUser: (chatId: string) => void
+  removeChat: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => void
   loadChatList: (refresh?: boolean) => Promise<void>
@@ -91,8 +91,6 @@ export interface ChatStore {
   clearError: () => void
 }
 
-// Mock 数据 - 已清理，连接失败时不再显示测试数据
-const mockUsers: ChatUser[] = []
 
 // Mock messages are now loaded from API
 
@@ -111,8 +109,8 @@ export const isMessageFromMe = (message: MessageDTO | ClientMessageDTO): boolean
   return false
 }
 
-// 转换后端 ChatInfoDTO 到前端 ChatUser 格式
-const convertChatInfoToUser = (chatInfo: ChatInfoDTO): ChatUser => {
+// 转换后端 ChatInfoDTO 到前端 Chat 格式
+const convertChatInfoToChat = (chatInfo: ChatInfoDTO): Chat => {
   // 安全地处理时间转换
   let lastMessageTime: Date
   try {
@@ -138,7 +136,7 @@ const convertChatInfoToUser = (chatInfo: ChatInfoDTO): ChatUser => {
     id: chatInfo.id,
     name: chatInfo.title,
     avatar: chatInfo.avatar,
-    lastMessage: chatInfo.lastMessage,
+    lastMessage: chatInfo.lastMessage || '', // 修复类型错误：确保 lastMessage 是 string
     lastMessageTime,
     unreadCount: chatInfo.unreadCount,
     online: chatInfo.online,
@@ -148,7 +146,7 @@ const convertChatInfoToUser = (chatInfo: ChatInfoDTO): ChatUser => {
 
 export const useChatStore = create<ChatStore>((set, get) => ({
     currentChatId: null,
-    chatUsers: mockUsers,
+    chats: [],
     chatMessagesMap: {},
     isLoading: false,
     hasMoreChats: true,
@@ -160,13 +158,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ currentChatId: chatId })
     
     const state = get()
-    const chatUser = state.chatUsers.find(user => user.id === chatId)
-    console.log(`[ChatStore] 找到聊天用户:`, chatUser ? `${chatUser.name}, 未读数量: ${chatUser.unreadCount}` : '未找到')
+    const chat = state.chats.find(chat => chat.id === chatId)
+    console.log(`[ChatStore] 找到聊天:`, chat ? `${chat.name}, 未读数量: ${chat.unreadCount}` : '未找到')
     
     const existingChatState = state.chatMessagesMap[chatId]
     
     // 检查是否需要加载消息
-    const needsLoading = !hasChatMessages(existingChatState) || hasNewMessagesToLoad(existingChatState, chatUser)
+    const needsLoading = !hasChatMessages(existingChatState) || hasNewMessagesToLoad(existingChatState, chat)
     
     if (needsLoading) {
       const reason = !hasChatMessages(existingChatState) ? '没有消息数据' : '检测到新消息'
@@ -364,27 +362,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   markChatAsRead: async (chatId: string, force: boolean = false) => {
     const state = get()
     
-    // 查找对应的聊天用户
-    const chatUser = state.chatUsers.find(user => user.id === chatId)
-    if (!chatUser) {
+    // 查找对应的聊天
+    const chat = state.chats.find(chat => chat.id === chatId)
+    if (!chat) {
       console.warn(`[ChatStore] 找不到聊天 ${chatId}，无法标记已读`)
       return
     }
 
     // 如果不是强制模式且没有未读消息，则跳过
-    if (!force && chatUser.unreadCount === 0) {
-      console.log(`[ChatStore] 聊天 ${chatId} 没有未读消息，跳过标记已读。未读数量: ${chatUser.unreadCount}`)
+    if (!force && chat.unreadCount === 0) {
+      console.log(`[ChatStore] 聊天 ${chatId} 没有未读消息，跳过标记已读。未读数量: ${chat.unreadCount}`)
       return
     }
 
-    console.log(`[ChatStore] 开始标记聊天 ${chatId} 为已读，当前未读数量: ${chatUser.unreadCount}，强制模式: ${force}`)
+    console.log(`[ChatStore] 开始标记聊天 ${chatId} 为已读，当前未读数量: ${chat.unreadCount}，强制模式: ${force}`)
 
-    // 优先从聊天用户信息中获取最新消息ID
-    let latestMessageId = chatUser.lastMessageId
+    // 优先从聊天信息中获取最新消息ID
+    let latestMessageId = chat.lastMessageId
     
-    // 如果聊天用户信息中没有最新消息ID，再从消息缓存中获取
+    // 如果聊天信息中没有最新消息ID，再从消息缓存中获取
     if (!latestMessageId) {
-      console.log(`[ChatStore] 聊天用户信息中没有最新消息ID，从消息缓存中获取`)
+      console.log(`[ChatStore] 聊天信息中没有最新消息ID，从消息缓存中获取`)
       
       const chatMessagesState = state.chatMessagesMap[chatId]
       
@@ -410,7 +408,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         latestMessageId = chatMessagesState.newestMessageId || chatMessagesState.messages[chatMessagesState.messages.length - 1]?.id
       }
     } else {
-      console.log(`[ChatStore] 从聊天用户信息中获取到最新消息ID: ${latestMessageId}`)
+      console.log(`[ChatStore] 从聊天信息中获取到最新消息ID: ${latestMessageId}`)
     }
     
     if (!latestMessageId) {
@@ -429,18 +427,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       // 标记成功后，更新本地状态：将该聊天的未读数量设为0
       const currentState = get()
-      const updatedChatUsers = currentState.chatUsers.map(user => {
-        if (user.id === chatId) {
+      const updatedChats = currentState.chats.map(chat => {
+        if (chat.id === chatId) {
           return {
-            ...user,
+            ...chat,
             unreadCount: 0
           }
         }
-        return user
+        return chat
       })
 
       set({
-        chatUsers: updatedChatUsers
+        chats: updatedChats
       })
 
       console.log(`[ChatStore] 成功标记聊天 ${chatId} 的消息已读`)
@@ -450,9 +448,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  removeChatUser: (chatId: string) => {
+  removeChat: (chatId: string) => {
     const state = get()
-    const updatedChatUsers = state.chatUsers.filter(user => user.id !== chatId)
+    const updatedChats = state.chats.filter(chat => chat.id !== chatId)
     
     // 如果被删除的聊天是当前聊天，清空当前聊天ID
     const currentChatId = state.currentChatId === chatId ? null : state.currentChatId
@@ -462,7 +460,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     delete updatedChatMessagesMap[chatId]
     
     set({
-      chatUsers: updatedChatUsers,
+      chats: updatedChats,
       currentChatId,
       chatMessagesMap: updatedChatMessagesMap
     })
@@ -474,19 +472,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const state = get()
     
     // 检查是否已存在该聊天
-    const existingChatIndex = state.chatUsers.findIndex(user => user.id === chatInfo.id)
+    const existingChatIndex = state.chats.findIndex(chat => chat.id === chatInfo.id)
     
     if (existingChatIndex >= 0) {
       // 如果已存在，更新聊天信息
-      const updatedChatUsers = [...state.chatUsers]
-      updatedChatUsers[existingChatIndex] = convertChatInfoToUser(chatInfo)
-      set({ chatUsers: updatedChatUsers })
+      const updatedChats = [...state.chats]
+      updatedChats[existingChatIndex] = convertChatInfoToChat(chatInfo)
+      set({ chats: updatedChats })
       console.log(`[ChatStore] 已更新聊天信息 ${chatInfo.id}`)
     } else {
       // 如果不存在，添加到聊天列表的最前面
-      const newChatUser = convertChatInfoToUser(chatInfo)
-      const updatedChatUsers = [newChatUser, ...state.chatUsers]
-      set({ chatUsers: updatedChatUsers })
+      const newChat = convertChatInfoToChat(chatInfo)
+      const updatedChats = [newChat, ...state.chats]
+      set({ chats: updatedChats })
       console.log(`[ChatStore] 已本地添加新聊天 ${chatInfo.id}`)
     }
   },
@@ -496,12 +494,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     
     const state = get()
     const currentChatState = state.chatMessagesMap[chatId]
-    const chatUser = state.chatUsers.find(user => user.id === chatId)
+    const chat = state.chats.find(chat => chat.id === chatId)
     
     // 在群聊中，如果收到的是自己发送的消息，直接跳过所有处理（避免重复）
     // 因为消息回执已经处理了聊天列表的更新
     const isMyMessage = isMessageFromMe(messageDTO)
-    if (chatUser && chatUser.chatType === 'GROUP' && isMyMessage) {
+    if (chat && chat.chatType === 'GROUP' && isMyMessage) {
       console.log(`[ChatStore] 群聊中收到自己发送的消息 ${messageDTO.id}，跳过处理避免重复`)
       return
     }
@@ -528,32 +526,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // 添加消息到当前聊天
     get().addMessage(messageDTO)
     
-    // 更新聊天用户信息
-    if (chatUser) {
+    // 更新聊天信息
+    if (chat) {
       // 检查是否是自己发送的消息（在前面已经做过了，这里直接使用）
       const shouldIncreaseUnread = !isMyMessage && state.currentChatId !== chatId
       
-      console.log(`[ChatStore] 更新聊天用户信息 - 聊天ID: ${chatId}, 是否增加未读: ${shouldIncreaseUnread}`)
+      console.log(`[ChatStore] 更新聊天信息 - 聊天ID: ${chatId}, 是否增加未读: ${shouldIncreaseUnread}`)
       
       // 更新聊天信息
-      const updatedChatUser = {
-        ...chatUser,
-        lastMessage: messageDTO.meta.content,
+      const updatedChat = {
+        ...chat,
+        lastMessage: messageDTO.meta.content || '', // 修复类型错误：确保 lastMessage 是 string
         lastMessageTime: new Date(messageDTO.sentTime),
-        unreadCount: shouldIncreaseUnread ? chatUser.unreadCount + 1 : chatUser.unreadCount,
+        unreadCount: shouldIncreaseUnread ? chat.unreadCount + 1 : chat.unreadCount,
         lastMessageId: messageDTO.id // 更新最新消息ID
       }
       
-      // 更新聊天用户列表
-      const updatedChatUsers = state.chatUsers.map(user => 
-        user.id === chatId ? updatedChatUser : user
+      // 更新聊天列表
+      const updatedChats = state.chats.map(chat => 
+        chat.id === chatId ? updatedChat : chat
       )
       
       // 将更新的聊天移到列表顶部
-      const filteredChatUsers = updatedChatUsers.filter(user => user.id !== chatId)
-      const reorderedChatUsers = [updatedChatUser, ...filteredChatUsers]
+      const filteredChats = updatedChats.filter(chat => chat.id !== chatId)
+      const reorderedChats = [updatedChat, ...filteredChats]
       
-      set({ chatUsers: reorderedChatUsers })
+      set({ chats: reorderedChats })
     }
   },
 
@@ -571,10 +569,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         20
       )
       
-      const newChatUsers = result.items.map(convertChatInfoToUser)
+      const newChats = result.items.map(convertChatInfoToChat)
       
       set({
-        chatUsers: refresh ? newChatUsers : [...state.chatUsers, ...newChatUsers],
+        chats: refresh ? newChats : [...state.chats, ...newChats],
         hasMoreChats: result.hasNext,
         lastChatId: result.items.length > 0 ? result.items[result.items.length - 1].id : state.lastChatId,
         isLoading: false

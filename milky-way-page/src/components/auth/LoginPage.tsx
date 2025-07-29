@@ -12,7 +12,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegister }) => {
-  const { loading, error, clearError } = useAuthStore()
+  const {loading} = useAuthStore()
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -34,11 +34,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
         ...prev,
         [field]: ''
       }))
-    }
-    
-    // 清除API错误
-    if (error) {
-      clearError()
     }
   }
 
@@ -85,7 +80,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onNavigateToRegis
 
         {/* 登录表单 */}
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* API错误现在由全局处理 */}
           
           <div className={styles.inputGroup}>
             <label className={styles.label}>账号</label>

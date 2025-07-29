@@ -1,69 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { SidebarNav } from './components/SidebarNav'
-import { ChatList } from './components/chats/ChatList'
-import { ChatWindow } from './components/chats/ChatWindow'
+import { ChatPage } from './components/chats/ChatPage'
 import { SettingsPage } from './components/settings/SettingsPage'
-import { ProfilePage } from './components/settings/ProfilePage'
 import { FriendPage } from './components/friends/FriendPage'
-import { MomentsPage as MomentsPageComponent } from './components/moments/MomentsPage'
+import { MomentsPage } from './components/moments/MomentsPage'
 import { UserMomentsPage } from './components/moments/UserMomentsPage'
 import { MomentDetailPage } from './components/moments/MomentDetailPage'
 
-import { useChatStore, type ChatUser } from './store/chat'
 import { useUserStore } from './store/user'
 import { useAuthStore } from './store/auth'
 import { useConnectionManagerStore } from './store/connectionManager'
-import styles from './css/App.module.css'
-import chatWindowStyles from './css/chats/ChatWindow.module.css'
-
-// 将页面组件移到外部以避免重新创建导致的组件重新挂载问题
-const MessagesPage = ({ 
-  onSelectChat, 
-  selectedChatId, 
-  currentUser 
-}: { 
-  onSelectChat: (userId: string) => void
-  selectedChatId: string | null
-  currentUser: ChatUser | null
-}) => (
-  <div className={styles.mainContent}>
-    <ChatList 
-      onSelectChat={onSelectChat}
-      selectedChatId={selectedChatId}
-    />
-    <ChatWindow currentUser={currentUser} />
-  </div>
-)
-
-
-
-const SettingsPageWrapper = ({ 
-  showProfile, 
-  onNavigateToProfile, 
-  onBackFromProfile 
-}: { 
-  showProfile: boolean
-  onNavigateToProfile: () => void
-  onBackFromProfile: () => void
-}) => {
-  if (showProfile) {
-    return (
-      <div className={chatWindowStyles.chatWindowBase}>
-        <ProfilePage onBack={onBackFromProfile} />
-      </div>
-    )
-  }
-  return (
-    <div className={chatWindowStyles.chatWindowBase}>
-      <SettingsPage onNavigateToProfile={onNavigateToProfile} />
-    </div>
-  )
-}
 
 function MilkyWayApp() {
-  const [showProfile, setShowProfile] = useState(false)
-  const { chatUsers, currentChatId, setCurrentChat } = useChatStore()
   const { fetchUserInfo } = useUserStore()
   const { isAuthenticated } = useAuthStore()
   const location = useLocation()
@@ -81,7 +30,7 @@ function MilkyWayApp() {
   useEffect(() => {
     if (isAuthenticated) {
       console.log('[MilkyWayApp] 用户已认证，初始化聊天服务，当前连接状态:', useConnectionManagerStore.getState().isConnected())
-      
+ 
       // 直接调用connectionManager的聊天应用初始化方法
       useConnectionManagerStore.getState().initializeApp().catch(error => {
         console.error('[MilkyWayApp] 初始化聊天应用失败:', error)
@@ -103,25 +52,9 @@ function MilkyWayApp() {
     return 'messages'
   }
 
-  const currentUser_chat = chatUsers.find((user) => user.id === currentChatId) || null
-
-  const handleSelectChat = (userId: string) => {
-    setCurrentChat(userId)
-  }
-
-  const handleNavigateToProfile = () => {
-    setShowProfile(true)
-  }
-
-  const handleBackFromProfile = () => {
-    setShowProfile(false)
-  }
-
   const handleTabChange = (tab: string) => {
     navigate(`/main/${tab}`)
   }
-
-
 
   return (
     <div className="milky-container">
@@ -131,27 +64,15 @@ function MilkyWayApp() {
         onTabChange={handleTabChange}
       />
       
-      {/* 主要内容区域 - 使用路由 */}
+   {/* 主要内容区域 - 使用路由 */}
       <Routes>
         <Route path="/" element={<Navigate to="/main/messages" replace />} />
-        <Route path="/messages" element={
-          <MessagesPage 
-            onSelectChat={handleSelectChat}
-            selectedChatId={currentChatId}
-            currentUser={currentUser_chat}
-          />
-        } />
+        <Route path="/messages" element={<ChatPage />} />
         <Route path="/friends" element={<FriendPage />} />
-        <Route path="/moments" element={<MomentsPageComponent />} />
+        <Route path="/moments" element={<MomentsPage />} />
         <Route path="/moments/user/:userId" element={<UserMomentsPage />} />
         <Route path="/moments/detail/:momentId" element={<MomentDetailPage />} />
-        <Route path="/settings" element={
-          <SettingsPageWrapper 
-            showProfile={showProfile}
-            onNavigateToProfile={handleNavigateToProfile}
-            onBackFromProfile={handleBackFromProfile}
-          />
-        } />
+        <Route path="/settings" element={<SettingsPage />} />
 
         <Route path="*" element={<Navigate to="/main/messages" replace />} />
       </Routes>

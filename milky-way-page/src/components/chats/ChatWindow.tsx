@@ -8,11 +8,11 @@ import { ChatInput } from './ChatInput'
 import { Trash2 } from 'lucide-react'
 import { useChatStore, isMessageFromMe } from '@/store/chat'
 import { chatService } from '../../services/chat'
-import type { ChatUser } from '@/store/chat'
+import type { Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
 
 interface ChatWindowProps {
-  currentUser: ChatUser | null
+  currentUser: Chat | null
 }
 
 export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
@@ -26,7 +26,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previousUserIdRef = useRef<string | null>(null)
-  const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, removeChatUser } = useChatStore()
+  const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, removeChat } = useChatStore()
 
   const messages = currentUser ? getChatMessages(currentUser.id) : []
   const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
@@ -136,12 +136,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     return null
   }
 
-
-
-
-
-
-
   // 处理更多操作按钮点击
   const handleMoreActionsClick = () => {
     setShowMoreActions(!showMoreActions)
@@ -161,7 +155,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     try {
       await chatService.deleteChat(currentUser.id)
       // 解散成功后，从聊天列表中移除该群聊
-      removeChatUser(currentUser.id)
+      removeChat(currentUser.id)
       setShowDeleteChatDialog(false)
       console.log('群聊解散成功')
     } catch (error) {
@@ -284,8 +278,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           textareaRef={textareaRef}
           currentChatId={currentUser?.id || null}
         />
-
-
 
       {/* 解散群聊确认弹框 */}
       <ConfirmDialog

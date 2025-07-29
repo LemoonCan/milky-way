@@ -3,7 +3,7 @@ import { ChatListItem } from './ChatListItem'
 import { TitleBar } from '../TitleBar'
 import { CreateGroupChatDialog } from './CreateGroupChatDialog'
 import { Search, SmilePlus } from 'lucide-react'
-import { useChatStore, type ChatUser } from '@/store/chat'
+import { useChatStore, type Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatList.module.css'
 
 interface ChatListProps {
@@ -14,11 +14,11 @@ interface ChatListProps {
 export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false)
-  const { 
-    chatUsers, 
-    isLoading, 
+  const {
+    chats,
+    isLoading,
     hasMoreChats,
-    loadChatList, 
+    loadChatList,
     loadMoreChats
   } = useChatStore()
 
@@ -49,9 +49,9 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
     onSelectChat(chatId)
   }
 
-  const filteredUsers = chatUsers.filter((user: ChatUser) =>
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = chats.filter((chat: Chat) =>
+    chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   // 处理滚动加载更多
@@ -69,7 +69,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
     <div className={styles.chatList}>
       {/* 头部区域 */}
       <TitleBar title="消息" />
-      
+
       {/* 搜索框 */}
       <div className={styles.searchSection}>
         <div className={styles.searchContainer}>
@@ -83,7 +83,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
               className={styles.searchInput}
             />
           </div>
-          <button 
+          <button
             className={styles.addGroupButton}
             onClick={handleCreateGroup}
             title="发起群聊"
@@ -94,7 +94,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
       </div>
 
       {/* 聊天列表 */}
-      <div 
+      <div
         className={`${styles.chatListContent} ${styles.listContainer}`}
         onScroll={handleScroll}
       >
@@ -104,12 +104,12 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
           </div>
         ) : (
           <div>
-            {filteredUsers.map((user: ChatUser) => (
+            {filteredUsers.map((chat: Chat) => (
               <ChatListItem
-                key={user.id}
-                user={user}
-                isActive={selectedChatId === user.id}
-                onClick={() => onSelectChat(user.id)}
+                key={chat.id}
+                user={chat}
+                isActive={selectedChatId === chat.id}
+                onClick={() => onSelectChat(chat.id)}
               />
             ))}
           </div>
