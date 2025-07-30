@@ -5,6 +5,7 @@ import lombok.Getter;
 
 /**
  * 消息类型
+ *
  * @author lemoon
  * @since 2025/5/15
  */
@@ -37,4 +38,8 @@ public enum MessageType {
     FILE("文件"),
     ;
     private final String desc;
+
+    public boolean isMedia() {
+        return this != SYSTEM && this != TEXT;
+    }
 }

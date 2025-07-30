@@ -76,4 +76,11 @@ public interface FileService {
      * @return 视频封面图访问链接
      */
     String getVideoCoverImageAccessUrl(String temporaryAccessUrl);
+
+    /**
+     *  是否过期
+     * @param temporaryAccessUrl 临时访问链接
+     * @return
+     */
+    boolean expire(String temporaryAccessUrl);
 }

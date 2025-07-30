@@ -78,7 +78,7 @@ public class FileController {
      */
     @GetMapping
     @Operation(summary = "访问")
-    public ResponseEntity<Resource> temporaryAccess(@RequestParam String accessCode) {
+    public ResponseEntity<?> temporaryAccess(@RequestParam String accessCode) {
         FileDTO fileDTO = fileService.temporaryLoadFile(accessCode);
         String encodedFileName = URLEncoder.encode(fileDTO.getFileName(), StandardCharsets.UTF_8)
                 .replace("+", "%20");

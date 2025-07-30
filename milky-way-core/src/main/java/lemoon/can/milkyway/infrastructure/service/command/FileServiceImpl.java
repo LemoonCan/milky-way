@@ -30,6 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author lemoon
@@ -149,30 +150,45 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String getFileName(String temporaryAccessUrl) {
-        AccessToken accessToken = getAccessToken(temporaryAccessUrl);
-        FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(accessToken.getObjectId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
-        return fileMetaInfo.getName();
+        try {
+            AccessToken accessToken = getAccessToken(temporaryAccessUrl);
+            Optional<FileMetaInfo> optional = fileMetaInfoRepository.findById(accessToken.getObjectId());
+            return optional.map(FileMetaInfo::getName).orElse(null);
+        } catch (Exception e) {
+            log.error("获取文件名失败: {}", temporaryAccessUrl, e);
+            return null;
+        }
     }
 
     @Override
     public String getVideoCoverImageAccessUrl(String temporaryAccessUrl) {
-        AccessToken accessToken;
         try {
-            accessToken = getAccessToken(temporaryAccessUrl);
+            AccessToken accessToken = getAccessToken(temporaryAccessUrl);
+
+            if (!StringUtils.hasLength(accessToken.getObjectId())) {
+                return null;
+            }
+            Optional<FileMetaInfo> optional = fileMetaInfoRepository.findById(accessToken.getObjectId());
+            if (optional.isEmpty()
+                    || !StringUtils.hasLength(optional.get().getVideoCoverImage())) {
+                return null;
+            }
+            return generateTemporaryAtAccessUrl(optional.get().getVideoCoverImage(), accessToken.getExpireAt());
+        } catch (Exception e) {
+            log.error("获取临时访问链接失败: {}", temporaryAccessUrl, e);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean expire(String temporaryAccessUrl) {
+        try {
+            getAccessToken(temporaryAccessUrl);
+            return false;
         } catch (Exception e) {
             log.error("解析临时访问链接失败: {}", temporaryAccessUrl, e);
-            return null;
+            return true;
         }
-        if(!StringUtils.hasLength(accessToken.getObjectId())){
-            return null;
-        }
-        FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(accessToken.getObjectId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
-        if(!StringUtils.hasLength(fileMetaInfo.getVideoCoverImage())){
-            return null;
-        }
-        return generateTemporaryAtAccessUrl(fileMetaInfo.getVideoCoverImage(), accessToken.getExpireAt());
     }
 
     private AccessToken getAccessToken(String temporaryAccessUrl) {

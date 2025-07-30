@@ -1,5 +1,5 @@
 import React from 'react'
-import { FileText } from 'lucide-react'
+import { FileText, Clock } from 'lucide-react'
 import styles from '../../css/chats/FileMessage.module.css'
 
 interface FileMessageProps {
@@ -11,7 +11,12 @@ export const FileMessage: React.FC<FileMessageProps> = ({
   media,
   fileName = '文件'
 }) => {
+  // 检查媒体是否已过期
+  const isExpired = !media || media.trim() === ''
+
   const handleDownload = () => {
+    if (isExpired) return
+    
     const link = document.createElement('a')
     link.href = media
     link.download = fileName
@@ -25,7 +30,7 @@ export const FileMessage: React.FC<FileMessageProps> = ({
   return (
     <div className={styles.fileMessage}>
       <div 
-        className={styles.fileMessageContent}
+        className={`${styles.fileMessageContent} ${isExpired ? styles.expired : ''}`}
         onClick={handleDownload}
         role="button"
         tabIndex={0}
@@ -36,9 +41,15 @@ export const FileMessage: React.FC<FileMessageProps> = ({
           }
         }}
       >
-        <FileText size={24} className={styles.fileIcon} />
+        {isExpired ? (
+          <Clock size={24} className={styles.expiredIcon} />
+        ) : (
+          <FileText size={24} className={styles.fileIcon} />
+        )}
         <div className={styles.fileInfo}>
-          <div className={styles.fileName}>{fileName}</div>
+          <div className={styles.fileName}>
+            {isExpired ? '文件已过期' : fileName}
+          </div>
         </div>
       </div>
     </div>

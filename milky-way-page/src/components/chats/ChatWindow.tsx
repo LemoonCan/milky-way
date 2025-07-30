@@ -12,10 +12,10 @@ import type { Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
 
 interface ChatWindowProps {
-  currentUser: Chat | null
+  currentChat: Chat | null
 }
 
-export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
+export const ChatWindow: React.FC<ChatWindowProps> = ({ currentChat }) => {
   const [inputValue, setInputValue] = useState('')
 
   const [showMoreActions, setShowMoreActions] = useState(false)
@@ -25,11 +25,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const previousUserIdRef = useRef<string | null>(null)
+  const previousChatIdRef = useRef<string | null>(null)
   const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, removeChat } = useChatStore()
 
-  const messages = currentUser ? getChatMessages(currentUser.id) : []
-  const chatState = currentUser ? chatMessagesMap[currentUser.id] : undefined
+  const messages = currentChat ? getChatMessages(currentChat.id) : []
+  const chatState = currentChat ? chatMessagesMap[currentChat.id] : undefined
 
   const scrollToBottomImmediate = () => {
     // 立即滚动到底部，不使用动画
@@ -45,9 +45,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
 
   // 监听当前用户切换，立即滚动到底部
   useEffect(() => {
-    if (currentUser && currentUser.id !== previousUserIdRef.current) {
+    if (currentChat && currentChat.id !== previousChatIdRef.current) {
       // 用户切换了聊天对象，立即滚动到底部
-      previousUserIdRef.current = currentUser.id
+      previousChatIdRef.current = currentChat.id
       
 
       
@@ -66,19 +66,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       // 也设置一个短暂延迟，以防消息还在加载
       setTimeout(forceScrollToBottom, 100)
     }
-  }, [currentUser?.id])
+  }, [currentChat?.id])
 
   // 监听消息变化，对于同一个聊天的新消息使用平滑滚动
   useEffect(() => {
-    if (currentUser && currentUser.id === previousUserIdRef.current && messages.length > 0) {
+    if (currentChat && currentChat.id === previousChatIdRef.current && messages.length > 0) {
       // 同一个聊天中的消息更新，使用平滑滚动
       scrollToBottomSmooth()
     }
-  }, [messages, currentUser?.id])
+  }, [messages, currentChat?.id])
 
   // 监听消息初次加载完成，确保滚动到底部
   useEffect(() => {
-    if (currentUser && messages.length > 0 && chatState && !chatState.isLoading) {
+    if (currentChat && messages.length > 0 && chatState && !chatState.isLoading) {
       // 消息加载完成后，确保滚动到底部
       const ensureScrollToBottom = () => {
         scrollToBottomImmediate()
@@ -94,12 +94,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
       // 稍微延迟执行，确保DOM完全渲染
       setTimeout(ensureScrollToBottom, 50)
     }
-  }, [currentUser?.id, messages.length, chatState?.isLoading])
+  }, [currentChat?.id, messages.length, chatState?.isLoading])
 
   // 监听滚动事件，实现上拉加载更多历史消息
   useEffect(() => {
     const container = messagesContainerRef.current
-    if (!container || !currentUser) return
+    if (!container || !currentChat) return
 
     const handleScroll = () => {
       // 当滚动到顶部附近时，加载更多历史消息
@@ -107,7 +107,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         const scrollHeight = container.scrollHeight
         const scrollTop = container.scrollTop
         
-        loadMoreOlderMessages(currentUser.id).then(() => {
+        loadMoreOlderMessages(currentChat.id).then(() => {
           // 加载完成后，保持滚动位置
           requestAnimationFrame(() => {
             if (container) {
@@ -121,11 +121,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
 
     container.addEventListener('scroll', handleScroll)
     return () => container.removeEventListener('scroll', handleScroll)
-  }, [currentUser, chatState?.hasMoreOlder, chatState?.isLoading, loadMoreOlderMessages])
+  }, [currentChat, chatState?.hasMoreOlder, chatState?.isLoading, loadMoreOlderMessages])
 
   // 获取聊天对象的用户ID（在单聊中）
   const getChatPartnerUserId = (): string | null => {
-    if (!currentUser || currentUser.chatType !== 'SINGLE') return null
+    if (!currentChat || currentChat.chatType !== 'SINGLE') return null
     
     // 从消息记录中找到不是当前用户发送的消息，获取发送者ID
     const partnerMessage = messages.find(msg => !isMessageFromMe(msg))
@@ -149,13 +149,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
 
   // 确认解散群聊
   const confirmDeleteChat = async () => {
-    if (!currentUser) return
+    if (!currentChat) return
 
     setIsDeleting(true)
     try {
-      await chatService.deleteChat(currentUser.id)
+      await chatService.deleteChat(currentChat.id)
       // 解散成功后，从聊天列表中移除该群聊
-      removeChat(currentUser.id)
+      removeChat(currentChat.id)
       setShowDeleteChatDialog(false)
       console.log('群聊解散成功')
     } catch (error) {
@@ -185,7 +185,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
     }
   }, [showMoreActions])
 
-  if (!currentUser) {
+  if (!currentChat) {
     return (
       <div className={styles.chatWindow}>
       </div>
@@ -199,18 +199,18 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
         <div className={styles.chatHeaderUser}>
           <Avatar 
             size={40}
-            userId={getChatPartnerUserId() || currentUser.id}
-            avatarUrl={currentUser.avatar}
+            userId={getChatPartnerUserId() || currentChat.id}
+            avatarUrl={currentChat.avatar}
             style={{
               boxShadow: 'var(--milky-shadow)'
             }}
           />
           <div className={styles.chatHeaderInfo}>
             <h2 className={styles.chatHeaderName}>
-              {currentUser.name}
-              {currentUser.chatType === 'SINGLE' && (
+              {currentChat.name}
+              {currentChat.chatType === 'SINGLE' && (
                 <span className={styles.chatHeaderStatus}>
-                  ({currentUser.online ? '在线' : '离线'})
+                  ({currentChat.online ? '在线' : '离线'})
                 </span>
               )}
             </h2>
@@ -230,7 +230,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           </div>
           
           {/* 更多操作下拉菜单 */}
-          {showMoreActions && currentUser?.chatType === 'GROUP' && (
+          {showMoreActions && currentChat?.chatType === 'GROUP' && (
             <div className={styles.moreActionsMenu}>
               <button
                 onClick={handleDeleteChat}
@@ -264,7 +264,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           <MessageBubble
             key={message.id}
             message={message}
-            chatId={currentUser.id}
+            chatId={currentChat.id}
           />
         ))}
         <div ref={messagesEndRef} />
@@ -276,14 +276,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentUser }) => {
           onInputChange={setInputValue}
           uploadingFiles={new Set()}
           textareaRef={textareaRef}
-          currentChatId={currentUser?.id || null}
+          currentChatId={currentChat?.id || null}
         />
 
       {/* 解散群聊确认弹框 */}
       <ConfirmDialog
         isOpen={showDeleteChatDialog}
         title="解散群聊"
-        message={`确定要解散群聊 "${currentUser?.name}" 吗？解散后所有成员将无法再在此群聊中发送消息。`}
+        message={`确定要解散群聊 "${currentChat?.name}" 吗？解散后所有成员将无法再在此群聊中发送消息。`}
         confirmText={isDeleting ? "解散中..." : "解散群聊"}
         cancelText="取消"
         onConfirm={confirmDeleteChat}

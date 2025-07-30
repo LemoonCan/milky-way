@@ -27,8 +27,27 @@
   transform: translateY(0);
 }
 
+/* 已过期状态 */
+.fileMessageContent.expired {
+  background-color: rgba(128, 128, 128, 0.1);
+  cursor: default;
+  opacity: 0.6;
+}
+
+.fileMessageContent.expired:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+  transform: none;
+  box-shadow: none;
+}
+
 .fileIcon {
   color: var(--milky-text-light);
+  flex-shrink: 0;
+}
+
+/* 已过期图标样式 */
+.expiredIcon {
+  color: rgba(128, 128, 128, 0.8);
   flex-shrink: 0;
 }
 

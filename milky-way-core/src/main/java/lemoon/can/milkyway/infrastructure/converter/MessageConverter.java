@@ -100,6 +100,11 @@ public abstract class MessageConverter {
             return messageMeta;
         }
         messageMeta.setType(messageType);
+        if(messageType.isMedia()) {
+            if(fileService.expire(content)) {
+                return messageMeta;
+            }
+        }
         messageMeta.setContent(content);
         switch (messageType) {
             case IMAGE:

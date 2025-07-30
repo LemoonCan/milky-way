@@ -20,4 +20,29 @@
 
 .messageImage:hover {
   transform: scale(1.02);
+}
+
+/* 已过期容器样式 */
+.expiredContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(128, 128, 128, 0.1) 0%, rgba(128, 128, 128, 0.05) 100%);
+  border-radius: 8px;
+  gap: 8px;
+  min-width: 160px;
+  opacity: 0.8;
+}
+
+.expiredIcon {
+  color: rgba(128, 128, 128, 0.8);
+  margin-bottom: 4px;
+}
+
+.expiredText {
+  font-size: 14px;
+  color: rgba(128, 128, 128, 0.9);
+  font-weight: 500;
 } 

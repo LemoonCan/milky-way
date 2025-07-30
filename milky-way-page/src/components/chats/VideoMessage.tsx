@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Play } from 'lucide-react'
+import { Play, Clock } from 'lucide-react'
 import styles from '../../css/chats/VideoMessage.module.css'
 
 interface VideoMessageProps {
@@ -16,6 +16,9 @@ export const VideoMessage: React.FC<VideoMessageProps> = ({
   const [isPlaying, setIsPlaying] = useState(false)
   const [imageError, setImageError] = useState(false)
 
+  // 检查视频是否已过期
+  const isExpired = !videoUrl || videoUrl.trim() === ''
+
   const handleImageError = () => {
     setImageError(true)
   }
@@ -25,10 +28,25 @@ export const VideoMessage: React.FC<VideoMessageProps> = ({
   }
 
   const handleCoverClick = () => {
+    // 如果已过期，不执行任何操作
+    if (isExpired) return
+    
     // 优先使用本地视频，其次使用服务器视频
     if (videoUrl && sendStatus !== 'sending') {
       setIsPlaying(true)
     }
+  }
+
+  // 如果视频已过期，显示过期提示
+  if (isExpired) {
+    return (
+      <div className={styles.videoMessage}>
+        <div className={styles.expiredContainer}>
+          <Clock size={48} className={styles.expiredIcon} />
+          <span className={styles.expiredText}>视频已过期</span>
+        </div>
+      </div>
+    )
   }
 
   // 如果有本地视频（上传中、重新发送或失败），或者正在播放视频，直接显示视频播放器

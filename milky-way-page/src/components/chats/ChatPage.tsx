@@ -6,7 +6,7 @@ import styles from '../../css/App.module.css'
 
 export const ChatPage: React.FC = () => {
   const { chats, currentChatId, setCurrentChat } = useChatStore()
-  const currentUser = chats.find(chat => chat.id === currentChatId) || null
+  const currentChat = chats.find(chat => chat.id === currentChatId) || null
   
   const handleSelectChat = (chatId: string) => {
     setCurrentChat(chatId)
@@ -18,7 +18,7 @@ export const ChatPage: React.FC = () => {
         onSelectChat={handleSelectChat}
         selectedChatId={currentChatId}
       />
-      <ChatWindow currentUser={currentUser} />
+      <ChatWindow currentChat={currentChat} />
     </div>
   )
 } 
