@@ -51,9 +51,10 @@ export interface Chat {
   lastMessage: string
   lastMessageTime: Date
   unreadCount: number
-  online: boolean
+  online: boolean //仅在单聊时有值
   lastMessageId?: string // 添加最新消息ID
   chatType: 'SINGLE' | 'GROUP' // 添加聊天类型字段
+  friendId?: string // 好友ID，仅在单聊时有值
 }
 
 // 修改聊天消息状态接口
@@ -140,7 +141,8 @@ const convertChatInfoToChat = (chatInfo: ChatInfoDTO): Chat => {
     lastMessageTime,
     unreadCount: chatInfo.unreadCount,
     online: chatInfo.online,
-    chatType: chatInfo.chatType
+    chatType: chatInfo.chatType,
+    friendId: chatInfo.friendId // 添加好友ID字段
   }
 }
 

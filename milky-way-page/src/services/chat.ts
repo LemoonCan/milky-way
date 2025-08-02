@@ -29,6 +29,7 @@ export interface ChatInfoDTO {
   lastMessageTime: string
   unreadCount: number
   online: boolean
+  friendId?: string // 好友ID，仅在单聊时有值
 }
 
 // 消息元数据类型

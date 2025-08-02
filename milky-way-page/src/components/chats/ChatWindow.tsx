@@ -49,8 +49,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentChat }) => {
       // 用户切换了聊天对象，立即滚动到底部
       previousChatIdRef.current = currentChat.id
       
-
-      
       // 使用多重保障确保滚动生效
       const forceScrollToBottom = () => {
         scrollToBottomImmediate()
@@ -124,17 +122,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentChat }) => {
   }, [currentChat, chatState?.hasMoreOlder, chatState?.isLoading, loadMoreOlderMessages])
 
   // 获取聊天对象的用户ID（在单聊中）
-  const getChatPartnerUserId = (): string | null => {
-    if (!currentChat || currentChat.chatType !== 'SINGLE') return null
-    
-    // 从消息记录中找到不是当前用户发送的消息，获取发送者ID
-    const partnerMessage = messages.find(msg => !isMessageFromMe(msg))
-    if (partnerMessage) {
-      return partnerMessage.sender.id
-    }
-    
-    return null
-  }
+
 
   // 处理更多操作按钮点击
   const handleMoreActionsClick = () => {
@@ -199,7 +187,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentChat }) => {
         <div className={styles.chatHeaderUser}>
           <Avatar 
             size={40}
-            userId={getChatPartnerUserId() || currentChat.id}
+            userId={currentChat.chatType === 'SINGLE' ? currentChat.friendId : currentChat.id}
             avatarUrl={currentChat.avatar}
             style={{
               boxShadow: 'var(--milky-shadow)'

@@ -27,6 +27,12 @@ public class ChatInfoDTO implements Serializable {
      * 头像(单聊时为对方头像，群聊时为群头像)
      */
     private String avatar;
+
+    /**
+     * 好友ID(单聊时为对方用户ID，群聊时无效)
+     */
+    private String friendId;
+
     /**
      * 最新消息ID
      */

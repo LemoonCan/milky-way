@@ -29,6 +29,10 @@ public class ChatInfoDO {
      */
     private String avatar;
     /**
+     * 好友ID(单聊时为对方用户ID，群聊时无效)
+     */
+    private String friendId;
+    /**
      * 最新消息ID
      */
     private Long lastMessageId;

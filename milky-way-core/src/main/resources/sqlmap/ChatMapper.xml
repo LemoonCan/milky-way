@@ -27,8 +27,8 @@
     <!-- 游标分页查询聊天列表 - 最终优化版本 -->
     <select id="findChatsByUserId" resultType="lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO">
         SELECT
-        c.id,                                  -- 会话 ID
-        c.type AS chatType,                    -- 会话类型：SINGLE 或 GROUP
+        c.id, -- 会话 ID
+        c.type AS chatType, -- 会话类型：SINGLE 或 GROUP
 
         -- 会话标题：单聊优先显示朋友备注、其次昵称，群聊显示群名称
         CASE
@@ -45,6 +45,9 @@
         ELSE
         u_friend.avatar
         END AS avatar,
+
+        -- 好友ID：仅适用于单聊
+        IF(c.type = 'SINGLE', u_friend.id, NULL) AS friendId,
 
         lm.id AS lastMessageId,
         lm.type as lastMessageType,
