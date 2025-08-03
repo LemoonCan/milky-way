@@ -5,6 +5,9 @@ import { CreateGroupChatDialog } from './CreateGroupChatDialog'
 import { Search, SmilePlus } from 'lucide-react'
 import { useChatStore, type Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatList.module.css'
+import { useConnectionManagerStore } from '@/store/connectionManager'
+import { ConnectionStatus } from '@/services/websocket'
+
 
 interface ChatListProps {
   onSelectChat: (userId: string) => void
@@ -21,16 +24,17 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
     loadChatList,
     loadMoreChats
   } = useChatStore()
+  const {
+    connectionStatus
+  } = useConnectionManagerStore()
 
   // 组件挂载时加载聊天列表
   useEffect(() => {
     // 延迟执行，等待WebSocket连接状态稳定
-    const timer = setTimeout(() => {
-      loadChatList(true) // 刷新模式，清空现有数据重新加载
-    }, 500) // 延迟500ms，给WebSocket连接一些时间
-
-    return () => clearTimeout(timer)
-  }, []) // 移除 loadChatList 依赖，只在组件挂载时执行一次
+    if(connectionStatus === ConnectionStatus.CONNECTED){
+      loadChatList() // 刷新模式，清空现有数据重新加载
+    }
+  }, [connectionStatus,chats])
 
   // 处理创建群聊
   const handleCreateGroup = () => {
@@ -44,7 +48,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
   // 创建群聊成功后的处理
   const handleGroupCreated = (chatId: string) => {
     // 刷新聊天列表
-    loadChatList(true)
+    // loadChatList()
     // 选中新创建的群聊
     onSelectChat(chatId)
   }

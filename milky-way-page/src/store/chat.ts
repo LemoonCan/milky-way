@@ -85,9 +85,8 @@ export interface ChatStore {
   removeChat: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => void
-  loadChatList: (refresh?: boolean) => Promise<void>
+  loadChatList: () => Promise<void>
   loadMoreChats: () => Promise<void>
-  markAllSendingMessagesAsFailed: () => void
   setError: (error: string | null) => void
   clearError: () => void
 }
@@ -557,24 +556,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  loadChatList: async (refresh = false) => {
+  loadChatList: async () => {
     const state = get()
     
     // 如果正在加载且不是刷新，则跳过
-    if (state.isLoading && !refresh) return
+    if (state.isLoading) return
     
     try {
       set({ isLoading: true })
       
       const result = await chatService.getChatList(
-        refresh ? undefined : state.lastChatId,
-        20
+        state.lastChatId,
+        10
       )
       
       const newChats = result.items.map(convertChatInfoToChat)
       
       set({
-        chats: refresh ? newChats : [...state.chats, ...newChats],
+        chats:  state.lastChatId ? [...state.chats, ...newChats] : newChats,
         hasMoreChats: result.hasNext,
         lastChatId: result.items.length > 0 ? result.items[result.items.length - 1].id : state.lastChatId,
         isLoading: false
@@ -590,28 +589,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const state = get()
     if (!state.hasMoreChats || state.isLoading) return
     
-    await get().loadChatList(false)
-  },
-
-  markAllSendingMessagesAsFailed: () => {
-    const state = get()
-    const updatedChatMessagesMap = { ...state.chatMessagesMap }
-    
-    Object.keys(updatedChatMessagesMap).forEach(chatId => {
-      const chatState = updatedChatMessagesMap[chatId]
-      if (chatState) {
-        const updatedMessages = chatState.messages.map(msg => 
-          msg.sendStatus === 'sending' ? { ...msg, sendStatus: 'failed' as const } : msg
-        )
-        
-        updatedChatMessagesMap[chatId] = {
-          ...chatState,
-          messages: updatedMessages
-        }
-      }
-    })
-    
-    set({ chatMessagesMap: updatedChatMessagesMap })
+    await get().loadChatList()
   },
 
   setError: (error: string | null) => {
