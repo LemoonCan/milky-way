@@ -7,14 +7,17 @@ import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.*;
 import lemoon.can.milkyway.facade.dto.ChatDTO;
+import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.param.*;
 import lemoon.can.milkyway.facade.service.command.ChatService;
+import lemoon.can.milkyway.infrastructure.converter.ChatConverter;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.inner.chat.ChatProcessorManager;
 import lemoon.can.milkyway.infrastructure.repository.ChatRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageReadCursorRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageRepository;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatDO;
+import lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatMemberDO;
 import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMemberMapper;
@@ -42,10 +45,11 @@ public class ChatServiceImpl implements ChatService {
     private final MessageReadCursorRepository messageReadCursorRepository;
     private final MessageRepository messageRepository;
     private final ChatProcessorManager chatProcessorManager;
+    private final ChatConverter chatConverter;
 
     @Transactional
     @Override
-    public ChatDTO createChat(ChatCreateParam param) {
+    public ChatInfoDTO createChat(ChatCreateParam param) {
         //TODO 请求幂等
         List<ChatMember> members = param.getMembers()
                 .stream()
@@ -59,21 +63,20 @@ public class ChatServiceImpl implements ChatService {
         };
 
         Long chatId = chatRepository.save(chat);
-        ChatDTO chatDTO = new ChatDTO();
-        chatDTO.setId(secureId.simpleEncode(chatId, secureId.getChatSalt()));
-        chatDTO.setTitle(chat.getTitle());
-
         Message message = new Message(chatId, param.getOperateUserId(),
                 MessageType.SYSTEM, param.getDefaultMessage());
         messageRepository.save(message);
 
+        ChatInfoDO chatInfoDO = chatMapper.selectChatInfoById(chatId);
+        ChatInfoDTO chatInfoDTO = chatConverter.toDto(chatInfoDO);
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                chatProcessorManager.pushChatCreatedMsg(chatId, param.getOperateUserId(), param.getChatType());
+                chatProcessorManager.pushChatCreatedMsg(chatId, param.getOperateUserId(), chatInfoDTO);
             }
         });
-        return chatDTO;
+        return chatInfoDTO;
     }
 
     @Override

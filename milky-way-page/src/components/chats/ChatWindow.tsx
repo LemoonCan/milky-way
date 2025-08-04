@@ -6,16 +6,11 @@ import { ConfirmDialog } from '../ui/confirm-dialog'
 import { ChatInput } from './ChatInput'
 
 import { Trash2 } from 'lucide-react'
-import { useChatStore, isMessageFromMe } from '@/store/chat'
+import { useChatStore } from '@/store/chat'
 import { chatService } from '../../services/chat'
-import type { Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
 
-interface ChatWindowProps {
-  currentChat: Chat | null
-}
-
-export const ChatWindow: React.FC<ChatWindowProps> = ({ currentChat }) => {
+export const ChatWindow: React.FC = () => {
   const [inputValue, setInputValue] = useState('')
 
   const [showMoreActions, setShowMoreActions] = useState(false)
@@ -28,6 +23,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ currentChat }) => {
   const previousChatIdRef = useRef<string | null>(null)
   const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, removeChat } = useChatStore()
 
+  const { currentChatId,chats } = useChatStore()
+  const currentChat = chats.find(chat => chat.id === currentChatId) || null
   const messages = currentChat ? getChatMessages(currentChat.id) : []
   const chatState = currentChat ? chatMessagesMap[currentChat.id] : undefined
 

@@ -25,6 +25,7 @@ export interface ChatInfoDTO {
   chatType: 'SINGLE' | 'GROUP'
   title: string
   avatar: string
+  lastMessageId: string
   lastMessage: string
   lastMessageTime: string
   unreadCount: number
@@ -307,9 +308,9 @@ export class ChatService {
   /**
    * 创建群聊
    */
-  async createGroupChat(request: CreateGroupChatRequest): Promise<ChatDTO> {
+  async createGroupChat(request: CreateGroupChatRequest): Promise<ChatInfoDTO> {
     try {
-      const response = await http.post<ApiResponse<ChatDTO>>('/chats', request)
+      const response = await http.post<ApiResponse<ChatInfoDTO>>('/chats', request)
       
       if (response.data.success !== false && response.data.data) {
         console.log('[ChatService] 创建群聊成功:', response.data.data)

@@ -37,7 +37,7 @@ public class ChatInfoDO {
      */
     private Long lastMessageId;
     /**
-     * 最新消息时间
+     * 最新消息类型
      */
     private MessageType lastMessageType;
     /**

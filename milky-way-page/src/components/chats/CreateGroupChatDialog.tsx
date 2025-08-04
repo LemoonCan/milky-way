@@ -2,20 +2,19 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Search, X, Users, Check } from 'lucide-react'
 import { Avatar } from '../Avatar'
 import { useFriendStore } from '../../store/friend'
-import { chatService, type CreateGroupChatRequest } from '../../services/chat'
+import {chatService, type CreateGroupChatRequest } from '../../services/chat'
+import { useChatStore } from '@/store/chat'
 import type { Friend } from '../../types/api'
 import styles from '../../css/chats/CreateGroupChatDialog.module.css'
 
 interface CreateGroupChatDialogProps {
   open: boolean
   onClose: () => void
-  onSuccess?: (chatId: string) => void
 }
 
 export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({ 
   open, 
-  onClose, 
-  onSuccess 
+  onClose
 }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFriends, setSelectedFriends] = useState<Friend[]>([])
@@ -23,6 +22,7 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
   const [isCreating, setIsCreating] = useState(false)
   
   const { friends, fetchFriends } = useFriendStore()
+  const { createGroupChat, setCurrentChat } = useChatStore()
 
   // 组件打开时获取好友列表
   useEffect(() => {
@@ -98,15 +98,15 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
         members: selectedFriends.map(f => f.id)
       }
       
-      const result = await chatService.createGroupChat(request)
-      console.log('创建群聊成功:', result)
+      const chatId = await createGroupChat(request)
+      console.log('创建群聊成功:', chatId)
       
       // 创建成功后立即订阅该群聊的消息
-      chatService.subscribeToGroupChat(result.id)
-      console.log('已订阅群聊消息:', result.id)
+      chatService.subscribeToGroupChat(chatId)
+      console.log('已订阅群聊消息:', chatId)
       
       // 调用成功回调
-      onSuccess?.(result.id)
+      setCurrentChat(chatId)
       handleClose()
     } catch (error) {
       console.error('创建群聊失败:', error)

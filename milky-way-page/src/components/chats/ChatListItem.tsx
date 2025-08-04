@@ -5,13 +5,13 @@ import type { Chat } from '@/store/chat'
 import styles from '../../css/chats/ChatListItem.module.css'
 
 interface ChatListItemProps {
-  user: Chat
+  chat: Chat
   isActive: boolean
   onClick: () => void
 }
 
 export const ChatListItem: React.FC<ChatListItemProps> = ({
-  user,
+  chat,
   isActive,
   onClick,
 }) => {
@@ -57,16 +57,16 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       <div className={styles.avatarContainer}>
         <Avatar 
           size={48}
-          userId={user.id}
-          avatarUrl={user.avatar}
+          userId={chat.id}
+          avatarUrl={chat.avatar}
           className={styles.avatar}
         />
-        {user.online && user.chatType === 'SINGLE' && (
+        {chat.online && chat.chatType === 'SINGLE' && (
           <div className={styles.onlineIndicator}></div>
         )}
-        {user.unreadCount > 0 && (
+        {chat.unreadCount > 0 && (
           <div className={styles.unreadBadge}>
-            {user.unreadCount > 99 ? '99+' : user.unreadCount}
+            {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
           </div>
         )}
       </div>
@@ -74,14 +74,14 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       <div className={styles.chatItemContent}>
         <div className={styles.chatItemHeader}>
           <h3 className={styles.chatItemName}>
-            {user.name}
+            {chat.name}
           </h3>
           <span className={styles.chatItemTime}>
-            {formatTime(user.lastMessageTime)}
+            {formatTime(chat.lastMessageTime)}
           </span>
         </div>
         <p className={styles.chatItemMessage}>
-          <EmojiText text={user.lastMessage} size="1em" />
+          <EmojiText text={chat.lastMessage} size="1em" />
         </p>
       </div>
     </div>

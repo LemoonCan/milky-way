@@ -136,6 +136,7 @@
                c.type as chat_type,
                c.title,
                m.id as last_message_id,
+               m.type as last_message_type,
                m.content as last_message,
                m.sent_time as last_message_time
         from chat c

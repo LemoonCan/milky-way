@@ -9,7 +9,6 @@ import lemoon.can.milkyway.infrastructure.converter.ChatConverter;
 import lemoon.can.milkyway.infrastructure.converter.MessageConverter;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.inner.MessageDestination;
-import lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatMemberDO;
 import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMapper;
 import lemoon.can.milkyway.infrastructure.repository.mapper.ChatMemberMapper;
@@ -46,12 +45,10 @@ public class GroupChatProcessor implements ChatProcessor {
     }
 
     @Override
-    public void pushChatCreateMsg(Long chatId, String operatorUserId) {
-        ChatInfoDO chatInfoDO = chatMapper.selectChatInfoById(chatId);
-        ChatInfoDTO chatInfoDTO = chatConverter.toDto(chatInfoDO);
+    public void pushChatCreateMsg(Long chatId, String operatorUserId, ChatInfoDTO chatInfo) {
         MessageNotifyDTO<ChatInfoDTO> payload = new MessageNotifyDTO<>();
         payload.setNotifyType(MessageNotifyType.CHAT_CREATE);
-        payload.setContent(chatInfoDTO);
+        payload.setContent(chatInfo);
 
         List<ChatMemberDO> chatMemberDOS = chatMemberMapper.selectByChatId(chatId);
         for (ChatMemberDO chatMemberDO : chatMemberDOS) {

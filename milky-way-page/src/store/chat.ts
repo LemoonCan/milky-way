@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type MessageDTO } from '../services/chat'
-import { type ClientMessageDTO } from '../services/chat'
+import { type ClientMessageDTO,type CreateGroupChatRequest } from '../services/chat'
 import { useUserStore } from './user'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 
@@ -85,10 +85,10 @@ export interface ChatStore {
   removeChat: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => void
-  loadChatList: () => Promise<void>
+  loadChatList: (lastChatId?: string) => Promise<void>
   loadMoreChats: () => Promise<void>
   setError: (error: string | null) => void
-  clearError: () => void
+  createGroupChat: (request: CreateGroupChatRequest) => Promise<string>
 }
 
 
@@ -556,7 +556,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  loadChatList: async () => {
+  loadChatList: async (lastChatId?: string) => {
     const state = get()
     
     // 如果正在加载且不是刷新，则跳过
@@ -566,14 +566,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ isLoading: true })
       
       const result = await chatService.getChatList(
-        state.lastChatId,
+        lastChatId,
         10
       )
       
       const newChats = result.items.map(convertChatInfoToChat)
       
       set({
-        chats:  state.lastChatId ? [...state.chats, ...newChats] : newChats,
+        chats:  lastChatId ? [...state.chats, ...newChats] : newChats,
         hasMoreChats: result.hasNext,
         lastChatId: result.items.length > 0 ? result.items[result.items.length - 1].id : state.lastChatId,
         isLoading: false
@@ -589,7 +589,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const state = get()
     if (!state.hasMoreChats || state.isLoading) return
     
-    await get().loadChatList()
+    await get().loadChatList(state.lastChatId)
   },
 
   setError: (error: string | null) => {
@@ -599,7 +599,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  clearError: () => {
-    // 全局错误处理会自动清理，这里不需要做任何事
+  createGroupChat: async (request: CreateGroupChatRequest) => {
+    const result = await chatService.createGroupChat(request)
+    console.log('创建群聊成功:', result)
+    get().addChatLocally(result)
+    return result.id
   }
 }))

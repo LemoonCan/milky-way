@@ -9,21 +9,19 @@ import { useConnectionManagerStore } from '@/store/connectionManager'
 import { ConnectionStatus } from '@/services/websocket'
 
 
-interface ChatListProps {
-  onSelectChat: (userId: string) => void
-  selectedChatId: string | null
-}
-
-export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId }) => {
+export const ChatList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateGroupDialog, setShowCreateGroupDialog] = useState(false)
   const {
+    currentChatId,
     chats,
     isLoading,
     hasMoreChats,
     loadChatList,
-    loadMoreChats
+    loadMoreChats,
+    setCurrentChat
   } = useChatStore()
+  
   const {
     connectionStatus
   } = useConnectionManagerStore()
@@ -34,26 +32,9 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
     if(connectionStatus === ConnectionStatus.CONNECTED){
       loadChatList() // 刷新模式，清空现有数据重新加载
     }
-  }, [connectionStatus,chats])
+  }, [connectionStatus])
 
-  // 处理创建群聊
-  const handleCreateGroup = () => {
-    setShowCreateGroupDialog(true)
-  }
-
-  const handleCloseCreateGroupDialog = () => {
-    setShowCreateGroupDialog(false)
-  }
-
-  // 创建群聊成功后的处理
-  const handleGroupCreated = (chatId: string) => {
-    // 刷新聊天列表
-    // loadChatList()
-    // 选中新创建的群聊
-    onSelectChat(chatId)
-  }
-
-  const filteredUsers = chats.filter((chat: Chat) =>
+  const filteredChats = chats.filter((chat: Chat) =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -66,8 +47,6 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
       loadMoreChats()
     }
   }
-
-
 
   return (
     <div className={styles.chatList}>
@@ -89,7 +68,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
           </div>
           <button
             className={styles.addGroupButton}
-            onClick={handleCreateGroup}
+            onClick={() => setShowCreateGroupDialog(true)}
             title="发起群聊"
           >
             <SmilePlus size={20} />
@@ -102,18 +81,18 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
         className={`${styles.chatListContent} ${styles.listContainer}`}
         onScroll={handleScroll}
       >
-        {filteredUsers.length === 0 ? (
+        {filteredChats.length === 0 ? (
           <div className={styles.emptyState}>
             {searchQuery ? '未找到匹配的聊天' : '暂无聊天记录'}
           </div>
         ) : (
           <div>
-            {filteredUsers.map((chat: Chat) => (
+            {filteredChats.map((chat: Chat) => (
               <ChatListItem
                 key={chat.id}
-                user={chat}
-                isActive={selectedChatId === chat.id}
-                onClick={() => onSelectChat(chat.id)}
+                chat={chat}
+                isActive={chat.id === currentChatId}
+                onClick={() => setCurrentChat(chat.id)}
               />
             ))}
           </div>
@@ -123,8 +102,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat, selectedChatId
       {/* 创建群聊对话框 */}
       <CreateGroupChatDialog
         open={showCreateGroupDialog}
-        onClose={handleCloseCreateGroupDialog}
-        onSuccess={handleGroupCreated}
+        onClose={() => setShowCreateGroupDialog(false)}
       />
     </div>
   )

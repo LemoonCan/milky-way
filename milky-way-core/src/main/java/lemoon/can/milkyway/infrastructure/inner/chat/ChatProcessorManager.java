@@ -4,6 +4,7 @@ import lemoon.can.milkyway.common.enums.ChatType;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.domain.chat.Chat;
+import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,12 +29,12 @@ public class ChatProcessorManager {
         chatProcessor.pushMessage(chat, message);
     }
 
-    public void pushChatCreatedMsg(Long chatId, String operateUserId, ChatType chatType) {
-        ChatProcessor chatProcessor = chatProcessorMap.get(chatType.name().toLowerCase() + "ChatProcessor");
+    public void pushChatCreatedMsg(Long chatId, String operateUserId, ChatInfoDTO chatInfo) {
+        ChatProcessor chatProcessor = chatProcessorMap.get(chatInfo.getChatType().name().toLowerCase() + "ChatProcessor");
         if (chatProcessor == null) {
-            throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的聊天室类型" + chatType);
+            throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的聊天室类型" + chatInfo.getChatType());
         }
-        chatProcessor.pushChatCreateMsg(chatId, operateUserId);
+        chatProcessor.pushChatCreateMsg(chatId, operateUserId, chatInfo);
     }
 
     public void pushChatDeletedMsg(Long chatId, String operateUserId, ChatType chatType, List<String> memberUserIds) {

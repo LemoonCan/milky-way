@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.infrastructure.inner.chat;
 
 import lemoon.can.milkyway.domain.chat.Chat;
+import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.dto.MessageDTO;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public interface ChatProcessor {
      * 聊天室创建
      * @param chatId 群聊ID
      */
-    default void pushChatCreateMsg(Long chatId, String operatorUserId){}
+    default void pushChatCreateMsg(Long chatId, String operatorUserId, ChatInfoDTO chatInfo){}
 
     /**
      * 聊天室解散

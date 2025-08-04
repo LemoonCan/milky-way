@@ -27,6 +27,7 @@ public abstract class ChatConverter {
     }
 
     @Mapping(target = "id", source = "id", qualifiedByName = "encodeChatId")
+    @Mapping(target = "lastMessageId", source = "lastMessageId", qualifiedByName = "encodeMessageId")
     @Mapping(target = "minUnreadMessageId", source = "minUnreadMessageId", qualifiedByName = "encodeMessageId")
     protected abstract ChatInfoDTO innerToDto(ChatInfoDO chatInfoDO);
 }
