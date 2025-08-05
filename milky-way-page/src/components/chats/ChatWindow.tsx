@@ -31,7 +31,7 @@ export const ChatWindow: React.FC = () => {
   const scrollToBottomImmediate = () => {
     // 立即滚动到底部，不使用动画
     if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' })
     }
   }
 
@@ -39,29 +39,6 @@ export const ChatWindow: React.FC = () => {
     // 平滑滚动到底部
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
-
-  // 监听当前用户切换，立即滚动到底部
-  useEffect(() => {
-    if (currentChat && currentChat.id !== previousChatIdRef.current) {
-      // 用户切换了聊天对象，立即滚动到底部
-      previousChatIdRef.current = currentChat.id
-      
-      // 使用多重保障确保滚动生效
-      const forceScrollToBottom = () => {
-        scrollToBottomImmediate()
-        // 双重保障，确保滚动生效
-        requestAnimationFrame(() => {
-          scrollToBottomImmediate()
-        })
-      }
-
-      // 立即执行一次
-      forceScrollToBottom()
-      
-      // 也设置一个短暂延迟，以防消息还在加载
-      setTimeout(forceScrollToBottom, 100)
-    }
-  }, [currentChat?.id])
 
   // 监听消息变化，对于同一个聊天的新消息使用平滑滚动
   useEffect(() => {
@@ -74,20 +51,12 @@ export const ChatWindow: React.FC = () => {
   // 监听消息初次加载完成，确保滚动到底部
   useEffect(() => {
     if (currentChat && messages.length > 0 && chatState && !chatState.isLoading) {
-      // 消息加载完成后，确保滚动到底部
-      const ensureScrollToBottom = () => {
-        scrollToBottomImmediate()
-        // 额外保障
+      setTimeout(() => {
+        // 再等待浏览器完成布局计算
         requestAnimationFrame(() => {
           scrollToBottomImmediate()
         })
-      }
-
-      // 立即执行
-      ensureScrollToBottom()
-      
-      // 稍微延迟执行，确保DOM完全渲染
-      setTimeout(ensureScrollToBottom, 50)
+      }, 0)
     }
   }, [currentChat?.id, messages.length, chatState?.isLoading])
 
@@ -117,9 +86,6 @@ export const ChatWindow: React.FC = () => {
     container.addEventListener('scroll', handleScroll)
     return () => container.removeEventListener('scroll', handleScroll)
   }, [currentChat, chatState?.hasMoreOlder, chatState?.isLoading, loadMoreOlderMessages])
-
-  // 获取聊天对象的用户ID（在单聊中）
-
 
   // 处理更多操作按钮点击
   const handleMoreActionsClick = () => {
@@ -274,8 +240,6 @@ export const ChatWindow: React.FC = () => {
         onConfirm={confirmDeleteChat}
         onCancel={() => setShowDeleteChatDialog(false)}
       />
-
-      {/* 错误提示现在由全局处理 */}
     </div>
   )
 } 
