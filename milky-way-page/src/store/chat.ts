@@ -61,7 +61,6 @@ export interface Chat {
 export interface ChatMessagesState {
   messages: ClientMessageDTO[]
   isLoading: boolean
-  hasMore: boolean
   hasMoreOlder: boolean
   oldestMessageId?: string
   newestMessageId?: string
@@ -156,7 +155,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   
   setCurrentChat: async (chatId: string) => {
     console.log(`[ChatStore] setCurrentChat 被调用，chatId: ${chatId}`)
-    set({ currentChatId: chatId })
     
     const state = get()
     const chat = state.chats.find(chat => chat.id === chatId)
@@ -172,11 +170,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.log(`[ChatStore] 聊天 ${chatId} ${reason}，开始加载消息`)
       try {
         await get().loadChatMessages(chatId, true)
+        set({ currentChatId: chatId })
         console.log(`[ChatStore] 聊天 ${chatId} 消息加载完成`)
       } catch (error) {
         console.error(`[ChatStore] 聊天 ${chatId} 消息加载失败:`, error)
       }
     } else {
+      set({ currentChatId: chatId })
       console.log(`[ChatStore] 聊天 ${chatId} 已有 ${existingChatState.messages.length} 条消息，跳过加载`)
     }
     
@@ -213,7 +213,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // 获取消息，默认加载最新的20条消息
       const result = await chatService.getChatMessages({
         chatId,
-        pageSize: 20
+        pageSize: 10
         // 不传before和after，默认获取最新消息
       })
       
@@ -245,7 +245,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           [chatId]: {
             messages: finalMessages,
             isLoading: false,
-            hasMore: true, // 总是假设有更多新消息
             hasMoreOlder: result.hasNext, // 是否有更老的消息
             oldestMessageId: messages.length > 0 ? messages[0].id : undefined,
             newestMessageId: finalNewestMessageId,
@@ -292,7 +291,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const result = await chatService.getChatMessages({
         chatId,
         before: currentChatState.oldestMessageId, // 获取在最旧消息之前的消息
-        pageSize: 20
+        pageSize: 10
       })
       
       const messages = result.items.map(dto => dto as ClientMessageDTO)
@@ -333,7 +332,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const currentChatState = state.chatMessagesMap[message.chatId] || {
       messages: [],
       isLoading: false,
-      hasMore: true,
       hasMoreOlder: false
     }
     

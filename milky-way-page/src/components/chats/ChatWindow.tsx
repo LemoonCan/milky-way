@@ -19,21 +19,15 @@ export const ChatWindow: React.FC = () => {
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const previousChatIdRef = useRef<string | null>(null)
-  const { getChatMessages, loadMoreOlderMessages, chatMessagesMap, removeChat } = useChatStore()
+  const { loadMoreOlderMessages, removeChat } = useChatStore()
 
   const { currentChatId,chats } = useChatStore()
   const currentChat = chats.find(chat => chat.id === currentChatId) || null
-  const messages = currentChat ? getChatMessages(currentChat.id) : []
-  const chatState = currentChat ? chatMessagesMap[currentChat.id] : undefined
-
-  const scrollToBottomImmediate = () => {
-    // 立即滚动到底部，不使用动画
-    if (messagesContainerRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' })
-    }
-  }
+  const chatState = useChatStore(s => currentChat?s.chatMessagesMap[currentChat.id]:undefined)
+  const messages = chatState?.messages ?? []
 
   const scrollToBottomSmooth = () => {
     // 平滑滚动到底部
@@ -44,47 +38,70 @@ export const ChatWindow: React.FC = () => {
   useEffect(() => {
     if (currentChat && currentChat.id === previousChatIdRef.current && messages.length > 0) {
       // 同一个聊天中的消息更新，使用平滑滚动
-      scrollToBottomSmooth()
+      setTimeout(() => {
+        // 再等待浏览器完成布局计算
+        requestAnimationFrame(() => {
+          scrollToBottomSmooth()
+        })
+      }, 50)
     }
   }, [messages, currentChat?.id])
 
   // 监听消息初次加载完成，确保滚动到底部
   useEffect(() => {
-    if (currentChat && messages.length > 0 && chatState && !chatState.isLoading) {
+    if (currentChat && currentChat.id != previousChatIdRef.current && messages.length > 0 && !chatState?.isLoading) {
+      previousChatIdRef.current = currentChat.id
       setTimeout(() => {
         // 再等待浏览器完成布局计算
         requestAnimationFrame(() => {
-          scrollToBottomImmediate()
+          scrollToBottomSmooth()
         })
-      }, 0)
+      }, 100)
     }
   }, [currentChat?.id, messages.length, chatState?.isLoading])
 
-  // 监听滚动事件，实现上拉加载更多历史消息
+  // 使用 Intersection Observer 监听加载更多提示的可见性
   useEffect(() => {
+    const loadMoreElement = loadMoreRef.current
     const container = messagesContainerRef.current
-    if (!container || !currentChat) return
+    
+    if (!loadMoreElement || !container || !currentChat) return
 
-    const handleScroll = () => {
-      // 当滚动到顶部附近时，加载更多历史消息
-      if (container.scrollTop <= 100 && chatState?.hasMoreOlder && !chatState?.isLoading) {
-        const scrollHeight = container.scrollHeight
-        const scrollTop = container.scrollTop
-        
-        loadMoreOlderMessages(currentChat.id).then(() => {
-          // 加载完成后，保持滚动位置
-          requestAnimationFrame(() => {
-            if (container) {
-              const newScrollHeight = container.scrollHeight
-              container.scrollTop = scrollTop + (newScrollHeight - scrollHeight)
-            }
-          })
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // 当"加载更多"提示进入视窗且满足加载条件时，触发加载
+          if (entry.isIntersecting && chatState?.hasMoreOlder && !chatState?.isLoading) {            
+            const currentScrollHeight = container.scrollHeight
+            const currentScrollTop = container.scrollTop
+            
+            loadMoreOlderMessages(currentChat.id).then(() => {
+              // 加载完成后，保持滚动位置
+              requestAnimationFrame(() => {
+                if (container) {
+                  const newScrollHeight = container.scrollHeight
+                  const heightDiff = newScrollHeight - currentScrollHeight
+                  container.scrollTop = currentScrollTop + heightDiff
+                }
+              })
+            }).catch(error => {
+              console.error('加载更多消息失败:', error)
+            })
+          }
         })
+      },
+      {
+        root: container, // 指定滚动容器作为根元素
+        threshold: 0.1, // 当10%的元素可见时触发
+        rootMargin: '0px' // 提前20px触发，提供更好的用户体验
       }
-    }
+    )
 
-    container.addEventListener('scroll', handleScroll)
-    return () => container.removeEventListener('scroll', handleScroll)
+    observer.observe(loadMoreElement)
+
+    return () => {
+      observer.disconnect()
+    }
   }, [currentChat, chatState?.hasMoreOlder, chatState?.isLoading, loadMoreOlderMessages])
 
   // 处理更多操作按钮点击
@@ -197,17 +214,21 @@ export const ChatWindow: React.FC = () => {
 
       {/* 聊天消息区域 */}
       <div className={styles.messagesContainer} ref={messagesContainerRef}>
-        {/* 显示加载状态 */}
-        {chatState?.isLoading && (
-          <div style={{ textAlign: 'center', padding: '10px', color: 'var(--milky-text-light)' }}>
-            正在加载消息...
+
+        {/* 显示是否还有更多历史消息 - 作为 Intersection Observer 的观察目标 */}
+        {chatState?.hasMoreOlder && !chatState?.isLoading && messages.length > 0 && (
+          <div 
+            ref={loadMoreRef}
+            style={{ textAlign: 'center', padding: '10px', color: 'var(--milky-text-light)' }}
+          >
+            向上滑动加载更多历史消息
           </div>
         )}
         
-        {/* 显示是否还有更多历史消息 */}
-        {chatState?.hasMoreOlder && !chatState?.isLoading && messages.length > 0 && (
+        {/* 加载中指示器 */}
+        {chatState?.isLoading && (
           <div style={{ textAlign: 'center', padding: '10px', color: 'var(--milky-text-light)' }}>
-            向上滑动加载更多历史消息
+            正在加载历史消息...
           </div>
         )}
         

@@ -27,15 +27,20 @@ export const ImageMessage: React.FC<ImageMessageProps> = ({
     setShowImagePreview(false)
   }
 
+  if(isExpired){
+    return (
+      <div className={styles.imageMessage}>
+        <div className={styles.expiredContainer}>
+          <Clock size={32} className={styles.expiredIcon} />
+          <span className={styles.expiredText}>图片已过期</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className={styles.imageMessage}>
-        {isExpired ? (
-          <div className={styles.expiredContainer}>
-            <Clock size={32} className={styles.expiredIcon} />
-            <span className={styles.expiredText}>图片已过期</span>
-          </div>
-        ) : (
           <img 
             src={media} 
             alt="图片" 
@@ -43,7 +48,6 @@ export const ImageMessage: React.FC<ImageMessageProps> = ({
             onClick={handleImageClick}
             style={{ cursor: 'pointer' }}
           />
-        )}
       </div>
 
       {/* 图片预览弹框 */}
