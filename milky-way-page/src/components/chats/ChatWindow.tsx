@@ -21,12 +21,12 @@ export const ChatWindow: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const previousChatIdRef = useRef<string | null>(null)
-  const { loadMoreOlderMessages, removeChat } = useChatStore()
+  const lastScrollTopRef = useRef<number>(0)
+  const { loadMoreOlderMessages, removeChat, loadingHistory, setLoadingHistory } = useChatStore()
 
-  const { currentChatId,chats } = useChatStore()
+  const { currentChatId, chats } = useChatStore()
   const currentChat = chats.find(chat => chat.id === currentChatId) || null
-  const chatState = useChatStore(s => currentChat?s.chatMessagesMap[currentChat.id]:undefined)
+  const chatState = useChatStore(s => currentChat ? s.chatMessagesMap[currentChat.id] : undefined)
   const messages = chatState?.messages ?? []
 
   const scrollToBottomSmooth = () => {
@@ -34,23 +34,44 @@ export const ChatWindow: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // 监听消息变化，对于同一个聊天的新消息使用平滑滚动
+  // 监听聊天切换，设置loadingHistory为false
   useEffect(() => {
-    if (currentChat && currentChat.id === previousChatIdRef.current && messages.length > 0) {
-      // 同一个聊天中的消息更新，使用平滑滚动
-      setTimeout(() => {
-        // 再等待浏览器完成布局计算
-        requestAnimationFrame(() => {
-          scrollToBottomSmooth()
-        })
-      }, 50)
+    if (currentChatId) {
+      setLoadingHistory(false)
     }
-  }, [messages, currentChat?.id])
+  }, [currentChatId, setLoadingHistory])
 
-  // 监听消息初次加载完成，确保滚动到底部
+  // 添加滚动检测逻辑
   useEffect(() => {
-    if (currentChat && currentChat.id != previousChatIdRef.current && messages.length > 0 && !chatState?.isLoading) {
-      previousChatIdRef.current = currentChat.id
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      const currentScrollTop = container.scrollTop
+      const lastScrollTop = lastScrollTopRef.current
+
+      // 检测滚动方向
+      if (currentScrollTop < lastScrollTop) {
+        // 向上滚动
+        setLoadingHistory(true)
+      } else if (currentScrollTop > lastScrollTop) {
+        // 向下滚动
+        setLoadingHistory(false)
+      }
+
+      lastScrollTopRef.current = currentScrollTop
+    }
+
+    container.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll)
+    }
+  }, [setLoadingHistory])
+
+  // 监听消息加载完成，确保滚动到底部
+  useEffect(() => {
+    if (!loadingHistory) {
       setTimeout(() => {
         // 再等待浏览器完成布局计算
         requestAnimationFrame(() => {
@@ -58,7 +79,7 @@ export const ChatWindow: React.FC = () => {
         })
       }, 100)
     }
-  }, [currentChat?.id, messages.length, chatState?.isLoading])
+  }, [messages, loadingHistory])
 
   // 使用 Intersection Observer 监听加载更多提示的可见性
   useEffect(() => {

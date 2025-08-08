@@ -72,9 +72,11 @@ export interface ChatStore {
   chats: Chat[]
   chatMessagesMap: Record<string, ChatMessagesState>
   isLoading: boolean
+  loadingHistory: boolean
   hasMoreChats: boolean
   lastChatId?: string
   error: string | null
+  setLoadingHistory: (loading: boolean) => void
   setCurrentChat: (chatId: string) => Promise<void>
   loadChatMessages: (chatId: string, refresh?: boolean) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
@@ -149,9 +151,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     chats: [],
     chatMessagesMap: {},
     isLoading: false,
+    loadingHistory: false,
     hasMoreChats: true,
     lastChatId: undefined,
     error: null,
+  
+  setLoadingHistory: (loadingHistory: boolean) => {
+    set({ loadingHistory: loadingHistory })
+  },
   
   setCurrentChat: async (chatId: string) => {
     console.log(`[ChatStore] setCurrentChat 被调用，chatId: ${chatId}`)
@@ -276,6 +283,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // 如果正在加载或没有更多旧消息，则跳过
     if (currentChatState?.isLoading || !currentChatState?.hasMoreOlder) return
     
+    set({loadingHistory: true})
     try {
       set({
         chatMessagesMap: {
