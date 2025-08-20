@@ -117,10 +117,6 @@
   animation: rotate 1s linear infinite;
 }
 
-.sendStatusSent {
-  color: var(--milky-text-light);
-}
-
 .sendStatusFailed {
   color: #ff4444;
   cursor: pointer;

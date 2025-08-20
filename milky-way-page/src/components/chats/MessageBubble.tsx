@@ -129,13 +129,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             />
           </div>
         )
-      case 'sent':
-        return (
-          <CheckCheck 
-            size={14} 
-            className={styles.sendStatusIcon + ' ' + styles.sendStatusSent}
-          />
-        )
       default:
         return null
     }
