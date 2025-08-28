@@ -358,6 +358,26 @@ export const useMessageManagerStore = create<MessageManagerStore>()((set, get) =
             meta: messageDTO.meta, // 更新媒体信息（封面图、视频URL等）
             fileData: undefined // 清除本地文件数据，因为已经上传成功
           })
+
+          // 🆕 更新聊天列表排序 - 将该聊天移动到头部
+          const chatStore = useChatStore.getState()
+          const chat = chatStore.chats.find(c => c.id === messageDTO.chatId)
+          if (chat) {
+            console.log(`[MessageManager] 更新聊天列表排序，将聊天 ${messageDTO.chatId} 移动到头部`)
+            
+            const updatedChat = {
+              ...chat,
+              lastMessage: messageDTO.meta.content || '',
+              lastMessageTime: new Date(messageDTO.sentTime),
+              lastMessageId: messageDTO.id
+            }
+            
+            // 将更新的聊天移到列表顶部
+            const otherChats = chatStore.chats.filter(c => c.id !== messageDTO.chatId)
+            const reorderedChats = [updatedChat, ...otherChats]
+            
+            useChatStore.setState({ chats: reorderedChats })
+          }
         } else {
           console.warn(`[MessageManager] 未找到对应的本地消息:`, messageDTO.clientMsgId)
         }

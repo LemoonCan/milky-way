@@ -3,6 +3,7 @@ import { useNotificationStore } from './notification'
 import { useFriendStore } from './friend'
 import { useChatStore } from './chat'
 import { useMomentStore } from './moment'
+import { webSocketClient } from '../services/websocket'
 import type { 
   MessageNotifyDTO,
   FriendApplicationDTO,
@@ -156,12 +157,26 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()((s
           const chatInfo = content as NotificationChatInfoDTO
           const serviceChatInfo = convertNotificationChatInfoToServiceChatInfo(chatInfo)
           useChatStore.getState().addChatLocally(serviceChatInfo)
+          
+          // 如果是群聊，自动订阅该群聊的消息频道
+          if (chatInfo.chatType === 'GROUP') {
+            console.log('[NotificationManager] 自动订阅新群聊消息:', chatInfo.id)
+            webSocketClient.subscribeToGroupChat(chatInfo.id)
+          }
         }
         break
 
       case 'CHAT_DELETE':
         if (typeof content === 'string') {
-          useChatStore.getState().removeChat(content)
+          // 取消订阅该群聊（如果是群聊的话）
+          const chatStore = useChatStore.getState()
+          const chat = chatStore.chats.find(c => c.id === content)
+          if (chat && chat.chatType === 'GROUP') {
+            console.log('[NotificationManager] 取消订阅已删除的群聊:', content)
+            webSocketClient.unsubscribeFromGroupChat(content)
+          }
+          
+          chatStore.removeChat(content)
         }
         break
 

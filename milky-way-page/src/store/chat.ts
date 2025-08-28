@@ -505,6 +505,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     
     // 在群聊中，如果收到的是自己发送的消息，直接跳过所有处理（避免重复）
     // 因为消息回执已经处理了聊天列表的更新
+    // 单聊仍然需要通过addRealTimeMessage处理自己的消息
     const isMyMessage = isMessageFromMe(messageDTO)
     if (chat && chat.chatType === 'GROUP' && isMyMessage) {
       console.log(`[ChatStore] 群聊中收到自己发送的消息 ${messageDTO.id}，跳过处理避免重复`)
@@ -530,8 +531,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     }
     
-    // 添加消息到当前聊天
-    get().addMessage(messageDTO)
+    // 检查消息列表是否已缓存（不为空）
+    const hasMessageCache = currentChatState && currentChatState.messages && currentChatState.messages.length > 0
+    
+    if (hasMessageCache) {
+      // 如果已有消息缓存，正常添加消息到列表
+      console.log(`[ChatStore] 聊天 ${chatId} 已有消息缓存，添加新消息到列表`)
+      get().addMessage(messageDTO)
+    } else {
+      // 如果没有消息缓存，只更新聊天项信息，不添加消息到列表
+      // 这样用户打开聊天时会触发完整的历史消息加载
+      console.log(`[ChatStore] 聊天 ${chatId} 无消息缓存，只更新聊天项信息，不添加消息到列表`)
+    }
     
     // 更新聊天信息
     if (chat) {
