@@ -4,6 +4,7 @@ import { MessageCircle, UserCheck, Phone, Video } from 'lucide-react'
 import { FriendApplicationVerifyDialog } from './FriendApplicationVerifyDialog'
 import type { FriendApplication } from '../../types/api'
 import styles from '../../css/friends/FriendApplicationDetail.module.css'
+import { EmojiText } from '../EmojiText'
 
 interface FriendApplicationDetailProps {
   application: FriendApplication
@@ -68,7 +69,7 @@ export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = (
           
           <div className={styles.basicInfo}>
             <h1 className={styles.displayName}>
-              {application.fromUser.nickName}
+              <EmojiText text={application.fromUser.nickName} size="1em" />
             </h1>
             <div className={styles.userId}>账号：{application.fromUser.openId}</div>
             <div className={styles.applyTime}>

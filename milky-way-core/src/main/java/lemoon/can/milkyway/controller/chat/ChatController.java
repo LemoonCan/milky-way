@@ -86,9 +86,9 @@ public class ChatController {
 
     @GetMapping
     @Operation(summary = "查询聊天列表")
-    public ResponseEntity<Result<Slices<ChatInfoDTO>>> getChatList(@RequestParam(required = false) String lastId,
+    public ResponseEntity<Result<Slices<ChatInfoDTO>>> getChatList(@RequestParam(required = false) String lastMessageId,
                                                                    @RequestParam Integer pageSize) {
-        Slices<ChatInfoDTO> chatList = chatQueryService.getChatList(UserInfoHolder.id(), lastId, pageSize);
+        Slices<ChatInfoDTO> chatList = chatQueryService.getChatList(UserInfoHolder.id(), lastMessageId, pageSize);
         return ResponseEntity.ok(Result.success(chatList));
     }
 

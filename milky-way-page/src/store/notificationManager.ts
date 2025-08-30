@@ -9,27 +9,12 @@ import type {
   FriendApplicationDTO,
   FriendApplication,
   FriendRelation,
-  ChatInfoDTO as NotificationChatInfoDTO,
   LikeDTO,
   CommentWithMomentDTO,
   UnlikeDTO,
   MomentDTO
 } from '../types/api'
-import type { ChatInfoDTO as ChatServiceChatInfoDTO } from '../services/chat'
-
-// 类型转换函数：将通知中的ChatInfoDTO转换为聊天服务的ChatInfoDTO
-const convertNotificationChatInfoToServiceChatInfo = (dto: NotificationChatInfoDTO): ChatServiceChatInfoDTO => {
-  return {
-    id: dto.id,
-    chatType: dto.chatType,
-    title: dto.title,
-    avatar: dto.avatar,
-    lastMessage: dto.lastMessage || '',
-    lastMessageTime: dto.lastMessageTime || new Date().toISOString(),
-    unreadCount: dto.unreadCount,
-    online: dto.online
-  }
-}
+import type { ChatInfoDTO } from '../services/chat'
 
 // 类型转换函数：将FriendApplicationDTO转换为FriendApplication
 const convertDTOToApplication = (dto: FriendApplicationDTO): FriendApplication => {
@@ -154,9 +139,8 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()((s
 
       case 'CHAT_CREATE':
         if (content && typeof content === 'object' && 'id' in content) {
-          const chatInfo = content as NotificationChatInfoDTO
-          const serviceChatInfo = convertNotificationChatInfoToServiceChatInfo(chatInfo)
-          useChatStore.getState().addChatLocally(serviceChatInfo)
+          const chatInfo = content as ChatInfoDTO
+          useChatStore.getState().addChatLocally(chatInfo)
           
           // 如果是群聊，自动订阅该群聊的消息频道
           if (chatInfo.chatType === 'GROUP') {

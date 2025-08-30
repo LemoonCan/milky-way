@@ -159,7 +159,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             return message.fileData.originalFile.name
           }
           // 否则使用 meta.content 中的文件名（正常情况）
-          return message.meta.content
+          return message.meta.content || undefined
         }
         
         return (

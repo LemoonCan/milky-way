@@ -47,18 +47,18 @@ public class ChatQueryServiceImpl implements ChatQueryService {
     }
 
     @Override
-    public Slices<ChatInfoDTO> getChatList(String userId, String lastId, Integer pageSize) {
+    public Slices<ChatInfoDTO> getChatList(String userId, String lastMessageId, Integer pageSize) {
         // 设置默认分页大小
         int size = pageSize != null && pageSize > 0 ? Math.min(pageSize, 50) : 20;
 
-        // 解码游标为实际的聊天室ID
-        Long decodedLastId = null;
-        if (StringUtils.hasText(lastId)) {
-            decodedLastId = secureId.simpleDecode(lastId, secureId.getChatSalt());
+        // 解码游标为实际的消息ID
+        Long decodedLastMessageId = null;
+        if (StringUtils.hasText(lastMessageId)) {
+            decodedLastMessageId = secureId.simpleDecode(lastMessageId, secureId.getMessageSalt());
         }
 
         // 查询数据，多查一条用于判断是否还有更多数据
-        List<ChatInfoDO> chatDoList = chatMapper.findChatsByUserId(userId, decodedLastId, size + 1);
+        List<ChatInfoDO> chatDoList = chatMapper.findChatsByUserId(userId, decodedLastMessageId, size + 1);
 
         // 判断是否还有更多数据
         boolean hasNext = chatDoList.size() > size;

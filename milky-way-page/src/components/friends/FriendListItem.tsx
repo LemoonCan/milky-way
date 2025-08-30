@@ -2,6 +2,7 @@ import React from 'react'
 import { Avatar } from '../Avatar'
 import type { Friend } from '../../types/api'
 import styles from '../../css/friends/FriendListItem.module.css'
+import { EmojiText } from '../EmojiText'
 
 interface FriendListItemProps {
   friend: Friend
@@ -34,7 +35,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({
       
       <div className={styles.friendInfo}>
         <div className={styles.nickName}>
-          {friend.remark || friend.nickName}
+          <EmojiText text={friend.remark || friend.nickName} size="1em" />
         </div>
       </div>
     </div>

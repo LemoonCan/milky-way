@@ -74,7 +74,7 @@ export interface ChatStore {
   isLoading: boolean
   loadingHistory: boolean
   hasMoreChats: boolean
-  lastChatId?: string
+  lastMessageId?: string
   error: string | null
   setLoadingHistory: (loading: boolean) => void
   setCurrentChat: (chatId: string) => Promise<void>
@@ -86,7 +86,7 @@ export interface ChatStore {
   removeChat: (chatId: string) => void
   addChatLocally: (chatInfo: ChatInfoDTO) => void
   addRealTimeMessage: (chatId: string, messageDTO: MessageDTO) => void
-  loadChatList: (lastChatId?: string) => Promise<void>
+  loadChatList: (lastMessageId?: string) => Promise<void>
   loadMoreChats: () => Promise<void>
   setError: (error: string | null) => void
   createGroupChat: (request: CreateGroupChatRequest) => Promise<string>
@@ -142,7 +142,8 @@ const convertChatInfoToChat = (chatInfo: ChatInfoDTO): Chat => {
     unreadCount: chatInfo.unreadCount,
     online: chatInfo.online,
     chatType: chatInfo.chatType,
-    friendId: chatInfo.friendId // 添加好友ID字段
+    friendId: chatInfo.friendId, // 添加好友ID字段
+    lastMessageId: chatInfo.lastMessageId // 添加最新消息ID字段
   }
 }
 
@@ -153,7 +154,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     isLoading: false,
     loadingHistory: false,
     hasMoreChats: true,
-    lastChatId: undefined,
+    lastMessageId: undefined,
     error: null,
   
   setLoadingHistory: (loadingHistory: boolean) => {
@@ -573,7 +574,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  loadChatList: async (lastChatId?: string) => {
+  loadChatList: async (lastMessageId?: string) => {
     const state = get()
     
     // 如果正在加载且不是刷新，则跳过
@@ -583,16 +584,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ isLoading: true })
       
       const result = await chatService.getChatList(
-        lastChatId,
+        lastMessageId,
         10
       )
       
       const newChats = result.items.map(convertChatInfoToChat)
       
       set({
-        chats:  lastChatId ? [...state.chats, ...newChats] : newChats,
+        chats:  lastMessageId ? [...state.chats, ...newChats] : newChats,
         hasMoreChats: result.hasNext,
-        lastChatId: result.items.length > 0 ? result.items[result.items.length - 1].id : state.lastChatId,
         isLoading: false
       })
       
@@ -606,7 +606,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const state = get()
     if (!state.hasMoreChats || state.isLoading) return
     
-    await get().loadChatList(state.lastChatId)
+    const chats = state.chats;
+    const lastMessageId = chats[chats.length - 1].lastMessageId;
+    await get().loadChatList(lastMessageId)
   },
 
   setError: (error: string | null) => {

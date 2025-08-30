@@ -113,7 +113,7 @@ export const CommentList: React.FC<CommentListProps> = ({
             </div>
             <div className={styles.commentText}>
               <div className={styles.username}>
-                {comment.user.nickName}
+                <EmojiText text={comment.user.nickName} size="1em" />
               </div>
               <div className={styles.content}>
                 {comment.replyUser && (
@@ -122,7 +122,7 @@ export const CommentList: React.FC<CommentListProps> = ({
                       className={styles.replyUserButton}
                       onClick={(e) => handleReplyUserClick(comment.replyUser, e.currentTarget)}
                     >
-                      {comment.replyUser.nickName}
+                      <EmojiText text={comment.replyUser.nickName} size="1em" />
                     </button>：
                   </span>
                 )}

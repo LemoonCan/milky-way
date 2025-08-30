@@ -10,6 +10,7 @@ import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
 import { useNotificationStore } from '../../store/notification'
 import styles from '../../css/moments/MomentsPage.module.css'
+import { EmojiText } from '../EmojiText'
 
 export const MomentsPage: React.FC = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false)
@@ -155,7 +156,7 @@ export const MomentsPage: React.FC = () => {
           <div className={styles.userInfo}>
             <div className={styles.userDetails}>
               <span className={styles.userName}>
-                {currentUser?.nickName || '未登录'}
+                <EmojiText text={currentUser?.nickName || '未登录'} size="1em" />
               </span>
             </div>
             <Avatar

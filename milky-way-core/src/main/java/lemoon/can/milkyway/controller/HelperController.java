@@ -2,6 +2,7 @@ package lemoon.can.milkyway.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +31,7 @@ public class HelperController {
     @Operation(summary = "编码ID")
     public ResponseEntity<Result<String>> encodeId(@RequestParam Long id,
                                                    @RequestParam String type) {
-        String salt;
-        Class<SecureId> clazz = SecureId.class;
-        String methodName = "get" + StringUtils.capitalize(type) + "Salt";
-        try {
-            Method saltMethod = clazz.getDeclaredMethod(methodName);
-            salt = (String) saltMethod.invoke(secureId);
-        } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException e) {
-            return ResponseEntity.ok(Result.fail(ErrorCode.UNSUPPORTED, "不支持的类型" + type));
-        }
+        String salt = getSaltByType(type);
         String encodedId = secureId.encode(id, salt);
         return ResponseEntity.ok(Result.success(encodedId));
     }
@@ -46,18 +39,33 @@ public class HelperController {
     @PostMapping("/simpleEncodeId")
     @Operation(summary = "编码简化版ID")
     public ResponseEntity<Result<String>> simpleEncodeId(@RequestParam Long id,
-                                                   @RequestParam String type) {
+                                                         @RequestParam String type) {
+        String salt = getSaltByType(type);
+        String encodedId = secureId.simpleEncode(id, salt);
+        return ResponseEntity.ok(Result.success(encodedId));
+    }
+
+    @PostMapping("/simpleDecodeId")
+    @Operation(summary = "解码简化版ID")
+    public ResponseEntity<Result<String>> simpleDecodeId(@RequestParam String id,
+                                                         @RequestParam String type) {
+        String salt = getSaltByType(type);
+        Long decodedId = secureId.simpleDecode(id, salt);
+        return ResponseEntity.ok(Result.success(String.valueOf(decodedId)));
+
+    }
+
+    private String getSaltByType(String type) {
         String salt;
         Class<SecureId> clazz = SecureId.class;
         String methodName = "get" + StringUtils.capitalize(type) + "Salt";
         try {
             Method saltMethod = clazz.getDeclaredMethod(methodName);
             salt = (String) saltMethod.invoke(secureId);
-        } catch (NoSuchMethodException|InvocationTargetException|IllegalAccessException e) {
-            return ResponseEntity.ok(Result.fail(ErrorCode.UNSUPPORTED, "不支持的类型" + type));
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的类型" + type);
         }
-        String encodedId = secureId.simpleEncode(id, salt);
-        return ResponseEntity.ok(Result.success(encodedId));
+        return salt;
     }
 
 }

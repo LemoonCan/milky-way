@@ -149,13 +149,13 @@ export class ChatService {
 
   /**
    * 获取聊天列表
-   * @param lastId 上次查询的最后一个聊天ID，用于分页
+   * @param lastMessageId 上次查询的最后一个消息ID，用于分页
    * @param pageSize 每页大小，默认20
    */
-  async getChatList(lastId?: string, pageSize?: number): Promise<Slices<ChatInfoDTO>> {
+  async getChatList(lastMessageId?: string, pageSize?: number): Promise<Slices<ChatInfoDTO>> {
     const params = new URLSearchParams()
-    if (lastId) {
-      params.append('lastId', lastId)
+    if (lastMessageId) {
+      params.append('lastMessageId', lastMessageId)
     }
     if (pageSize) {
       params.append('pageSize', pageSize.toString())

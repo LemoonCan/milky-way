@@ -9,6 +9,7 @@ import { Trash2 } from 'lucide-react'
 import { useChatStore } from '@/store/chat'
 import { chatService } from '../../services/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
+import { EmojiText } from '../EmojiText'
 
 export const ChatWindow: React.FC = () => {
   const [inputValue, setInputValue] = useState('')
@@ -196,7 +197,7 @@ export const ChatWindow: React.FC = () => {
           />
           <div className={styles.chatHeaderInfo}>
             <h2 className={styles.chatHeaderName}>
-              {currentChat.name}
+              <EmojiText text={currentChat.name} size="1em" />
               {currentChat.chatType === 'SINGLE' && (
                 <span className={styles.chatHeaderStatus}>
                   ({currentChat.online ? '在线' : '离线'})

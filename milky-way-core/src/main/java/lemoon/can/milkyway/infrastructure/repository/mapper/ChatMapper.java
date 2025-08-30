@@ -37,12 +37,12 @@ public interface ChatMapper {
      * 游标分页查询聊天列表
      *
      * @param userId   用户ID
-     * @param lastId   游标，用于分页查询的起始位置，为null则从头开始
+     * @param lastMessageId   游标，用于分页查询的起始位置，为null则从头开始
      * @param pageSize 每页数量
      * @return 聊天信息列表
      */
     List<ChatInfoDO> findChatsByUserId(@Param("userId") String userId,
-                                       @Param("lastId") Long lastId,
+                                       @Param("lastMessageId") Long lastMessageId,
                                        @Param("pageSize") int pageSize);
 
     /**

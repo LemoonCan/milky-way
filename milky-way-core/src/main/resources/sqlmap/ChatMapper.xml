@@ -93,13 +93,12 @@
 
         -- 最后一条消息子查询（提升性能，避免重复查询）
         LEFT JOIN (
-        SELECT m1.id, m1.chat_id, m1.type, m1.content, m1.sent_time
-        FROM message m1
-        INNER JOIN (
-        SELECT MAX(id) as max_id, chat_id
-        FROM message
-        GROUP BY chat_id
-        ) m2 ON m1.chat_id = m2.chat_id AND m1.id = m2.max_id
+        SELECT t.*
+            FROM (
+                SELECT m.id, m.chat_id, m.type, m.content, m.sent_time,
+                ROW_NUMBER() OVER (PARTITION BY chat_id ORDER BY id DESC) AS rn
+                FROM message m
+                ) t WHERE rn = 1
         ) lm ON lm.chat_id = c.id
 
         -- 未读消息数和最小未读消息ID子查询
@@ -118,14 +117,13 @@
         -- 当前用户参与的会话
         WHERE cm.user_id = #{userId}
 
-        -- 分页：只查询 ID 小于 lastId 的记录（用于向下翻页）
-        <if test="lastId != null">
-            AND c.id &lt; #{lastId}
+        -- 分页：只查询 ID 小于 lastMessageId 的记录（用于向下翻页）
+        <if test="lastMessageId != null">
+            AND lm.id &lt; #{lastMessageId}
         </if>
 
         -- 排序：先按消息ID，再按会话 ID
-        ORDER BY
-        lm.id DESC, c.id DESC
+        ORDER BY lm.id DESC
 
         -- 分页大小限制
         LIMIT #{pageSize}

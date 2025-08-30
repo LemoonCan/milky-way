@@ -2,6 +2,7 @@ import React from 'react'
 import { Avatar } from '../Avatar'
 import type { FriendApplication } from '../../types/api'
 import styles from '../../css/friends/FriendApplicationItem.module.css'
+import { EmojiText } from '../EmojiText'
 
 interface FriendApplicationItemProps {
   application: FriendApplication
@@ -62,7 +63,9 @@ export const FriendApplicationItem: React.FC<FriendApplicationItemProps> = ({
       
       <div className={styles.content}>
         <div className={styles.userInfo}>
-          <div className={styles.nickname}>{application.fromUser.nickName}</div>
+          <div className={styles.nickname}>
+            <EmojiText text={application.fromUser.nickName} size="1em" />
+          </div>
         </div>
         
         {application.applyMsg && (

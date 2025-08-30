@@ -8,6 +8,7 @@ import { ImagePreviewModal } from '../ImagePreviewModal'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
 import styles from '../../css/moments/MomentPublishDialog.module.css'
+import { EmojiText } from '../EmojiText'
 
 interface MomentPublishDialogProps {
   open: boolean
@@ -206,7 +207,7 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
             avatarUrl={currentUser?.avatar}
           />
           <span className={styles.username}>
-            {currentUser?.nickName || '未登录'}
+            <EmojiText text={currentUser?.nickName || '未登录'} size="1em" />
           </span>
         </div>
 

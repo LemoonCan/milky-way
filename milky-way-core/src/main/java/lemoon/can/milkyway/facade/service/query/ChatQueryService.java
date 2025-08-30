@@ -22,7 +22,7 @@ public interface ChatQueryService {
      * @param pageSize 每页数量
      * @return 聊天信息分页结果
      */
-    Slices<ChatInfoDTO> getChatList(String userId, String lastId, Integer pageSize);
+    Slices<ChatInfoDTO> getChatList(String userId, String lastMessageId, Integer pageSize);
 
     /**
      * 获取聊天消息列表

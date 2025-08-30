@@ -175,7 +175,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
         
         <div className={styles.userInfo}>
           <div className={styles.username}>
-            {moment.user.nickName}
+            <EmojiText text={moment.user.nickName} size="1em" />
           </div>
           <div className={styles.time}>
             {formatTime(moment.createTime)}

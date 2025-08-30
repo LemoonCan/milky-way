@@ -74,7 +74,7 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       <div className={styles.chatItemContent}>
         <div className={styles.chatItemHeader}>
           <h3 className={styles.chatItemName}>
-            {chat.name}
+            <EmojiText text={chat.name} size="1em" />
           </h3>
           <span className={styles.chatItemTime}>
             {formatTime(chat.lastMessageTime)}
