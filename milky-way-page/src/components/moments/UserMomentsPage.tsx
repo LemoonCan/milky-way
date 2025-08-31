@@ -7,6 +7,7 @@ import { MomentItem } from './MomentItem'
 import { useUserMomentStore } from '../../store/userMoment'
 import type { UserDetailInfo } from '../../services/user'
 import styles from '../../css/moments/UserMomentsPage.module.css'
+import { EmojiText } from '../EmojiText'
 
 // 路由状态类型定义
 interface LocationState {
@@ -143,7 +144,7 @@ export const UserMomentsPage: React.FC = () => {
           <div className={styles.userInfo}>
             <div className={styles.userDetails}>
               <span className={styles.userName}>
-                {targetUser?.nickName || '未知用户'}
+                <EmojiText text={targetUser?.nickName || '未知用户'} size="1em" />
               </span>
             </div>
             <Avatar

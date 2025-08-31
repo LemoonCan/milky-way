@@ -145,17 +145,21 @@ public class MessagePushServiceImpl implements MessagePushService {
         content.setCreateTime(comment.getCreateTime().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
+        //非作者评论时，作者需收到通知
+        if (!comment.getCommentUserId().equals(momentPublishUserId)) {
+            messagingTemplate.convertAndSendToUser(momentPublishUserId, MessageDestination.NOTIFY_DEST, payload);
+        }
+
         if (comment.getParentCommentId() != null) {
             SimpleUserDTO replyUser = commentMapper.selectReplyUser(comment.getParentCommentId());
             if(replyUser.getId().equals(content.getUser().getId())){
                 return;
             }
+            if(momentPublishUserId.equals(replyUser.getId())){
+                return;
+            }
             content.setReplyUser(replyUser);
             messagingTemplate.convertAndSendToUser(replyUser.getId(), MessageDestination.NOTIFY_DEST, payload);
-        }
-
-        if (!comment.getCommentUserId().equals(momentPublishUserId)) {
-            messagingTemplate.convertAndSendToUser(momentPublishUserId, MessageDestination.NOTIFY_DEST, payload);
         }
     }
 }
