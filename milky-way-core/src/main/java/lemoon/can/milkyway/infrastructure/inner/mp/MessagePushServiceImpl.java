@@ -155,7 +155,7 @@ public class MessagePushServiceImpl implements MessagePushService {
             if(replyUser.getId().equals(content.getUser().getId())){
                 return;
             }
-            if(momentPublishUserId.equals(replyUser.getId())){
+            if(replyUser.getId().equals(momentPublishUserId)){
                 return;
             }
             content.setReplyUser(replyUser);
