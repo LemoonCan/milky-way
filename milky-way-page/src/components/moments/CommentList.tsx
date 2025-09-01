@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { EmojiText } from '../EmojiText'
 import { ProfileModal } from '../ProfileModal'
 import { Avatar } from '../Avatar'
+import { TimeFormatter } from '@/utils/timeFormatter'
 import type { CommentDTO } from '../../types/api'
 import styles from '../../css/moments/CommentList.module.css'
 
@@ -52,41 +53,7 @@ export const CommentList: React.FC<CommentListProps> = ({
     }
   }
 
-  // 格式化时间
-  const formatTime = (timeString: string | null | undefined) => {
-    // 处理空值情况
-    if (!timeString) {
-      return '时间未知'
-    }
-    
-    try {
-      const now = new Date()
-      const time = new Date(timeString)
-      
-      // 检查时间是否有效
-      if (isNaN(time.getTime())) {
-        return '时间未知'
-      }
-      
-      const diff = now.getTime() - time.getTime()
-      
-      const minutes = Math.floor(diff / 60000)
-      const hours = Math.floor(diff / 3600000)
-      const days = Math.floor(diff / 86400000)
-      
-      if (minutes < 1) return '刚刚'
-      if (minutes < 60) return `${minutes}分钟前`
-      if (hours < 24) return `${hours}小时前`
-      if (days < 7) return `${days}天前`
-      
-      return time.toLocaleDateString('zh-CN', {
-        month: 'short',
-        day: 'numeric'
-      })
-    } catch {
-      return '时间未知'
-    }
-  }
+
 
   const handleReply = (commentId?: string) => {
     onReply?.(commentId)
@@ -131,7 +98,7 @@ export const CommentList: React.FC<CommentListProps> = ({
             </div>
             <div className={styles.commentMeta}>
               <span className={styles.time}>
-                {formatTime(comment.createTime)}
+                {TimeFormatter.formatRelativeTime(comment.createTime)}
               </span>
               <button 
                 className={styles.replyButton}

@@ -10,6 +10,7 @@ import { CommentInput } from './CommentInput'
 import { ProfileModal } from '../ProfileModal'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { ImagePreviewModal } from '../ImagePreviewModal'
+import { TimeFormatter } from '@/utils/timeFormatter'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
 import type { MomentDTO, SimpleUserDTO } from '../../types/api'
@@ -70,41 +71,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
     setShowDeleteDialog(false)
   }
 
-  // 格式化时间
-  const formatTime = (timeString: string | null | undefined) => {
-    // 处理空值情况
-    if (!timeString) {
-      return '时间未知'
-    }
-    
-    try {
-      const now = new Date()
-      const time = new Date(timeString)
-      
-      // 检查时间是否有效
-      if (isNaN(time.getTime())) {
-        return '时间未知'
-      }
-      
-      const diff = now.getTime() - time.getTime()
-      
-      const minutes = Math.floor(diff / 60000)
-      const hours = Math.floor(diff / 3600000)
-      const days = Math.floor(diff / 86400000)
-      
-      if (minutes < 1) return '刚刚'
-      if (minutes < 60) return `${minutes}分钟前`
-      if (hours < 24) return `${hours}小时前`
-      if (days < 7) return `${days}天前`
-      
-      return time.toLocaleDateString('zh-CN', {
-        month: 'short',
-        day: 'numeric'
-      })
-    } catch {
-      return '时间未知'
-    }
-  }
+
 
   // 渲染图片网格
   const renderImages = () => {
@@ -178,7 +145,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
             <EmojiText text={moment.user.nickName} size="1em" />
           </div>
           <div className={styles.time}>
-            {formatTime(moment.createTime)}
+            {TimeFormatter.formatRelativeTime(moment.createTime)}
           </div>
         </div>
         
@@ -325,7 +292,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
                 color: '#6b7280',
                 marginBottom: '8px' 
               }}>
-                {formatTime(moment.createTime)}
+                {TimeFormatter.formatRelativeTime(moment.createTime)}
               </div>
               {moment.text && (
                 <div style={{ 

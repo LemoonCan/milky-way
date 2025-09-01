@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { MessageBubble } from './MessageBubble'
+import { MessageTimeHeader } from './MessageTimeHeader'
 import { Avatar } from '../Avatar'
 
 import { ConfirmDialog } from '../ui/confirm-dialog'
@@ -29,6 +30,23 @@ export const ChatWindow: React.FC = () => {
   const currentChat = chats.find(chat => chat.id === currentChatId) || null
   const chatState = useChatStore(s => currentChat ? s.chatMessagesMap[currentChat.id] : undefined)
   const messages = chatState?.messages ?? []
+
+  // 判断两个消息是否需要显示时间分隔（间隔>=10分钟）
+  const shouldShowTimeHeader = (currentMessage: { sentTime: string; meta: { type: string } }, previousMessage?: { sentTime: string }) => {
+    // 系统消息不显示时间分隔
+    if (currentMessage.meta.type === 'SYSTEM') return false
+    
+    if (!previousMessage) return true // 第一条消息总是显示时间
+    
+    const currentTime = new Date(currentMessage.sentTime)
+    const previousTime = new Date(previousMessage.sentTime)
+    
+    // 计算时间差（毫秒）
+    const timeDiff = currentTime.getTime() - previousTime.getTime()
+    
+    // 如果时间差大于等于10分钟（600000毫秒），则显示时间分隔
+    return timeDiff >= 10 * 60 * 1000
+  }
 
   const scrollToBottomSmooth = () => {
     // 平滑滚动到底部
@@ -254,13 +272,22 @@ export const ChatWindow: React.FC = () => {
           </div>
         )}
         
-        {messages.map((message) => (
-          <MessageBubble
-            key={message.id}
-            message={message}
-            chatId={currentChat.id}
-          />
-        ))}
+        {messages.map((message, index) => {
+          const previousMessage = index > 0 ? messages[index - 1] : undefined
+          const showTimeHeader = shouldShowTimeHeader(message, previousMessage)
+          
+          return (
+            <React.Fragment key={message.id}>
+              {showTimeHeader && (
+                <MessageTimeHeader timestamp={message.sentTime} />
+              )}
+              <MessageBubble
+                message={message}
+                chatId={currentChat.id}
+              />
+            </React.Fragment>
+          )
+        })}
         <div ref={messagesEndRef} />
       </div>
 

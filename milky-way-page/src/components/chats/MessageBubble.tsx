@@ -30,12 +30,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const [showActions, setShowActions] = useState(false)
   const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
   
-  const formatTime = (sentTime: string) => {
-    return new Date(sentTime).toLocaleTimeString('zh-CN', {
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
+
 
   // 处理消息重发
   const handleRetryMessage = async () => {
@@ -186,9 +181,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
         <div className={styles.systemMessage}>
           <EmojiText text={message.meta.content || ''} size="0.9em" />
         </div>
-        <div className={styles.systemMessageTime}>
-          {formatTime(message.sentTime)}
-        </div>
       </div>
     )
   }
@@ -223,12 +215,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
             {renderMessageContent()}
           </div>
         )}
-        <div className={styles.messageTimeContainer}>
-          <span className={styles.messageTime}>
-            {formatTime(message.sentTime)}
-          </span>
-          {renderSendStatus()}
-        </div>
+        {renderSendStatus() && (
+          <div className={styles.messageTimeContainer}>
+            {renderSendStatus()}
+          </div>
+        )}
       </div>
       
       {isFromMe && (

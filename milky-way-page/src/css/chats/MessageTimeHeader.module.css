@@ -1,0 +1,23 @@
+/* MessageTimeHeader 组件样式模块 */
+
+.timeHeader {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+  padding: 0 20px;
+}
+
+.timeLine {
+  flex: 1;
+  height: 1px;
+  background-color: var(--milky-border);
+  opacity: 0.3;
+}
+
+.timeText {
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--milky-text-light);
+  background-color: var(--milky-bg);
+  white-space: nowrap;
+}
