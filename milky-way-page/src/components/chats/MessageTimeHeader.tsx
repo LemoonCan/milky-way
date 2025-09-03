@@ -11,7 +11,7 @@ export const MessageTimeHeader: React.FC<MessageTimeHeaderProps> = ({ timestamp 
     <div className={styles.timeHeader}>
       <div className={styles.timeLine}></div>
       <div className={styles.timeText}>
-        {TimeFormatter.formatMessageTime(timestamp)}
+        {TimeFormatter.formatChineseTime(timestamp)}
       </div>
       <div className={styles.timeLine}></div>
     </div>
