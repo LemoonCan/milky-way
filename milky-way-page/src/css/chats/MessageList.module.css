@@ -1,0 +1,17 @@
+/* MessageList 样式模块 */
+
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .messagesContainer {
+    padding: 8px;
+  }
+}

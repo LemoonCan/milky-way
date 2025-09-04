@@ -84,6 +84,7 @@
   color: var(--milky-text-light);
   margin: 0;
   line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .actions {
