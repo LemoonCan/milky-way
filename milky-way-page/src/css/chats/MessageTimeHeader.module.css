@@ -18,6 +18,5 @@
   padding: 0 16px;
   font-size: 12px;
   color: var(--milky-text-light);
-  background-color: var(--milky-bg);
   white-space: nowrap;
 }

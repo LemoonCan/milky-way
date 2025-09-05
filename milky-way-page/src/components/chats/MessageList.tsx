@@ -20,7 +20,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
-  const { loadMoreOlderMessages, loadingHistory } = useChatStore()
+  const { loadMoreOlderMessages } = useChatStore()
 
   // 添加状态来跟踪滚动方向和加载状态
   const [isScrollingUp, setIsScrollingUp] = useState(false)
@@ -52,16 +52,26 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   // 监听消息变化，确保滚动到底部
   useEffect(() => {
-    if (!loadingHistory && messages.length > 0) {
+    if (!isScrollingUp && messages.length > 0) {
       setTimeout(() => {
         // 再等待浏览器完成布局计算
         requestAnimationFrame(() => {
-          console.log('检测到新消息，滚动到底部')
           scrollToBottomSmooth()
         })
       }, 100)
     }
   }, [messages])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+        setTimeout(() => {
+          // 再等待浏览器完成布局计算
+          requestAnimationFrame(() => {
+            scrollToBottomSmooth()
+          })
+        }, 100)
+      }
+  }, [chatId])
 
   // 处理滚动事件，检测滚动方向
   const handleScroll = useCallback(() => {

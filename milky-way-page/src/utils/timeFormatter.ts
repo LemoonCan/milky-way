@@ -140,10 +140,14 @@ export class TimeFormatter {
       // 检查是否是今天
       const isToday = now.toDateString() === targetDate.toDateString()
       
-      // 检查是否在一周内（不包括今天）
-      const diffInMs = now.getTime() - targetDate.getTime()
-      const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24))
-      const isWithinWeek = diffInDays > 0 && diffInDays <= 7
+      // 检查是否是昨天
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const targetDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
+      const diffInDays = Math.floor((today.getTime() - targetDay.getTime()) / (1000 * 60 * 60 * 24))
+      const isYesterday = diffInDays === 1
+      
+      // 检查是否在一周内（不包括今天和昨天）
+      const isWithinWeek = diffInDays > 1 && diffInDays <= 7
       
       const time = targetDate.toLocaleTimeString('zh-CN', {
         hour: '2-digit',
@@ -153,6 +157,9 @@ export class TimeFormatter {
       if (isToday) {
         // 今天：只展示时:分
         return time
+      } else if (isYesterday) {
+        // 昨天：展示昨天 时:分
+        return `昨天 ${time}`
       } else if (isWithinWeek) {
         // 一周内：展示星期几 时:分
         const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
