@@ -9,11 +9,9 @@ interface MessageTimeHeaderProps {
 export const MessageTimeHeader: React.FC<MessageTimeHeaderProps> = ({ timestamp }) => {
   return (
     <div className={styles.timeHeader}>
-      <div className={styles.timeLine}></div>
       <div className={styles.timeText}>
         {TimeFormatter.formatChineseTime(timestamp)}
       </div>
-      <div className={styles.timeLine}></div>
     </div>
   )
 }
