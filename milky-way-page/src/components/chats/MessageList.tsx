@@ -3,6 +3,7 @@ import { MessageBubble } from './MessageBubble'
 import { MessageTimeHeader } from './MessageTimeHeader'
 import { useChatStore } from '@/store/chat'
 import type { ChatMessagesState } from '@/store/chat'
+import { ChevronsDown } from 'lucide-react'
 import styles from '../../css/chats/MessageList.module.css'
 
 interface MessageListProps {
@@ -83,20 +84,12 @@ export const MessageList: React.FC<MessageListProps> = ({
     
     // 只有当滚动距离足够大时才认为是有效的滚动
     const scrollDiff = Math.abs(currentScrollTop - lastScrollTop)
-    if (scrollDiff > 5) { // 至少滚动5px才认为是有效滚动
+    if (scrollDiff > 10) { // 至少滚动5px才认为是有效滚动
       setIsScrollingUp(isUp)
       setLastScrollTop(currentScrollTop)
     }
 
-    // 清除之前的定时器
-    if (loadMoreTimeoutRef.current) {
-      clearTimeout(loadMoreTimeoutRef.current)
-    }
 
-    // 设置新的定时器，延迟检测滚动停止
-    loadMoreTimeoutRef.current = setTimeout(() => {
-      setIsScrollingUp(false)
-    }, 200) // 增加到200ms，给用户更多时间
   }, [lastScrollTop, hasMoreOlder, isLoading, isLoadingMore])
 
   // 添加滚动监听
@@ -189,6 +182,19 @@ export const MessageList: React.FC<MessageListProps> = ({
 
   return (
     <div className={styles.messagesContainer} ref={messagesContainerRef}>
+      {/* 滚动到底部按钮 - 使用 sticky 布局实现固定效果 */}
+      {isScrollingUp && 
+      <div className={styles.scrollToBottomWrapper}>
+        <button
+          className={styles.scrollToBottomBtn}
+          onClick={scrollToBottomSmooth}
+          title="滚动到底部"
+        >
+          <span>2条新消息</span>
+          <ChevronsDown size={16} />
+        </button>
+      </div>}
+
       {/* 显示是否还有更多历史消息 - 作为 Intersection Observer 的观察目标 */}
       {hasMoreOlder && !isLoading && !isLoadingMore && messages.length > 0 && (
         <div 

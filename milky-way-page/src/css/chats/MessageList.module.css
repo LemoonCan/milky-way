@@ -9,9 +9,63 @@
   gap: 12px;
 }
 
+/* 滚动到底部按钮包装容器 - 使用 sticky 定位但不占用空间 */
+.scrollToBottomWrapper {
+  position: sticky;
+  top: 20px;
+  width: 100%;
+  height: 0;
+  z-index: 1000;
+  pointer-events: none; /* 让容器不拦截点击事件 */
+  overflow: visible; /* 确保按钮可见 */
+}
+
+/* 滚动到底部按钮样式 */
+.scrollToBottomBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 8px 12px;
+  border-radius: 20px; /* 圆角矩形 */
+  background-color: var(--milky-unread);
+  border: none;
+  box-shadow: var(--milky-shadow-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* 图标和文字之间的间距 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  pointer-events: auto; /* 恢复按钮的点击事件 */
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.scrollToBottomBtn:hover {
+  background-color: var(--milky-unread);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(252, 214, 108, 0.3);
+}
+
+.scrollToBottomBtn:active {
+  transform: scale(0.95);
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .messagesContainer {
     padding: 8px;
+  }
+  
+  .scrollToBottomWrapper {
+    top: 16px;
+  }
+  
+  .scrollToBottomBtn {
+    padding: 6px 10px;
+    font-size: 11px;
   }
 }

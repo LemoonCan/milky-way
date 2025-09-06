@@ -44,4 +44,4 @@ export const ChatWindow: React.FC = () => {
       />
     </div>
   )
-} 
+}
