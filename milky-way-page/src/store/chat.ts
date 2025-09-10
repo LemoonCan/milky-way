@@ -171,7 +171,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       console.log(`[ChatStore] 聊天 ${chatId} ${reason}，开始加载消息`)
       try {
         await get().loadChatMessages(chatId, true)
-        set({ currentChatId: chatId })
         console.log(`[ChatStore] 聊天 ${chatId} 消息加载完成`)
       } catch (error) {
         console.error(`[ChatStore] 聊天 ${chatId} 消息加载失败:`, error)
@@ -201,6 +200,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     try {
       // 更新加载状态
       set({
+        currentChatId: chatId,
         chatMessagesMap: {
           ...state.chatMessagesMap,
           [chatId]: {

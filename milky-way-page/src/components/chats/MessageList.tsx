@@ -28,6 +28,7 @@ export const MessageList: React.FC<MessageListProps> = ({
   const [lastScrollTop, setLastScrollTop] = useState(0)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const loadMoreTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const prevChatIdRef = useRef<string>('')
 
   // 判断两个消息是否需要显示时间分隔（间隔>=10分钟）
   const shouldShowTimeHeader = (currentMessage: { sentTime: string; meta: { type: string } }, previousMessage?: { sentTime: string }) => {
@@ -51,46 +52,61 @@ export const MessageList: React.FC<MessageListProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  // 监听消息变化，确保滚动到底部
+  // 统一处理聊天切换和消息更新的滚动逻辑
   useEffect(() => {
-    if (!isScrollingUp && messages.length > 0) {
-      setTimeout(() => {
-        // 再等待浏览器完成布局计算
-        requestAnimationFrame(() => {
-          scrollToBottomSmooth()
-        })
-      }, 100)
-    }
-  }, [messages])
-
-  useEffect(() => {
-    if (messages.length > 0) {
+    if(isLoading) return;
+    const isNewChat = prevChatIdRef.current !== chatId
+    prevChatIdRef.current = chatId
+    console.log('isNewChat', isNewChat)
+    if (isNewChat) {
+      // 切换到新聊天：重置所有滚动相关状态
+      setIsScrollingUp(false)
+      setLastScrollTop(0)
+      setIsLoadingMore(false)
+      
+      // 新聊天总是滚动到底部
+      if (messages.length > 0) {
         setTimeout(() => {
-          // 再等待浏览器完成布局计算
           requestAnimationFrame(() => {
             scrollToBottomSmooth()
           })
         }, 100)
       }
-  }, [chatId])
+    } else {
+      // 同一聊天的消息更新：只有在没有上滑时才自动滚动到底部
+      if (!isScrollingUp && messages.length > 0) {
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            scrollToBottomSmooth()
+          })
+        }, 100)
+      }
+    }
+  }, [chatId, messages.length])
 
   // 处理滚动事件，检测滚动方向
   const handleScroll = useCallback(() => {
     const container = messagesContainerRef.current
     if (!container) return
 
+    // 如果聊天ID与记录的不一致，说明正在切换
+  if (prevChatIdRef.current !== chatId) {
+    console.log('检测到聊天切换，忽略滚动事件')
+    return
+  }
+
     const currentScrollTop = container.scrollTop
     const isUp = currentScrollTop < lastScrollTop
     
     // 只有当滚动距离足够大时才认为是有效的滚动
     const scrollDiff = Math.abs(currentScrollTop - lastScrollTop)
-    if (scrollDiff > 10) { // 至少滚动5px才认为是有效滚动
+    if (scrollDiff > 20) {
       setIsScrollingUp(isUp)
       setLastScrollTop(currentScrollTop)
     }
 
 
-  }, [lastScrollTop, hasMoreOlder, isLoading, isLoadingMore])
+  }, [lastScrollTop, chatId])
 
   // 添加滚动监听
   useEffect(() => {
