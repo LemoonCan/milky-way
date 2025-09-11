@@ -32,6 +32,7 @@ export const ChatWindow: React.FC = () => {
       <MessageList
         chatState={chatState}
         chatId={currentChat.id}
+        chat={currentChat}
       />
 
       {/* 输入工具栏 */}

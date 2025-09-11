@@ -41,7 +41,7 @@ export interface MessageManagerStore {
  * 消息管理器 Zustand Store
  * 统一处理消息发送、状态更新等操作
  */
-export const useMessageManagerStore = create<MessageManagerStore>()((set, get) => ({
+export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) => ({
   /**
    * 生成客户端消息ID
    */
@@ -359,7 +359,7 @@ export const useMessageManagerStore = create<MessageManagerStore>()((set, get) =
             fileData: undefined // 清除本地文件数据，因为已经上传成功
           })
 
-          // 🆕 更新聊天列表排序 - 将该聊天移动到头部
+          // 更新聊天列表排序 - 将该聊天移动到头部
           const chatStore = useChatStore.getState()
           const chat = chatStore.chats.find(c => c.id === messageDTO.chatId)
           if (chat) {

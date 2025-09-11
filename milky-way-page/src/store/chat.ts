@@ -64,7 +64,7 @@ export interface ChatMessagesState {
   hasMoreOlder: boolean
   oldestMessageId?: string
   newestMessageId?: string
-  error?: string
+  error?: string,
 }
 
 export interface ChatStore {
@@ -154,13 +154,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     lastMessageId: undefined,
     error: null,
   
-  setCurrentChat: async (chatId: string) => {
-    console.log(`[ChatStore] setCurrentChat 被调用，chatId: ${chatId}`)
-    
+  setCurrentChat: async (chatId: string) => {    
     const state = get()
-    const chat = state.chats.find(chat => chat.id === chatId)
-    console.log(`[ChatStore] 找到聊天:`, chat ? `${chat.name}, 未读数量: ${chat.unreadCount}` : '未找到')
-    
+    const chat = state.chats.find(chat => chat.id === chatId)    
     const existingChatState = state.chatMessagesMap[chatId]
     
     // 检查是否需要加载消息
@@ -327,18 +323,15 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   
-  addMessage: (message: ClientMessageDTO) => {
-    console.log(`[ChatStore] addMessage 被调用 - chatId: ${message.chatId}, clientMsgId: ${message.clientMsgId}`)
-    
+  addMessage: (message: ClientMessageDTO) => {    
     const state = get()
     const currentChatState = state.chatMessagesMap[message.chatId] || {
       messages: [],
       isLoading: false,
       hasMoreOlder: false
     }
-    
-    console.log(`[ChatStore] 消息添加到聊天 ${message.chatId}，消息ID: ${message.id}, clientMsgId: ${message.clientMsgId}, 状态: ${message.sendStatus}`)
-    
+    console.log(`[ChatStore] 原状态`,currentChatState)
+        
     set({
       chatMessagesMap: {
         ...state.chatMessagesMap,
@@ -349,8 +342,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       }
     })
-    
-    console.log(`[ChatStore] 消息添加完成，聊天 ${message.chatId} 现有 ${currentChatState.messages.length + 1} 条消息`)
+    console.log(`[ChatStore] 消息添加完成`,state.chatMessagesMap[message.chatId])
   },
 
 
@@ -541,7 +533,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // 更新聊天信息
     if (chat) {
       // 检查是否是自己发送的消息（在前面已经做过了，这里直接使用）
-      const shouldIncreaseUnread = !isMyMessage && state.currentChatId !== chatId
+      const shouldIncreaseUnread = !isMyMessage
       
       console.log(`[ChatStore] 更新聊天信息 - 聊天ID: ${chatId}, 是否增加未读: ${shouldIncreaseUnread}`)
       
