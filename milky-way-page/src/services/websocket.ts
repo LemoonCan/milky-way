@@ -1,7 +1,8 @@
 import { Client, StompConfig, ActivationState } from '@stomp/stompjs'
 import type { IMessage, StompSubscription } from '@stomp/stompjs'
 import { tokenManager } from '../lib/http'
-import type { MessageDTO, MessageNotifyDTO } from '../types/api'
+import type { MessageNotifyDTO } from '../types/api'
+import type { MessageDTO } from './chat'
 import EnvConfig from '../lib/env'
 
 export interface WebSocketMessage {

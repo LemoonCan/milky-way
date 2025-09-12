@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Avatar } from '../Avatar'
 import { MessageCircle, UserCheck, Phone, Video } from 'lucide-react'
 import { FriendApplicationVerifyDialog } from './FriendApplicationVerifyDialog'
-import type { FriendApplication } from '../../types/api'
+import type { FriendApplication } from '../../services/friend'
 import styles from '../../css/friends/FriendApplicationDetail.module.css'
 import { EmojiText } from '../EmojiText'
 

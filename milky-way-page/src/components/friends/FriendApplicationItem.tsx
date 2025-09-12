@@ -1,6 +1,6 @@
 import React from 'react'
 import { Avatar } from '../Avatar'
-import type { FriendApplication } from '../../types/api'
+import type { FriendApplication } from '../../services/friend'
 import styles from '../../css/friends/FriendApplicationItem.module.css'
 import { EmojiText } from '../EmojiText'
 

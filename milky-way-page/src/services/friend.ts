@@ -1,14 +1,91 @@
 import http from '../lib/http'
-import type { 
-  ApiResponse, 
-  FriendListData,
-  FriendApplicationListData,
-  FriendsQueryParams,
-  FriendApplicationsQueryParams,
-  AddFriendRequest,
-  HandleFriendApplicationRequest,
-  User
-} from '../types/api'
+import type { ApiResponse } from '../types/api'
+import type { SimpleUserDTO } from './user'
+import type { User } from './user'
+
+// 好友申请类型
+export interface FriendApplication {
+  id: string
+  fromUser: SimpleUserDTO
+  toUser: SimpleUserDTO
+  applyMsg?: string
+  applyChannel?: string // 申请来源渠道
+  status: 'APPLYING' | 'ACCEPTED' | 'REJECTED'
+  createTime?: string
+  updateTime?: string
+}
+
+// 好友申请DTO
+export interface FriendApplicationDTO {
+  id: string
+  fromUser: SimpleUserDTO
+  toUser: SimpleUserDTO
+  applyChannel?: string
+  applyMsg?: string
+  status: 'APPLYING' | 'ACCEPTED' | 'REJECTED'
+  createTime: string
+}
+
+// 好友关系类型 (API返回的嵌套结构)
+export interface Friend {
+  friend: SimpleUserDTO
+  remark?: string
+  status: 'ESTABLISHED' | 'BLACKLISTED'
+  permission?: string | null
+}
+
+// 好友操作参数
+export interface FriendOperateRequest {
+  friendUserId: string
+}
+
+// 好友列表分页响应 - 基于实际API响应
+export interface FriendListData {
+  items: Friend[]
+  hasNext: boolean
+  size: number
+}
+
+// 好友申请列表分页响应
+export interface FriendApplicationListData {
+  items: FriendApplication[]
+  hasNext: boolean
+  size: number
+}
+
+// 好友列表查询参数
+export interface FriendsQueryParams {
+  lastLetter?: string
+  lastNickName?: string
+  pageSize: number
+}
+
+// 好友申请查询参数
+export interface FriendApplicationsQueryParams {
+  lastId?: string
+  pageSize: number
+}
+
+// 添加好友参数
+export interface AddFriendRequest {
+  toUserId: string
+  applyMessage: string
+  applyChannel?: string // 申请来源渠道
+  extraInfo?: {
+    remark?: string
+    permission?: 'ALL' | 'CHAT'
+  }
+}
+
+// 处理好友申请参数
+export interface HandleFriendApplicationRequest {
+  friendApplicationId: string
+  status: 'ACCEPTED' | 'REJECTED'
+  extraInfo?: {
+    remark?: string
+    permission?: 'ALL' | 'CHAT'
+  }
+}
 
 // 好友服务类
 class FriendService {

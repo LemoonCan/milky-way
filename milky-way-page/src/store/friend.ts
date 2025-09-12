@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { friendService } from '../services'
-import type { Friend, FriendApplication, User, FriendRelation } from '../types/api'
+import type { Friend } from '../services/friend'
+import type { FriendApplication } from '../services/friend'
+import type { User } from '../services/user'
 
 interface FriendState {
   // 状态
@@ -46,7 +48,7 @@ interface FriendState {
   
   // 本地数据更新方法
   addFriendApplicationLocally: (application: FriendApplication) => void
-  addFriendLocally: (friendRelation: FriendRelation) => void
+  addFriendLocally: (friendRelation: Friend) => void
 }
 
 export const useFriendStore = create<FriendState>((set, get) => ({
@@ -101,17 +103,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       const response = await friendService.getFriends(params)
       
       if (response.success && response.data) {
-        // 转换数据结构以匹配组件预期的格式
-        const transformedFriends: Friend[] = response.data.items.map((relation: FriendRelation) => ({
-          id: relation.friend.id,
-          openId: relation.friend.openId,
-          nickName: relation.friend.nickName,
-          nickNameFirstLetter: relation.friend.nickNameFirstLetter,
-          avatar: relation.friend.avatar,
-          remark: relation.remark,
-          status: relation.status,
-          permission: relation.permission
-        }))
+        // 直接使用嵌套的Friend结构
+        const transformedFriends: Friend[] = response.data.items
         
         // 更新游标信息
         let newLastLetter = null
@@ -119,8 +112,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         
         if (transformedFriends.length > 0) {
           const lastFriend = transformedFriends[transformedFriends.length - 1]
-          newLastLetter = lastFriend.nickNameFirstLetter
-          newLastNickName = lastFriend.nickName
+          newLastLetter = lastFriend.friend.nickNameFirstLetter
+          newLastNickName = lastFriend.friend.nickName
         }
         
         set({
@@ -263,8 +256,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success) {
         set({ 
-          friends: get().friends.filter(f => f.id !== friendUserId),
-          selectedFriend: get().selectedFriend?.id === friendUserId ? null : get().selectedFriend,
+          friends: get().friends.filter(f => f.friend.id !== friendUserId),
+          selectedFriend: get().selectedFriend?.friend.id === friendUserId ? null : get().selectedFriend,
           isLoading: false 
         })
         // 更新好友总数
@@ -286,9 +279,9 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success) {
         const updatedFriends = get().friends.map(f =>
-          f.id === friendUserId ? { ...f, status: 'BLACKLISTED' as const } : f
+          f.friend.id === friendUserId ? { ...f, status: 'BLACKLISTED' as const } : f
         )
-        const updatedSelectedFriend = get().selectedFriend?.id === friendUserId
+        const updatedSelectedFriend = get().selectedFriend?.friend.id === friendUserId
           ? { ...get().selectedFriend!, status: 'BLACKLISTED' as const }
           : get().selectedFriend
         
@@ -314,9 +307,9 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success) {
         const updatedFriends = get().friends.map(f => 
-          f.id === friendUserId ? { ...f, status: 'ESTABLISHED' as const } : f
+          f.friend.id === friendUserId ? { ...f, status: 'ESTABLISHED' as const } : f
         )
-        const updatedSelectedFriend = get().selectedFriend?.id === friendUserId
+        const updatedSelectedFriend = get().selectedFriend?.friend.id === friendUserId
           ? { ...get().selectedFriend!, status: 'ESTABLISHED' as const }
           : get().selectedFriend
         
@@ -464,35 +457,28 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     console.log(`[Friend Store] 新好友信息:`, friendRelation)
     
     // 检查是否已存在相同ID的好友，避免重复添加
-    const existingIndex = currentState.friends.findIndex(friend => friend.id === friendRelation.friend.id)
+    const existingIndex = currentState.friends.findIndex(friend => friend.friend.id === friendRelation.friend.id)
     if (existingIndex !== -1) {
       console.log('[Friend Store] 好友已存在，跳过添加')
       return
     }
     
-    // 将FriendRelation转换为Friend类型
-    const newFriend: Friend = {
-      id: friendRelation.friend.id,
-      openId: friendRelation.friend.openId,
-      nickName: friendRelation.friend.nickName,
-      nickNameFirstLetter: friendRelation.friend.nickNameFirstLetter,
-      avatar: friendRelation.friend.avatar,
-      remark: friendRelation.remark,
-      status: friendRelation.status,
-      permission: friendRelation.permission
-    }
+    // 直接使用嵌套的Friend结构
+    const newFriend: Friend = friendRelation
     
     // 根据首字母排序插入到正确位置
     const newFriends = [...currentState.friends, newFriend].sort((a, b) => {
       // 先按首字母排序
-      const letterCompare = a.nickNameFirstLetter.localeCompare(b.nickNameFirstLetter)
+      const aLetter = a.friend.nickNameFirstLetter || ''
+      const bLetter = b.friend.nickNameFirstLetter || ''
+      const letterCompare = aLetter.localeCompare(bLetter)
       if (letterCompare !== 0) return letterCompare
       // 再按昵称排序
-      return a.nickName.localeCompare(b.nickName)
+      return a.friend.nickName.localeCompare(b.friend.nickName)
     })
     
     console.log(`[Friend Store] 新好友已添加到列表，新列表长度: ${newFriends.length}`)
-    console.log(`[Friend Store] 新列表内容:`, newFriends.map(friend => ({ id: friend.id, nickName: friend.nickName, status: friend.status })))
+    console.log(`[Friend Store] 新列表内容:`, newFriends.map(friend => ({ id: friend.friend.id, nickName: friend.friend.nickName, status: friend.status })))
     
     set({ 
       friends: newFriends,

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Avatar } from '../Avatar'
-import type { Friend } from '../../types/api'
+import type { Friend } from '../../services/friend'
 import styles from '../../css/friends/FriendListItem.module.css'
 import { EmojiText } from '../EmojiText'
 
@@ -22,8 +22,8 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({
     >
       <div className={styles.avatarContainer}>
         <Avatar
-          avatarUrl={friend.avatar}
-          userId={friend.id}
+          avatarUrl={friend.friend.avatar}
+          userId={friend.friend.id}
           size={44}
         />
         {friend.status === 'BLACKLISTED' && (
@@ -35,7 +35,7 @@ export const FriendListItem: React.FC<FriendListItemProps> = ({
       
       <div className={styles.friendInfo}>
         <div className={styles.nickName}>
-          <EmojiText text={friend.remark || friend.nickName} size="1em" />
+          <EmojiText text={friend.remark || friend.friend.nickName} size="1em" />
         </div>
       </div>
     </div>

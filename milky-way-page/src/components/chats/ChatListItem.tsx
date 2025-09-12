@@ -2,11 +2,11 @@ import React from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
 import { TimeFormatter } from '@/utils/timeFormatter'
-import type { Chat } from '@/store/chat'
+import type { ChatInfoDTO } from '../../services/chat'
 import styles from '../../css/chats/ChatListItem.module.css'
 
 interface ChatListItemProps {
-  chat: Chat
+  chat: ChatInfoDTO
   isActive: boolean
   onClick: () => void
 }
@@ -42,10 +42,10 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       <div className={styles.chatItemContent}>
         <div className={styles.chatItemHeader}>
           <h3 className={styles.chatItemName}>
-            <EmojiText text={chat.name} size="1em" />
+            <EmojiText text={chat.title} size="1em" />
           </h3>
           <span className={styles.chatItemTime}>
-            {TimeFormatter.formatRelativeTime(chat.lastMessageTime)}
+            {TimeFormatter.formatRelativeTime(new Date(chat.lastMessageTime))}
           </span>
         </div>
         <p className={styles.chatItemMessage}>

@@ -2,14 +2,15 @@ import React, { useRef, useEffect, useCallback, useState, useMemo } from "react"
 import { MessageBubble } from "./MessageBubble";
 import { MessageTimeHeader } from "./MessageTimeHeader";
 import { useChatStore, isMessageFromMe } from "@/store/chat";
-import type { ChatMessagesState, Chat } from "@/store/chat";
+import type { ChatMessagesState } from "@/store/chat";
+import type { ChatInfoDTO } from "../../services/chat";
 import { ChevronsDown } from "lucide-react";
 import styles from "../../css/chats/MessageList.module.css";
 
 interface MessageListProps {
   chatState: ChatMessagesState | undefined;
   chatId: string;
-  chat: Chat;
+  chat: ChatInfoDTO;
 }
 
 export const MessageList: React.FC<MessageListProps> = ({
@@ -39,7 +40,7 @@ export const MessageList: React.FC<MessageListProps> = ({
     previousMessage?: { sentTime: string }
   ) => {
     // 系统消息不显示时间分隔
-    if (currentMessage.meta.type === "SYSTEM") return false;
+    // if (currentMessage.meta.type === "SYSTEM") return false;
 
     if (!previousMessage) return true; // 第一条消息总是显示时间
 
@@ -49,8 +50,8 @@ export const MessageList: React.FC<MessageListProps> = ({
     // 计算时间差（毫秒）
     const timeDiff = currentTime.getTime() - previousTime.getTime();
 
-    // 如果时间差大于等于10分钟（600000毫秒），则显示时间分隔
-    return timeDiff >= 10 * 60 * 1000;
+    // 如果时间差大于等于5分钟（600000毫秒），则显示时间分隔
+    return timeDiff >= 5 * 60 * 1000;
   };
 
   const scrollToBottomSmooth = useCallback(() => {

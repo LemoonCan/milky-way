@@ -4,7 +4,7 @@ import { Avatar } from '../Avatar'
 import { useFriendStore } from '../../store/friend'
 import {chatService, type CreateGroupChatRequest } from '../../services/chat'
 import { useChatStore } from '@/store/chat'
-import type { Friend } from '../../types/api'
+import type { Friend } from '../../services/friend'
 import styles from '../../css/chats/CreateGroupChatDialog.module.css'
 
 interface CreateGroupChatDialogProps {
@@ -48,10 +48,10 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
     
     const query = searchQuery.toLowerCase()
     return friends.filter((friend: Friend) => {
-      const displayName = friend.remark || friend.nickName
+      const displayName = friend.remark || friend.friend.nickName
       return (
         displayName.toLowerCase().includes(query) ||
-        friend.nickName.toLowerCase().includes(query)
+        friend.friend.nickName.toLowerCase().includes(query)
       )
     })
   }, [friends, searchQuery])
@@ -59,9 +59,9 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
   // 切换好友选择状态
   const toggleFriendSelection = (friend: Friend) => {
     setSelectedFriends(prev => {
-      const isSelected = prev.find(f => f.id === friend.id)
+      const isSelected = prev.find(f => f.friend.id === friend.friend.id)
       if (isSelected) {
-        return prev.filter(f => f.id !== friend.id)
+        return prev.filter(f => f.friend.id !== friend.friend.id)
       } else {
         return [...prev, friend]
       }
@@ -70,7 +70,7 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
 
   // 移除选中的好友
   const removeFriend = (friendId: string) => {
-    setSelectedFriends(prev => prev.filter(f => f.id !== friendId))
+    setSelectedFriends(prev => prev.filter(f => f.friend.id !== friendId))
   }
 
   // 创建群聊
@@ -95,7 +95,7 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
       const request: CreateGroupChatRequest = {
         chatType: 'GROUP',
         title: groupName.trim(),
-        members: selectedFriends.map(f => f.id)
+        members: selectedFriends.map(f => f.friend.id)
       }
       
       const chatId = await createGroupChat(request)
@@ -153,17 +153,17 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
               </div>
               <div className={styles.selectedFriends}>
                 {selectedFriends.map((friend) => (
-                  <div key={friend.id} className={styles.selectedFriend}>
+                  <div key={friend.friend.id} className={styles.selectedFriend}>
                     <Avatar
-                      avatarUrl={friend.avatar}
-                      userId={friend.id}
+                      avatarUrl={friend.friend.avatar}
+                      userId={friend.friend.id}
                       size={40}
                     />
                     <div className={styles.selectedFriendName}>
-                      {friend.remark || friend.nickName}
+                      {friend.remark || friend.friend.nickName}
                     </div>
                     <button
-                      onClick={() => removeFriend(friend.id)}
+                      onClick={() => removeFriend(friend.friend.id)}
                       className={styles.removeFriendButton}
                     >
                       <X size={16} />
@@ -184,21 +184,21 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
                 </div>
               ) : (
                 filteredFriends.map((friend) => {
-                  const isSelected = selectedFriends.find(f => f.id === friend.id)
+                  const isSelected = selectedFriends.find(f => f.friend.id === friend.friend.id)
                   return (
                     <div
-                      key={friend.id}
+                      key={friend.friend.id}
                       className={`${styles.friendItem} ${isSelected ? styles.selected : ''}`}
                       onClick={() => toggleFriendSelection(friend)}
                     >
                                              <Avatar
-                         avatarUrl={friend.avatar}
-                         userId={friend.id}
+                         avatarUrl={friend.friend.avatar}
+                         userId={friend.friend.id}
                          size={40}
                        />
                        <div className={styles.friendInfo}>
                          <div className={styles.friendName}>
-                           {friend.remark || friend.nickName}
+                           {friend.remark || friend.friend.nickName}
                          </div>
                        </div>
                       <div className={styles.checkIcon}>

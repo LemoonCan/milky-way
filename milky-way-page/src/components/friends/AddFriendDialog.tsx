@@ -3,7 +3,7 @@ import { Search, X, UserPlus } from 'lucide-react'
 import { Avatar } from '../Avatar'
 import { useFriendStore } from '../../store/friend'
 import { useUserStore } from '../../store/user'
-import type { User } from '../../types/api'
+import type { User } from '../../services/user'
 import { showError, handleAndShowError } from '../../lib/globalErrorHandler'
 import styles from '../../css/friends/AddFriendDialog.module.css'
 

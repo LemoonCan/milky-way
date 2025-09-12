@@ -326,7 +326,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
       await get().initialize()
       
       // 添加消息处理器
-      webSocketClient.addNewMessageHandler(useMessageManagerStore.getState().handleWebSocketMessage)
+      webSocketClient.addNewMessageHandler(useMessageManagerStore.getState().handleNewMessage)
       webSocketClient.addReceiptHandler(useMessageManagerStore.getState().handleMessageReceipt)
       
       // 添加通知处理器

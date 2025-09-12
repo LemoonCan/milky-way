@@ -3,7 +3,7 @@ import { Send, Smile, X } from 'lucide-react'
 import { Button } from '../ui/button'
 import { EmojiPicker } from '../chats/EmojiPicker'
 import { useMomentStore } from '../../store/moment'
-import type { SimpleUserDTO } from '../../types/api'
+import type { SimpleUserDTO } from '../../services/user'
 import styles from '../../css/moments/CommentInput.module.css'
 
 interface CommentInputProps {

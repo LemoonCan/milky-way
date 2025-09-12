@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { X } from 'lucide-react'
 import { Avatar } from '../Avatar'
 import { useFriendStore } from '../../store/friend'
-import type { FriendApplication } from '../../types/api'
+import type { FriendApplication } from '../../services/friend'
 import styles from '../../css/friends/FriendApplicationVerifyDialog.module.css'
 
 interface FriendApplicationVerifyDialogProps {

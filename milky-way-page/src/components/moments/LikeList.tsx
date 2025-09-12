@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { Heart } from 'lucide-react'
 import { Avatar } from '../Avatar'
 import { ProfileModal } from '../ProfileModal'
-import type { SimpleUserDTO } from '../../types/api'
+import type { SimpleUserDTO } from '../../services/user'
 import styles from '../../css/moments/LikeList.module.css'
 
 interface LikeListProps {

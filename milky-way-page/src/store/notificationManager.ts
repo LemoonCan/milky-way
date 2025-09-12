@@ -6,14 +6,12 @@ import { useMomentStore } from './moment'
 import { webSocketClient } from '../services/websocket'
 import type { 
   MessageNotifyDTO,
-  FriendApplicationDTO,
-  FriendApplication,
-  FriendRelation,
   LikeDTO,
   CommentWithMomentDTO,
   UnlikeDTO,
   MomentDTO
 } from '../types/api'
+import type { FriendApplicationDTO, FriendApplication, Friend as FriendRelation } from '../services/friend'
 import type { ChatInfoDTO } from '../services/chat'
 
 // 类型转换函数：将FriendApplicationDTO转换为FriendApplication

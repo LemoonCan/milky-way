@@ -4,7 +4,8 @@ import { FriendListItem } from './FriendListItem'
 import { FriendApplicationItem } from './FriendApplicationItem'
 import { TitleBar } from '../TitleBar'
 import { useFriendStore } from '../../store/friend'
-import type { Friend, FriendApplication } from '../../types/api'
+import type { Friend } from '../../services/friend'
+import type { FriendApplication } from '../../services/friend'
 import styles from '../../css/friends/FriendList.module.css'
 
 interface FriendListProps {
@@ -58,10 +59,10 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     
     const query = searchQuery.toLowerCase()
     return friendsList.filter((friend: Friend) => {
-      const displayName = friend.remark || friend.nickName
+      const displayName = friend.remark || friend.friend.nickName
       return (
         displayName.toLowerCase().includes(query) ||
-        friend.nickName.toLowerCase().includes(query)
+        friend.friend.nickName.toLowerCase().includes(query)
       )
     })
   }, [friends, searchQuery])
@@ -274,9 +275,9 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
                 <div className={styles.friendsContainer} ref={friendsContainerRef}>
                   {filteredFriends.map((friend) => (
                     <FriendListItem
-                      key={friend.id}
+                      key={friend.friend.id}
                       friend={friend}
-                      isActive={selectedFriend?.id === friend.id}
+                      isActive={selectedFriend?.friend.id === friend.friend.id}
                       onClick={() => handleSelectFriend(friend)}
                     />
                   ))}

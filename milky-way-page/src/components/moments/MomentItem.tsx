@@ -13,7 +13,8 @@ import { ImagePreviewModal } from '../ImagePreviewModal'
 import { TimeFormatter } from '@/utils/timeFormatter'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
-import type { MomentDTO, SimpleUserDTO } from '../../types/api'
+import type { MomentDTO } from '../../types/api'
+import type { SimpleUserDTO } from '../../services/user'
 import styles from '../../css/moments/MomentItem.module.css'
 
 interface MomentItemProps {

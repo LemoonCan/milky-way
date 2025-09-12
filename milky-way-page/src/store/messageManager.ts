@@ -1,16 +1,14 @@
 import { create } from 'zustand'
 import { chatService, MessageMetaHelper, type MessageDTO, type MessageMeta, type FileData, type ClientMessageDTO } from '../services/chat'
 import { fileService, FilePermission } from '../services/file'
-import { useChatStore } from './chat'
+import { useChatStore, isMessageFromMe } from './chat'
 import { useUserStore } from './user'
 import type { MessageReceipt } from '../services/websocket'
 
 /**
  * 消息管理器状态接口
  */
-export interface MessageManagerStore {
-  // 状态（如果需要的话，目前主要是行为方法）
-  
+export interface MessageManagerStore {  
   // 方法
   generateClientMsgId: () => string
   validateUser: () => { id: string; openId: string; nickName: string; avatar?: string }
@@ -32,7 +30,7 @@ export interface MessageManagerStore {
   sendTextMessage: (chatId: string, content: string, message?: ClientMessageDTO) => Promise<void>
   sendFileMessage: (chatId: string, file?: File, message?: ClientMessageDTO) => Promise<void>
   uploadFile: (message: ClientMessageDTO) => Promise<void>
-  handleWebSocketMessage: (messageDTO: MessageDTO) => void
+  handleNewMessage: (messageDTO: MessageDTO) => void
   handleMessageReceipt: (receipt: MessageReceipt) => void
   retryMessage: (chatId: string, clientMsgId: string) => Promise<void>
 }
@@ -90,8 +88,7 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
       ...(fileData && { fileData }),
     };
     useChatStore.getState().addMessage(message);
-    
-    console.log(`[MessageManager] 消息已添加到本地列表 - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
+
     return message
   },
 
@@ -123,10 +120,8 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
         }
       }, 15000)
       
-      console.log(`[MessageManager] WebSocket发送完成 - clientMsgId: ${clientMsgId}`)
     } catch (error) {
-      console.error(`[MessageManager] WebSocket发送失败:`, error)
-      
+      console.error(`消息发送失败:`, error)
       // 标记消息为发送失败
       get().updateMessageByClientId(chatId, clientMsgId, {
         sendStatus: 'failed'
@@ -321,18 +316,48 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
   /**
    * 处理WebSocket消息
    */
-  handleWebSocketMessage: (messageDTO: MessageDTO): void => {
-    console.log('[MessageManager] 收到WebSocket消息:', messageDTO)
-    // 使用 addRealTimeMessage 处理，它包含了重复检查和群聊逻辑
-    useChatStore.getState().addRealTimeMessage(messageDTO.chatId, messageDTO)
+  handleNewMessage: (messageDTO: MessageDTO): void => {
+    const chatStore = useChatStore.getState()
+    const chatId = messageDTO.chatId
+    const currentChatState = chatStore.chatMessagesMap[chatId]    
+    
+    // 如果收到的是自己发送的消息，直接跳过所有处理
+    // 消息回执已经处理了聊天列表的更新
+    const isMyMessage = isMessageFromMe(messageDTO)
+    if (isMyMessage) {
+      return
+    }
+    
+    // 检查消息是否已存在（避免重复添加）
+    if (currentChatState) {
+      const existingMessage = currentChatState.messages.find(msg => {
+        // 通过消息ID匹配
+        if (msg.id === messageDTO.id) {
+          return true
+        }
+        return false
+      })
+      
+      if (existingMessage) {
+        return
+      }
+    }
+    
+    // 有消息缓存，正常添加消息到列表，无消息缓存，只更新聊天项信息，不添加消息到列表
+    // 用户打开聊天时会触发完整的历史消息加载
+    const hasMessageCache = currentChatState && currentChatState.messages && currentChatState.messages.length > 0
+    if (hasMessageCache) {
+      chatStore.addMessage(messageDTO)
+    }
+
+    // 聊天置顶并增加未读数量
+    chatStore.moveChatToTop(chatId, messageDTO, true)
   },
 
   /**
    * 处理消息回执
    */
-  handleMessageReceipt: (receipt: MessageReceipt): void => {
-    console.log('[MessageManager] 处理消息回执:', receipt)
-    
+  handleMessageReceipt: (receipt: MessageReceipt): void => {    
     try {
       // 回执数据结构是 Result<MessageDTO>
       if (receipt.success) {
@@ -344,12 +369,7 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
           msg.clientMsgId === messageDTO.clientMsgId
         )
         
-        if (localMessage) {
-          console.log(`[MessageManager] 找到本地消息，更新为服务器消息:`, {
-            clientMsgId: messageDTO.clientMsgId,
-            serverId: messageDTO.id
-          })
-          
+        if (localMessage) {          
           // 更新本地消息为服务器返回的完整消息
           get().updateMessageByClientId(messageDTO.chatId, messageDTO.clientMsgId!, {
             id: messageDTO.id, // 更新为服务器ID
@@ -361,25 +381,7 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
 
           // 更新聊天列表排序 - 将该聊天移动到头部
           const chatStore = useChatStore.getState()
-          const chat = chatStore.chats.find(c => c.id === messageDTO.chatId)
-          if (chat) {
-            console.log(`[MessageManager] 更新聊天列表排序，将聊天 ${messageDTO.chatId} 移动到头部`)
-            
-            const updatedChat = {
-              ...chat,
-              lastMessage: messageDTO.meta.content || '',
-              lastMessageTime: new Date(messageDTO.sentTime),
-              lastMessageId: messageDTO.id
-            }
-            
-            // 将更新的聊天移到列表顶部
-            const otherChats = chatStore.chats.filter(c => c.id !== messageDTO.chatId)
-            const reorderedChats = [updatedChat, ...otherChats]
-            
-            useChatStore.setState({ chats: reorderedChats })
-          }
-        } else {
-          console.warn(`[MessageManager] 未找到对应的本地消息:`, messageDTO.clientMsgId)
+          chatStore.moveChatToTop(messageDTO.chatId, messageDTO, false)
         }
       } else {
         const failMessage = receipt.data;
@@ -389,7 +391,7 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
         });
       }
     } catch (error) {
-      console.error('[MessageManager] 处理消息回执时出错:', error)
+      console.error('处理消息回执时出错:', error)
     }
   },
 
@@ -410,6 +412,6 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
       // 文件消息，重新上传和发送
       return get().sendFileMessage(chatId, message.fileData?.originalFile, message)
     } 
-  }
+  },
 }))
 

@@ -1,5 +1,26 @@
 import http from '../lib/http'
-import type { ApiResponse, User } from '../types/api'
+import type { ApiResponse } from '../types/api'
+
+// 简单用户信息DTO
+export interface SimpleUserDTO {
+  id: string
+  openId: string
+  nickName: string
+  nickNameFirstLetter?: string | null
+  avatar?: string
+}
+
+// 用户信息类型
+export interface User {
+  id: string
+  openId: string
+  nickName: string
+  phone?: string
+  avatar?: string
+  individualSignature?: string // 个性签名
+  createTime?: string
+  updateTime?: string
+}
 
 // 用户信息更新请求类型
 export interface UpdateUserRequest {

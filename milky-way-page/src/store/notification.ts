@@ -4,12 +4,12 @@ import type {
   NotificationItem, 
   NotificationStats, 
   MessageNotifyDTO, 
-  FriendApplicationDTO,
   ChatInfoDTO,
   MomentDTO,
   LikeDTO,
   CommentWithMomentDTO
 } from '../types/api'
+import type { FriendApplicationDTO } from '../services/friend'
 
 interface NotificationStore {
   // 状态

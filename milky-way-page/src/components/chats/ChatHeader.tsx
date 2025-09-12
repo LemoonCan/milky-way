@@ -5,11 +5,11 @@ import { EmojiText } from '../EmojiText'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { chatService } from '../../services/chat'
 import { useChatStore } from '@/store/chat'
-import type { Chat } from '@/store/chat'
+import type { ChatInfoDTO } from '../../services/chat'
 import styles from '../../css/chats/ChatHeader.module.css'
 
 interface ChatHeaderProps {
-  chat: Chat
+  chat: ChatInfoDTO
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
@@ -79,7 +79,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         />
         <div className={styles.chatHeaderInfo}>
           <h2 className={styles.chatHeaderName}>
-            <EmojiText text={chat.name} size="1em" />
+            <EmojiText text={chat.title} size="1em" />
             {chat.chatType === 'SINGLE' && (
               <span className={styles.chatHeaderStatus}>
                 ({chat.online ? '在线' : '离线'})
@@ -119,7 +119,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       <ConfirmDialog
         isOpen={showDeleteChatDialog}
         title="解散群聊"
-        message={`确定要解散群聊 "${chat?.name}" 吗？\n解散后所有成员将无法再在此群聊中发送消息。`}
+        message={`确定要解散群聊 "${chat?.title}" 吗？\n解散后所有成员将无法再在此群聊中发送消息。`}
         confirmText={isDeleting ? "解散中..." : "解散群聊"}
         cancelText="取消"
         onConfirm={confirmDeleteChat}

@@ -3,7 +3,8 @@ import { ChatListItem } from './ChatListItem'
 import { TitleBar } from '../TitleBar'
 import { CreateGroupChatDialog } from './CreateGroupChatDialog'
 import { Search, SmilePlus } from 'lucide-react'
-import { useChatStore, type Chat } from '@/store/chat'
+import { useChatStore } from '@/store/chat'
+import type { ChatInfoDTO } from '../../services/chat'
 import styles from '../../css/chats/ChatList.module.css'
 import { useConnectionManagerStore } from '@/store/connectionManager'
 import { ConnectionStatus } from '@/services/websocket'
@@ -32,10 +33,10 @@ export const ChatList: React.FC = () => {
     if(connectionStatus === ConnectionStatus.CONNECTED){
       loadChatList() // 刷新模式，清空现有数据重新加载
     }
-  }, [connectionStatus])
+  }, [connectionStatus, loadChatList])
 
-  const filteredChats = chats.filter((chat: Chat) =>
-    chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredChats = chats.filter((chat: ChatInfoDTO) =>
+    chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -87,7 +88,7 @@ export const ChatList: React.FC = () => {
           </div>
         ) : (
           <div>
-            {filteredChats.map((chat: Chat) => (
+            {filteredChats.map((chat: ChatInfoDTO) => (
               <ChatListItem
                 key={chat.id}
                 chat={chat}

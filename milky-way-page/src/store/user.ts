@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { userService } from '../services/user'
-import type { User } from '../types/api'
+import type { User } from '../services/user'
 
 interface UserStore {
   // 状态
