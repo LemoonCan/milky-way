@@ -120,16 +120,10 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({
   const currentCategoryEmojis = useMemo(() => {
     const currentCategory = categories[activeCategory as keyof typeof categories]
     if (!currentCategory) {
-      console.log(`[EmojiPicker] 找不到分类: ${activeCategory}`)
       return []
     }
     
     const result = currentCategory.emojis.slice(0, visibleEmojis)
-    
-    // 开发环境下的调试信息
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[EmojiPicker] 分类: ${activeCategory}, 总数: ${currentCategory.emojis.length}, 可见: ${visibleEmojis}, 当前: ${result.length}`)
-    }
     
     return result
   }, [activeCategory, visibleEmojis, categories])

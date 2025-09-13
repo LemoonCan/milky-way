@@ -101,14 +101,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
         [field]: ''
       }))
     }
-    
-    // 清除API错误信息
-    // if (error) {
-    //   setError('')
-    // }
-    // if (success) {
-    //   setSuccess(false)
-    // }
   }
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

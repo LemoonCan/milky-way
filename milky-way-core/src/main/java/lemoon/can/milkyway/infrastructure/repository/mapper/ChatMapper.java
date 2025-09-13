@@ -31,6 +31,8 @@ public interface ChatMapper {
     @Select("SELECT type FROM chat WHERE id = #{id}")
     ChatType selectTypeById(Long id);
 
+    ChatInfoDO findSingleChat(String userId, String friendUserId);
+
     List<Long> findGroupChats(String userId);
 
     /**

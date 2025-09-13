@@ -17,6 +17,40 @@
         WHERE id = #{id}
     </update>
 
+    <select id="findSingleChat" resultType="lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO">
+        select
+            c.id,
+            c.type as chat_type,
+            coalesce(f.remark, fu.nick_name) as title,
+            fu.avatar as avatar,
+            fu.id as friend_id,
+            lm.id as last_message_id,
+            lm.type as last_message_type,
+            lm.content as last_message,
+            lm.sent_time as last_message_time,
+            unread_info.count as unread_count,
+            unread_info.min_msg_id as min_unread_message_id,
+            fu.online as online
+        from chat c
+        -- 双方都在该会话中
+        join chat_member cm1 on cm1.chat_id = c.id and cm1.user_id = #{userId}
+        join chat_member cm2 on cm2.chat_id = c.id and cm2.user_id = #{friendUserId}
+        join users fu on fu.id = #{friendUserId}
+        left join friend f on f.user_id = #{userId} and f.friend_id = fu.id
+        -- 最后一条消息
+        left join message lm on lm.id = (select m2.id
+                                         from message m2
+                                         where m2.chat_id = c.id order by m2.id desc limit 1)
+        -- 未读统计
+        left join (select mcount.chat_id, count(*) as count,min(mcount.id) as min_msg_id
+                   from message mcount
+                       join message_read_cursor mrc on mrc.chat_id = mcount.chat_id and mrc.user_id = #{userId}
+                   where mcount.id > coalesce(mrc.last_read_message_id, 0) and mcount.sender_id != #{userId}
+                   group by mcount.chat_id)
+            as unread_info on unread_info.chat_id = c.id
+        where c.type = 'single';
+    </select>
+
     <select id="findGroupChats" resultType="java.lang.Long">
         select c.id
         from chat_member cm

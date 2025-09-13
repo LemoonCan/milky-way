@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
 import { MessageCircle, Phone, Video, MoreHorizontal, UserMinus, UserX, UserCheck, FileText } from 'lucide-react'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { useFriendStore } from '../../store/friend'
+import { useChatStore } from '../../store/chat'
 import { userService } from '../../services/user'
 import type { Friend } from '../../services/friend'
 import type { UserDetailInfo } from '../../services/user'
@@ -14,6 +16,7 @@ interface FriendDetailProps {
 }
 
 export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
+  const navigate = useNavigate()
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [, setLoading] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -23,6 +26,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const lastFetchedUserIdRef = useRef<string | null>(null)
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
+  const { setPendingFriendUserId } = useChatStore()
 
   // 获取用户详细信息
   useEffect(() => {
@@ -34,7 +38,6 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
 
     const fetchUserDetails = async () => {
       try {
-        console.log('Fetching user detail for friend:', friend);
         setLoading(true)
         // 记录当前请求的用户ID
         lastFetchedUserIdRef.current = friend.friend.id
@@ -42,7 +45,6 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         if (response.success && response.data) {
           // 保存用户详细信息到state中
           setUserDetails(response.data)
-          console.log('User detail fetched:', response.data)
         }
       } catch (error) {
         console.error('Failed to fetch user detail:', error)
@@ -73,17 +75,26 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     }
   }, [showMoreActions])
 
-  const handleSendMessage = () => {
-    // 这里可以跳转到聊天界面
-    console.log('Send message to:', friend.friend.nickName)
+  const handleSendMessage = async () => {
+    try {
+      console.log('Starting chat with friend:', friend.friend.nickName, 'friendId:', friend.friend.id)
+      
+      // 设置待处理的好友用户ID到全局状态
+      setPendingFriendUserId(friend.friend.id)
+      
+      // 跳转到聊天页面（ChatList组件会监听并处理）
+      navigate('/main/messages')
+    } catch (error) {
+      console.error('Failed to start chat with friend:', error)
+      // 清除待处理状态
+      setPendingFriendUserId(null)
+    }
   }
 
   const handleVoiceCall = () => {
-    console.log('Voice call to:', friend.friend.nickName)
   }
 
   const handleVideoCall = () => {
-    console.log('Video call to:', friend.friend.nickName)
   }
 
   const handleDeleteFriend = () => {

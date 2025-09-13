@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.infrastructure.service.query;
 
-import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.dto.MessageInfoDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
@@ -17,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,19 +28,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatQueryServiceImpl implements ChatQueryService {
     private final ChatMapper chatMapper;
-    private final SecureId secureId;
     private final ChatConverter chatConverter;
     private final MessageMapper messageMapper;
     private final SecureIdConverterHelper secureIdConverterHelper;
     private final MessageConverter messageConverter;
 
-    private static final DateTimeFormatter DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    @Override
+    public ChatInfoDTO getSingleChat(String userId, String friendUserId) {
+        ChatInfoDO chatInfoDO = chatMapper.findSingleChat(userId, friendUserId);
+        return chatConverter.toDto(chatInfoDO);
+    }
 
     @Override
     public List<String> getGroupChats(String userId) {
         return chatMapper.findGroupChats(userId).stream()
-                .map(item ->
-                        secureId.simpleEncode(item, secureId.getChatSalt()))
+                .map(secureIdConverterHelper::encodeChatId)
                 .toList();
     }
 
@@ -54,7 +54,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
         // 解码游标为实际的消息ID
         Long decodedLastMessageId = null;
         if (StringUtils.hasText(lastMessageId)) {
-            decodedLastMessageId = secureId.simpleDecode(lastMessageId, secureId.getMessageSalt());
+            decodedLastMessageId = secureIdConverterHelper.decodeMessageId(lastMessageId);
         }
 
         // 查询数据，多查一条用于判断是否还有更多数据

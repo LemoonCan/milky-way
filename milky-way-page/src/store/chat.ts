@@ -8,6 +8,14 @@ const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
   return !!(chatState?.messages && chatState.messages.length > 0)
 }
 
+// 工具函数：安全的聊天列表合并，避免重复
+const safeMergeChats = (existingChats: ChatInfoDTO[], newChats: ChatInfoDTO[]): ChatInfoDTO[] => {
+  const existingIds = new Set(existingChats.map(chat => chat.id))
+  const uniqueNewChats = newChats.filter(chat => !existingIds.has(chat.id))
+  console.log('[ChatStore] 合并聊天列表 - 已有:', existingChats.length, '新增:', newChats.length, '去重后新增:', uniqueNewChats.length)
+  return [...existingChats, ...uniqueNewChats]
+}
+
 // 判断消息是否是自己发送的
 export const isMessageFromMe = (message: MessageDTO | ClientMessageDTO): boolean => {
   const currentUserStore = useUserStore.getState()
@@ -40,6 +48,7 @@ export interface ChatStore {
   hasMoreChats: boolean
   lastMessageId?: string
   error: string | null
+  pendingFriendUserId: string | null // 待处理的好友用户ID
   setCurrentChat: (chatId: string) => Promise<void>
   loadChatMessages: (chatId: string) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
@@ -52,6 +61,8 @@ export interface ChatStore {
   loadMoreChats: () => Promise<void>
   createGroupChat: (request: CreateGroupChatRequest) => Promise<string>
   moveChatToTop: (chatId: string, messageDTO: MessageDTO, incrementUnreadCount?: boolean) => void
+  ensureFriendChatAndNavigate: (friendUserId: string) => Promise<string>
+  setPendingFriendUserId: (friendUserId: string | null) => void // 设置待处理的好友用户ID
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -62,14 +73,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     hasMoreChats: true,
     lastMessageId: undefined,
     error: null,
+    pendingFriendUserId: null,
   
   setCurrentChat: async (chatId: string) => {    
     const state = get()
     const existingChatState = state.chatMessagesMap[chatId]
-    
     // 检查是否需要加载消息：没有缓存消息且没有正在发送的消息时才加载
     const needsLoading = !hasChatMessages(existingChatState)
-    
+    console.log('[ChatStore] 检查是否需要加载消息:', chatId, needsLoading)
     if (needsLoading) {
       try {
         await get().loadChatMessages(chatId)
@@ -316,7 +327,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const newChats = result.items
       
       set({
-        chats:  lastMessageId ? [...state.chats, ...newChats] : newChats,
+        chats: lastMessageId ? safeMergeChats(state.chats, newChats) : newChats,
         hasMoreChats: result.hasNext,
         isLoading: false
       })
@@ -366,5 +377,43 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const reorderedChats = [updatedChat, ...otherChats]
     
     set({ chats: reorderedChats })
+  },
+
+  ensureFriendChatAndNavigate: async (friendUserId: string) => {
+    try {      
+      // 调用接口获取好友聊天信息
+      const chatInfo = await chatService.getFriendChat(friendUserId)      
+      // 验证返回的聊天信息
+      if (!chatInfo || !chatInfo.id) {
+        throw new Error('聊天信息无效')
+      }
+      
+      // 获取当前状态（聊天页面应该已经加载了聊天列表）
+      const currentState = get()
+      
+      // 检查缓存的聊天列表中是否包含相应聊天
+      const existingChatIndex = currentState.chats.findIndex(chat => chat.id === chatInfo.id)
+      
+      if (existingChatIndex >= 0) {
+        // 如果存在，将该聊天置顶
+        const existingChat = currentState.chats[existingChatIndex]
+        const otherChats = currentState.chats.filter(chat => chat.id !== chatInfo.id)
+        const reorderedChats = [existingChat, ...otherChats] 
+        set({ chats: reorderedChats })
+      } else {
+        // 如果不存在，添加到聊天列表的最前面
+        const updatedChats = [chatInfo, ...currentState.chats]   
+        set({ chats: updatedChats })
+      }
+      // 返回聊天ID，用于后续导航
+      return chatInfo.id
+    } catch (error) {
+      console.error('[ChatStore] 获取好友聊天信息失败:', error)
+      throw error
+    }
+  },
+
+  setPendingFriendUserId: (friendUserId: string | null) => {
+    set({ pendingFriendUserId: friendUserId })
   }
 }))

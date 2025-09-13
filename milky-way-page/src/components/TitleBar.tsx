@@ -25,22 +25,13 @@ export const TitleBar: React.FC<TitleBarProps> = ({
 
   // 处理网络重连
   const handleRetryConnection = async () => {
-    console.log('[TitleBar] handleRetryConnection 被调用')
-    console.log('[TitleBar] 当前状态:', {
-      isRetrying: isRetrying(),
-      isConnecting: isConnecting(),
-      connectionStatus,
-      isFailed: isFailed()
-    })
     
     if (isRetrying() || isConnecting()) {
-      console.log('[TitleBar] 连接正在进行中，跳过重试')
       return
     }
     
     try {
       console.log('[TitleBar] 开始重新连接...')
-      
       // 简化逻辑：只进行一次WebSocket重连尝试
       if (isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) {
         console.log('[TitleBar] 调用 connectionManager.resetConnection')

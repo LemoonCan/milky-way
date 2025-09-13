@@ -6,19 +6,6 @@ import type { ApiResponse, Slices } from '../types/api'
 // 重新导出常用类型
 export type { Slices } from '../types/api'
 
-export interface ChatInfo {
-  id: string
-  name: string
-  type: 'SINGLE' | 'GROUP'
-  memberCount?: number
-  lastMessage?: string
-  lastMessageTime?: string
-}
-
-export interface ChatListResponse {
-  chats: ChatInfo[]
-}
-
 // 添加聊天列表接口的返回类型，对应后端的 ChatInfoDTO
 export interface ChatInfoDTO {
   id: string
@@ -320,6 +307,26 @@ export class ChatService {
       }
     } catch (error) {
       console.error('[ChatService] 创建群聊失败:', error)
+      throw error
+    }
+  }
+
+  /**
+   * 获取好友聊天信息
+   * @param friendUserId 好友用户ID
+   */
+  async getFriendChat(friendUserId: string): Promise<ChatInfoDTO> {
+    try {
+      const response = await http.get<ApiResponse<ChatInfoDTO>>(`/chats/friendChat?friendUserId=${friendUserId}`)
+      
+      if (response.data.success !== false && response.data.data) {
+        console.log('[ChatService] 获取好友聊天信息成功:', response.data.data)
+        return response.data.data
+      } else {
+        throw new Error(response.data.msg || '获取好友聊天信息失败')
+      }
+    } catch (error) {
+      console.error('[ChatService] 获取好友聊天信息失败:', error)
       throw error
     }
   }

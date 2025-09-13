@@ -74,13 +74,6 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     return friendApplications || []
   }, [friendApplications])
 
-  // 移除原来的客户端统计逻辑，直接使用接口获取的数量
-  // const pendingCount = useMemo(() => {
-  //   const count = friendApplications.filter(app => app.status === 'APPLYING').length
-  //   console.log(`[FriendList] 待处理申请数量: ${count}`)
-  //   return count
-  // }, [friendApplications])
-
   // 当有待处理申请时自动展开新朋友区域，但尊重用户的手动操作
   useEffect(() => {
     if (pendingApplicationsCount > 0 && !newFriendsExpanded && !manuallyCollapsed) {

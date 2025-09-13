@@ -77,6 +77,13 @@ public class ChatController {
         return ResponseEntity.ok(Result.success());
     }
 
+    @GetMapping("/friendChat")
+    @Operation(summary = "获取与好友的私聊ID")
+    public ResponseEntity<Result<ChatInfoDTO>> getFriendChat(@RequestParam String friendUserId) {
+        ChatInfoDTO chatInfo = chatQueryService.getSingleChat(UserInfoHolder.id(), friendUserId);
+        return ResponseEntity.ok(Result.success(chatInfo));
+    }
+
     @GetMapping("/groupChats")
     @Operation(summary = "获取群聊列表")
     public ResponseEntity<Result<List<String>>> groupChats() {

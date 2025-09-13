@@ -42,17 +42,11 @@ class EmojiCacheManager {
     const cached = this.cache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       this.stats.hits++
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[EmojiCache] 缓存命中: ${emoji}`)
-      }
       // 返回调整尺寸后的SVG
       return this.adjustSvgSize(cached.svgData, size)
     }
 
     this.stats.misses++
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[EmojiCache] 缓存未命中: ${emoji}`)
-    }
 
     // 检查是否正在加载
     const loadingPromise = this.loadingPromises.get(cacheKey)
@@ -88,21 +82,11 @@ class EmojiCacheManager {
    * 动态调整SVG大小
    */
   private adjustSvgSize(svgData: string, size: string): string {
-    // 开发环境下输出调试信息
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[EmojiCache] 原始SVG数据:`, svgData)
-      console.log(`[EmojiCache] 目标尺寸:`, size)
-    }
-    
     // twemoji生成的是img标签，而不是SVG标签
     // 需要修改img标签的style属性
     const result = svgData.replace(
       /<img[^>]*>/g,
       (match) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[EmojiCache] 匹配到的img标签:`, match)
-        }
-        
         // 移除原有的style、width、height属性
         let newImg = match
           .replace(/\s+style="[^"]*"/g, '')
@@ -120,18 +104,9 @@ class EmojiCacheManager {
           newImg = newImg.replace('>', ` ${newStyle}>`)
         }
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`[EmojiCache] 调整后的img标签:`, newImg)
-        }
-        
         return newImg
       }
     )
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[EmojiCache] 最终结果:`, result)
-    }
-    
     return result
   }
 
@@ -263,7 +238,6 @@ export const COMMON_EMOJIS = [
 export const preloadCommonEmojis = async (): Promise<void> => {
   try {
     await emojiCache.preloadEmojis(COMMON_EMOJIS)
-    console.log('✅ 常用emoji预加载完成（统一缓存）')
   } catch (error) {
     console.warn('⚠️ 常用emoji预加载失败:', error)
   }
@@ -281,7 +255,6 @@ export const preloadEmojiPickerSize = async (emojis: string[]): Promise<void> =>
 // 查看缓存统计信息的便利函数
 export const getEmojiCacheStats = () => {
   const stats = emojiCache.getCacheStats()
-  console.log('📊 Emoji缓存统计:', stats)
   return stats
 }
 
