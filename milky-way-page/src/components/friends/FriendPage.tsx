@@ -4,17 +4,21 @@ import { FriendDetail } from './FriendDetail'
 import { FriendApplicationDetail } from './FriendApplicationDetail'
 import { AddFriendDialog } from './AddFriendDialog'
 import { useFriendStore } from '../../store/friend'
+import { useUserStore } from '../../store/user'
 import styles from '../../css/friends/FriendPage.module.css'
 
 export const FriendPage: React.FC = () => {
   const [showAddFriendDialog, setShowAddFriendDialog] = useState(false)
-  const { selectedFriend, selectedFriendApplication, fetchFriends, fetchFriendApplications, error, clearError } = useFriendStore()
+  const { selectedFriend, selectedFriendApplication, fetchFriends, fetchFriendApplications } = useFriendStore()
+  const {currentUser} = useUserStore()
 
   // 初始化时获取好友列表和申请列表
   useEffect(() => {
-    fetchFriends(true) // 明确传入true，表示刷新操作
-    fetchFriendApplications()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    if(currentUser){
+      fetchFriends(true)
+      fetchFriendApplications()
+    }
+  }, [currentUser, fetchFriends, fetchFriendApplications])
 
   // 处理添加好友
   const handleAddFriend = () => {
@@ -25,18 +29,6 @@ export const FriendPage: React.FC = () => {
     setShowAddFriendDialog(false)
   }
 
-  // 显示错误提示
-  useEffect(() => {
-    if (error) {
-      // 这里可以添加全局提示组件
-      console.error('Friend error:', error)
-      // 3秒后自动清除错误
-      const timer = setTimeout(() => {
-        clearError()
-      }, 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [error, clearError])
 
   return (
     <div className={styles.friendPage}>

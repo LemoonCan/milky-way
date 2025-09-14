@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { chatService, type ChatInfoDTO, type MessageDTO } from '../services/chat'
 import { type ClientMessageDTO,type CreateGroupChatRequest } from '../services/chat'
 import { useUserStore } from './user'
+import { handleAndShowError } from '../lib/globalErrorHandler'
 
 // 工具函数：检查聊天是否有消息数据
 const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
@@ -12,7 +13,6 @@ const hasChatMessages = (chatState?: ChatMessagesState): boolean => {
 const safeMergeChats = (existingChats: ChatInfoDTO[], newChats: ChatInfoDTO[]): ChatInfoDTO[] => {
   const existingIds = new Set(existingChats.map(chat => chat.id))
   const uniqueNewChats = newChats.filter(chat => !existingIds.has(chat.id))
-  console.log('[ChatStore] 合并聊天列表 - 已有:', existingChats.length, '新增:', newChats.length, '去重后新增:', uniqueNewChats.length)
   return [...existingChats, ...uniqueNewChats]
 }
 
@@ -47,7 +47,6 @@ export interface ChatStore {
   isLoading: boolean
   hasMoreChats: boolean
   lastMessageId?: string
-  error: string | null
   pendingFriendUserId: string | null // 待处理的好友用户ID
   setCurrentChat: (chatId: string) => Promise<void>
   loadChatMessages: (chatId: string) => Promise<void>
@@ -72,7 +71,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     isLoading: false,
     hasMoreChats: true,
     lastMessageId: undefined,
-    error: null,
     pendingFriendUserId: null,
   
   setCurrentChat: async (chatId: string) => {    
@@ -80,12 +78,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const existingChatState = state.chatMessagesMap[chatId]
     // 检查是否需要加载消息：没有缓存消息且没有正在发送的消息时才加载
     const needsLoading = !hasChatMessages(existingChatState)
-    console.log('[ChatStore] 检查是否需要加载消息:', chatId, needsLoading)
     if (needsLoading) {
       try {
         await get().loadChatMessages(chatId)
       } catch (error) {
         console.error(`[ChatStore] 聊天 ${chatId} 消息加载失败:`, error)
+        handleAndShowError(error)
       }
     } else {
       set({ currentChatId: chatId })
@@ -144,6 +142,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       })
       console.error('加载聊天消息失败:', error)
+      handleAndShowError(error)
     }
   },
   
@@ -198,6 +197,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         }
       })
       console.error('加载更多旧消息失败:', error)
+      handleAndShowError(error)
     }
   },
   
@@ -244,7 +244,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const latestMessageId = chat.lastMessageId
     
     if (!latestMessageId) {
-      console.warn(`无法获取聊天 ${chatId} 的最新消息ID，无法标记已读`)
       return
     }
 
@@ -271,6 +270,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       })
     } catch (error) {
       console.error(`[ChatStore] 标记聊天 ${chatId} 消息已读失败:`, error)
+      handleAndShowError(error)
     }
   },
 
@@ -334,6 +334,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       
     } catch (error) {
       console.error('加载聊天列表失败:', error)
+      handleAndShowError(error)
       set({ isLoading: false })
     }
   },
@@ -409,6 +410,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return chatInfo.id
     } catch (error) {
       console.error('[ChatStore] 获取好友聊天信息失败:', error)
+      handleAndShowError(error)
       throw error
     }
   },

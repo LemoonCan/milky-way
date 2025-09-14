@@ -19,7 +19,7 @@ export const FriendApplicationVerifyDialog: React.FC<FriendApplicationVerifyDial
   const [remark, setRemark] = useState('')
   const [permission, setPermission] = useState<'ALL' | 'CHAT'>('ALL')
   
-  const { handleFriendApplication, isLoading, error } = useFriendStore()
+  const { handleFriendApplication, isLoading } = useFriendStore()
 
   const handleClose = () => {
     setRemark('')
@@ -39,7 +39,6 @@ export const FriendApplicationVerifyDialog: React.FC<FriendApplicationVerifyDial
     if (success) {
       handleClose()
     }
-    // 如果失败，错误信息会显示在store的error中，弹窗保持打开状态
   }
 
   const handleReject = async () => {
@@ -54,7 +53,6 @@ export const FriendApplicationVerifyDialog: React.FC<FriendApplicationVerifyDial
     if (success) {
       handleClose()
     }
-    // 如果失败，错误信息会显示在store的error中，弹窗保持打开状态
   }
 
   if (!open || !application) return null
@@ -70,12 +68,6 @@ export const FriendApplicationVerifyDialog: React.FC<FriendApplicationVerifyDial
           </button>
         </div>
 
-        {/* 错误提示 */}
-        {error && (
-          <div className={styles.errorMessage}>
-            {error}
-          </div>
-        )}
 
         {/* 内容 */}
         <div className={styles.content}>

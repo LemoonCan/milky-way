@@ -39,6 +39,10 @@ export const useGlobalErrorStore = create<GlobalErrorStore>((set, get) => ({
   errors: [],
   
   showError: (message, options = {}) => {
+    if (get().errors.some(error => error.message === message)) {
+      return
+    }
+
     const newError: GlobalError = {
       id: generateId(),
       message,

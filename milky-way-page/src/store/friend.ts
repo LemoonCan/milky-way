@@ -3,6 +3,7 @@ import { friendService } from '../services'
 import type { Friend } from '../services/friend'
 import type { FriendApplication } from '../services/friend'
 import type { User } from '../services/user'
+import { handleAndShowError } from '../lib/globalErrorHandler'
 
 interface FriendState {
   // 状态
@@ -13,7 +14,6 @@ interface FriendState {
   isLoading: boolean
   isFriendsLoading: boolean
   isApplicationsLoading: boolean
-  error: string | null
   hasNextPage: boolean
   hasNextApplicationsPage: boolean
   // 新增：游标分页状态
@@ -44,7 +44,6 @@ interface FriendState {
   fetchFriendsCount: () => Promise<void>
   // 新增：获取好友申请数量
   fetchApplicationsCount: () => Promise<void>
-  clearError: () => void
   
   // 本地数据更新方法
   addFriendApplicationLocally: (application: FriendApplication) => void
@@ -60,7 +59,6 @@ export const useFriendStore = create<FriendState>((set, get) => ({
   isLoading: false,
   isFriendsLoading: false,
   isApplicationsLoading: false,
-  error: null,
   hasNextPage: false,
   hasNextApplicationsPage: false,
   // 新增：游标分页状态初始化
@@ -88,7 +86,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       return
     }
     
-    set({ isFriendsLoading: true, error: null })
+    set({ isFriendsLoading: true })
     
     try {
       // 构建请求参数
@@ -124,10 +122,12 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           isFriendsLoading: false
         })
       } else {
-        set({ error: response.msg || '获取好友列表失败', isFriendsLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isFriendsLoading: false })
       }
     } catch {
-      set({ error: '网络错误，请重试', isFriendsLoading: false })
+      handleAndShowError("好友查询失败")
+      set({ isFriendsLoading: false })
     }
   },
 
@@ -146,7 +146,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       return
     }
     
-    set({ isApplicationsLoading: true, error: null })
+    set({ isApplicationsLoading: true })
     
     try {
       const params: { pageSize: number; lastId?: string } = {
@@ -159,7 +159,6 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       }
       
       const response = await friendService.getFriendApplications(params)
-      console.log('好友申请列表API响应:', response)
       
       if (response.success && response.data) {
         // 更新游标信息
@@ -171,7 +170,6 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         }
         
         const newApplications = refresh ? response.data.items : [...currentState.friendApplications, ...response.data.items]
-        console.log(`更新好友申请列表，旧数量: ${currentState.friendApplications.length}，新数量: ${newApplications.length}`)
         
         set({ 
           friendApplications: newApplications,
@@ -180,11 +178,12 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           isApplicationsLoading: false 
         })
       } else {
-        set({ error: response.msg || '获取好友申请失败', isApplicationsLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isApplicationsLoading: false })
       }
-    } catch(error) {
-      console.error('获取好友申请列表失败:', error)
-      set({ error: '网络错误，请重试', isApplicationsLoading: false })
+    } catch {
+      handleAndShowError("好友申请查询失败")
+      set({ isApplicationsLoading: false })
     }
   },
 
@@ -197,7 +196,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
 
   // 添加好友
   addFriend: async (toUserId, applyMessage, applyChannel, extraInfo) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       const response = await friendService.addFriend({ toUserId, applyMessage, applyChannel, extraInfo })
@@ -207,16 +206,18 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         // 刷新好友申请列表
         await get().fetchFriendApplications(true)
       } else {
-        set({ error: response.msg || '添加好友失败', isLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isLoading: false })
       }
     } catch {
-      set({ error: '网络错误，请重试', isLoading: false })
+      handleAndShowError("添加好友失败")
+      set({ isLoading: false })
     }
   },
 
   // 处理好友申请
   handleFriendApplication: async (applicationId, action, extraInfo) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       // 转换action为后端期望的status格式
@@ -238,18 +239,20 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         ])
         return true // 返回成功标识
       } else {
-        set({ error: response.msg || '处理好友申请失败', isLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isLoading: false })
         return false // 返回失败标识
       }
     } catch {
-      set({ error: '网络错误，请重试', isLoading: false })
+      handleAndShowError("处理好友申请失败")
+      set({ isLoading: false })
       return false // 返回失败标识
     }
   },
 
   // 删除好友
   deleteFriend: async (friendUserId) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       const response = await friendService.deleteFriend(friendUserId)
@@ -263,16 +266,18 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         // 更新好友总数
         get().fetchFriendsCount()
       } else {
-        set({ error: response.msg || '删除好友失败', isLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isLoading: false })
       }
     } catch {
-      set({ error: '网络错误，请重试', isLoading: false })
+      handleAndShowError("删除好友失败")
+      set({ isLoading: false })
     }
   },
 
   // 拉黑好友
   blockFriend: async (friendUserId) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       const response = await friendService.blockFriend(friendUserId)
@@ -291,16 +296,18 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           isLoading: false 
         })
       } else {
-        set({ error: response.msg || '拉黑好友失败', isLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isLoading: false })
       }
     } catch {
-      set({ error: '网络错误，请重试', isLoading: false })
+      handleAndShowError("拉黑好友失败")
+      set({ isLoading: false })
     }
   },
 
   // 解除拉黑
   unblockFriend: async (friendUserId) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       const response = await friendService.unblockFriend(friendUserId)
@@ -319,16 +326,18 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           isLoading: false 
         })
       } else {
-        set({ error: response.msg || '解除拉黑失败', isLoading: false })
+        handleAndShowError(new Error(response.msg))
+        set({ isLoading: false })
       }
     } catch {
-      set({ error: '网络错误，请重试', isLoading: false })
+      handleAndShowError("解除拉黑失败")
+      set({ isLoading: false })
     }
   },
 
   // 通过OpenID搜索用户
   searchUserByOpenId: async (openId) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       const response = await friendService.searchUserByOpenId(openId)
@@ -337,18 +346,17 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       if (response.success && response.data) {
         return response.data
       } else {
-        // 搜索结果为空不应该设置全局错误，由调用方处理
         return null
       }
-    } catch(error) {
-      set({ error: '网络错误，请重试', isLoading: false })
-      throw error
+    } catch {
+      set({ isLoading: false })
+      return null
     }
   },
 
   // 通过手机号搜索用户
   searchUserByPhone: async (phone) => {
-    set({ isLoading: true, error: null })
+    set({ isLoading: true })
     
     try {
       const response = await friendService.searchUserByPhone(phone)
@@ -361,7 +369,7 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         return null
       }
     } catch {
-      set({ error: '网络错误，请重试', isLoading: false })
+      set({ isLoading: false })
       return null
     }
   },
@@ -384,10 +392,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       } else {
         set({ isCountLoading: false })
       }
-    } catch (error) {
-      console.error('获取好友总数失败:', error)
+    } catch {
       set({ isCountLoading: false })
-      // 不设置全局错误，因为这不是关键功能
     }
   },
 
@@ -409,32 +415,24 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       } else {
         set({ isApplicationCountLoading: false })
       }
-    } catch (error) {
-      console.error('获取好友申请数量失败:', error)
+    } catch {
       set({ isApplicationCountLoading: false })
     }
   },
 
-  // 清除错误
-  clearError: () => set({ error: null }),
 
   // 本地数据更新方法
   addFriendApplicationLocally: (application) => {
     const currentState = get()
-    console.log(`[Friend Store] 本地添加好友申请，当前列表长度: ${currentState.friendApplications.length}`)
-    console.log(`[Friend Store] 新申请信息:`, application)
     
     // 检查是否已存在相同ID的申请，避免重复添加
     const existingIndex = currentState.friendApplications.findIndex(app => app.id === application.id)
     if (existingIndex !== -1) {
-      console.log('[Friend Store] 好友申请已存在，跳过添加')
       return
     }
     
     // 将新申请添加到列表最前面
     const newApplications = [application, ...currentState.friendApplications]
-    console.log(`[Friend Store] 新申请已添加到列表最前面，新列表长度: ${newApplications.length}`)
-    console.log(`[Friend Store] 新列表内容:`, newApplications.map(app => ({ id: app.id, nickName: app.fromUser.nickName, status: app.status })))
     
     set({ friendApplications: newApplications })
     
@@ -442,24 +440,15 @@ export const useFriendStore = create<FriendState>((set, get) => ({
     if (application.status === 'APPLYING') {
       set({ pendingApplicationsCount: currentState.pendingApplicationsCount + 1 })
     }
-    
-    // 验证状态是否真的更新了
-    setTimeout(() => {
-      const updatedState = get()
-      console.log(`[Friend Store] 状态更新后验证，列表长度: ${updatedState.friendApplications.length}`)
-    }, 100)
   },
 
   // 本地添加好友
   addFriendLocally: (friendRelation) => {
     const currentState = get()
-    console.log(`[Friend Store] 本地添加好友，当前列表长度: ${currentState.friends.length}`)
-    console.log(`[Friend Store] 新好友信息:`, friendRelation)
     
     // 检查是否已存在相同ID的好友，避免重复添加
     const existingIndex = currentState.friends.findIndex(friend => friend.friend.id === friendRelation.friend.id)
     if (existingIndex !== -1) {
-      console.log('[Friend Store] 好友已存在，跳过添加')
       return
     }
     
@@ -476,19 +465,10 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       // 再按昵称排序
       return a.friend.nickName.localeCompare(b.friend.nickName)
     })
-    
-    console.log(`[Friend Store] 新好友已添加到列表，新列表长度: ${newFriends.length}`)
-    console.log(`[Friend Store] 新列表内容:`, newFriends.map(friend => ({ id: friend.friend.id, nickName: friend.friend.nickName, status: friend.status })))
-    
+        
     set({ 
       friends: newFriends,
       totalFriendsCount: currentState.totalFriendsCount + 1
     })
-    
-    // 验证状态是否真的更新了
-    setTimeout(() => {
-      const updatedState = get()
-      console.log(`[Friend Store] 状态更新后验证，列表长度: ${updatedState.friends.length}`)
-    }, 100)
   }
 })) 

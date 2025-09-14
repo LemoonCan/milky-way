@@ -2,6 +2,7 @@ import http from '../lib/http'
 import { webSocketClient, type WebSocketMessage } from './websocket'
 import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { ApiResponse, Slices } from '../types/api'
+import type { SimpleUserDTO } from './user'
 
 // 重新导出常用类型
 export type { Slices } from '../types/api'
@@ -81,13 +82,6 @@ export interface FileData {
   originalFile?: File
 }
 
-// 简单用户信息DTO
-export interface SimpleUserDTO {
-  id: string
-  openId: string
-  nickName: string
-  avatar?: string
-}
 
 // 客户端消息类型，包含UI状态字段
 export interface ClientMessageDTO extends MessageDTO {
@@ -216,8 +210,6 @@ export class ChatService {
       if (response.data.success === false) {
         throw new Error(response.data.msg || '标记消息已读失败')
       }
-      
-      console.log(`[ChatService] 标记聊天 ${request.chatId} 的消息已读成功`)
     } catch (error) {
       console.error('[ChatService] 标记消息已读失败:', error)
       throw error
@@ -227,9 +219,7 @@ export class ChatService {
   /**
    * 发送消息
    */
-  async sendMessage(request: SendMessageRequest): Promise<void> {
-    console.log('sendMessage', request)
-    
+  async sendMessage(request: SendMessageRequest): Promise<void> {    
     try {
       if (!webSocketClient.isConnected()) {
         throw new Error('聊天服务未就绪，请先初始化')
@@ -278,7 +268,6 @@ export class ChatService {
       const response = await http.delete<ApiResponse<void>>(`/chats/${chatId}`)
       
       if (response.data.success !== false) {
-        console.log('解散聊天室成功:', chatId)
         // 取消订阅该聊天室的消息
         this.unsubscribeFromGroupChat(chatId)
       } else {
@@ -300,7 +289,6 @@ export class ChatService {
       const response = await http.post<ApiResponse<ChatInfoDTO>>('/chats', request)
       
       if (response.data.success !== false && response.data.data) {
-        console.log('[ChatService] 创建群聊成功:', response.data.data)
         return response.data.data
       } else {
         throw new Error(response.data.msg || '创建群聊失败')
@@ -320,7 +308,6 @@ export class ChatService {
       const response = await http.get<ApiResponse<ChatInfoDTO>>(`/chats/friendChat?friendUserId=${friendUserId}`)
       
       if (response.data.success !== false && response.data.data) {
-        console.log('[ChatService] 获取好友聊天信息成功:', response.data.data)
         return response.data.data
       } else {
         throw new Error(response.data.msg || '获取好友聊天信息失败')

@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Avatar } from '../Avatar'
-import { MessageCircle, UserCheck, Phone, Video } from 'lucide-react'
+import { UserCheck } from 'lucide-react'
 import { FriendApplicationVerifyDialog } from './FriendApplicationVerifyDialog'
+import { CommunicationActions } from '../CommunicationActions'
 import type { FriendApplication } from '../../services/friend'
 import styles from '../../css/friends/FriendApplicationDetail.module.css'
 import { EmojiText } from '../EmojiText'
@@ -41,18 +42,6 @@ export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = (
     setShowVerifyDialog(false)
   }
 
-  const handleSendMessage = () => {
-    // 这里可以跳转到聊天界面
-    console.log('Send message to:', application.fromUser.nickName)
-  }
-
-  const handleVoiceCall = () => {
-    console.log('Voice call to:', application.fromUser.nickName)
-  }
-
-  const handleVideoCall = () => {
-    console.log('Video call to:', application.fromUser.nickName)
-  }
 
   return (
     <>
@@ -111,31 +100,11 @@ export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = (
 
         {/* 已通过状态下的操作 */}
         {application.status === 'ACCEPTED' && (
-          <div className={styles.primaryActions}>
-            <button
-              onClick={handleSendMessage}
-              className={styles.actionButton}
-            >
-              <MessageCircle size={24} />
-              <span>发消息</span>
-            </button>
-            
-            <button
-              onClick={handleVoiceCall}
-              className={styles.actionButton}
-            >
-              <Phone size={24} />
-              <span>语音通话</span>
-            </button>
-            
-            <button
-              onClick={handleVideoCall}
-              className={styles.actionButton}
-            >
-              <Video size={24} />
-              <span>视频通话</span>
-            </button>
-          </div>
+          <CommunicationActions
+            userId={application.fromUser.id}
+            userName={application.fromUser.nickName}
+            className={styles.primaryActions}
+          />
         )}
       </div>
 
