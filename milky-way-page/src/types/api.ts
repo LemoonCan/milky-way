@@ -1,9 +1,6 @@
 import type { MessageDTO } from '../services/chat'
 import type { SimpleUserDTO } from '../services/user'
 
-// 重新导出类型
-export type { SimpleUserDTO }
-
 // API 基础响应类型
 export interface ApiResponse<T = unknown> {
   code?: number
