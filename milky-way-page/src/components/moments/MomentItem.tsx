@@ -13,7 +13,7 @@ import { ImagePreviewModal } from '../ImagePreviewModal'
 import { TimeFormatter } from '@/utils/timeFormatter'
 import { useMomentStore } from '../../store/moment'
 import { useUserStore } from '../../store/user'
-import type { MomentDTO } from '../../types/api'
+import type { MomentDTO } from '../../services/moment'
 import type { SimpleUserDTO } from '../../services/user'
 import styles from '../../css/moments/MomentItem.module.css'
 
@@ -260,7 +260,7 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
         isVisible={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         triggerElement={avatarRef.current}
-        showActions={false}
+        showActions={true}
       />
 
       {/* 删除动态确认弹框 */}

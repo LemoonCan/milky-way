@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { RefreshCw, Edit3, Grape, Citrus } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Avatar } from '../Avatar'
-import { MomentItem } from './MomentItem'
+import { MomentsList } from './MomentsList'
 import { MomentPublishDialog } from './MomentPublishDialog'
 import NotificationButton from '../NotificationButton'
 import NotificationPanel from '../NotificationPanel'
@@ -15,7 +15,6 @@ import { EmojiText } from '../EmojiText'
 export const MomentsPage: React.FC = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const momentsListRef = useRef<HTMLDivElement>(null)
   
   const { 
     moments, 
@@ -51,7 +50,7 @@ export const MomentsPage: React.FC = () => {
     // 默认显示好友动态
     setMomentType('friends')
     fetchMoments()
-  }, [])
+  }, [fetchUserInfo, setMomentType, fetchMoments])
 
   // 处理动态类型切换
   const handleMomentTypeChange = async (type: 'friends' | 'mine') => {
@@ -65,26 +64,6 @@ export const MomentsPage: React.FC = () => {
     }
   }
 
-  // 无限滚动处理
-  const handleScroll = useCallback(() => {
-    const scrollContainer = momentsListRef.current
-    if (!scrollContainer || loading || !hasNext) return
-
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainer
-    // 当滚动到底部附近时（距离底部100px）触发加载
-    if (scrollTop + clientHeight >= scrollHeight - 100) {
-      loadMoreMoments()
-    }
-  }, [loading, hasNext, loadMoreMoments])
-
-  // 监听滚动事件
-  useEffect(() => {
-    const scrollContainer = momentsListRef.current
-    if (!scrollContainer) return
-
-    scrollContainer.addEventListener('scroll', handleScroll)
-    return () => scrollContainer.removeEventListener('scroll', handleScroll)
-  }, [handleScroll])
 
   // 刷新动态
   const handleRefresh = async () => {
@@ -170,37 +149,15 @@ export const MomentsPage: React.FC = () => {
       </div>
 
       {/* 动态列表 */}
-      <div className={styles.momentsList} ref={momentsListRef}>
-        <div className={styles.momentsListInner}>
-          {/* 动态条目 */}
-          {moments.map((moment) => (
-            <MomentItem key={moment.id} moment={moment} />
-          ))}
-
-          {/* 没有更多数据 */}
-          {!hasNext && moments.length > 0 && (
-            <div className={styles.noMore}>
-              <span>没有更多动态了</span>
-            </div>
-          )}
-
-          {/* 空状态 - 只有在已初始化且非加载状态且动态确实为空时才显示 */}
-          {initialized && !loading && moments.length === 0 && !error && (
-            <div className={styles.empty}>
-              <Edit3 size={48} className={styles.emptyIcon} />
-              <h3>还没有动态</h3>
-              <p>发布第一条动态，分享你的生活吧！</p>
-              <Button 
-                onClick={() => setShowPublishDialog(true)}
-                className={styles.publishButton}
-              >
-                <Edit3 size={16} />
-                发布动态
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
+      <MomentsList
+        moments={moments}
+        loading={loading}
+        hasNext={hasNext}
+        initialized={initialized}
+        error={error}
+        onLoadMore={loadMoreMoments}
+        onPublish={() => setShowPublishDialog(true)}
+      />
 
       {/* 发布动态对话框 */}
       <MomentPublishDialog

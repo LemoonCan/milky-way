@@ -5,12 +5,14 @@ import { useChatStore } from './chat'
 import { useMomentStore } from './moment'
 import { webSocketClient } from '../services/websocket'
 import type { 
-  MessageNotifyDTO,
+  MessageNotifyDTO
+} from '../types/api'
+import type { 
   LikeDTO,
   CommentWithMomentDTO,
-  UnlikeDTO,
-  MomentDTO
-} from '../types/api'
+  UnlikeDTO
+} from '../services/moment'
+import type { MomentDTO } from '../services/moment'
 import type { FriendApplicationDTO, FriendApplication, Friend as FriendRelation } from '../services/friend'
 import type { ChatInfoDTO } from '../services/chat'
 

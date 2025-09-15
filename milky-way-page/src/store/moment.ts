@@ -9,10 +9,10 @@ import type {
   PublishParam, 
   CommentParam, 
   MomentsQueryParams,
-  SimpleUserDTO,
   CommentDTO
-} from '../types/api'
-import { MomentContentType } from '../types/api'
+} from '../services/moment'
+import { MomentContentType } from '../services/moment'
+import type { SimpleUserDTO } from '../services/user'
 
 interface MomentStore {
   // 状态
@@ -379,6 +379,7 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         const { currentUser } = useUserStore.getState()
         
         if (currentUser) {
+          console.log('likeMoment', currentUser)
           set({
             moments: state.moments.map(moment => 
               moment.id === momentId 
@@ -395,6 +396,8 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
             ),
             operationLoading: { ...state.operationLoading, [`like_${momentId}`]: false }
           })
+          console.log('moments', get().moments)
+          console.log('curMoment', get().moments.find(moment => moment.id === momentId))
         }
         return true
       } else {

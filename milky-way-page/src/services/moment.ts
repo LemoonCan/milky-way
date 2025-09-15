@@ -1,12 +1,96 @@
 import http from '../lib/http'
-import type { 
-  ApiResponse, 
-  MomentDTO,
-  Slices,
-  PublishParam,
-  CommentParam,
-  MomentsQueryParams
-} from '../types/api'
+import type { ApiResponse, Slices } from '../types/api'
+import type { SimpleUserDTO } from './user'
+
+// 朋友圈动态内容类型
+export enum MomentContentType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+  TEXT_IMAGE = 'TEXT_IMAGE'
+}
+
+// 朋友圈动态描述DTO
+export interface MomentDescriptionDTO {
+  id: string
+  contentType: MomentContentType
+  text?: string
+  medias?: string[]
+}
+
+// 评论DTO - 根据实际后端返回数据结构调整
+export interface CommentDTO {
+  id: number
+  momentId?: string  // 添加 momentId 字段（用于通知）
+  parentCommentId?: number | null
+  user: SimpleUserDTO
+  content: string
+  createTime: string | null  // 允许null值
+  replyUser?: SimpleUserDTO
+  replies?: CommentDTO[]
+}
+
+// 朋友圈动态DTO - 根据实际后端返回数据结构调整
+export interface MomentDTO {
+  id: string
+  user: SimpleUserDTO
+  contentType?: MomentContentType
+  text?: string
+  medias?: string[]
+  location?: string
+  likeCounts?: number // 可选：不再在前端使用显示
+  commentCounts?: number // 可选：不再在前端使用显示
+  createTime: string | null  // 修正字段名，匹配后端返回数据
+  likeUsers?: SimpleUserDTO[]
+  comments?: CommentDTO[]
+}
+
+// 发布动态参数 - 根据后端PublishParam调整
+export interface PublishParam {
+  text?: string
+  contentType: MomentContentType
+  medias?: string[]
+  location?: string
+  publishUserId?: string
+}
+
+// 评论参数
+export interface CommentParam {
+  momentId: string
+  content: string
+  parentCommentId?: string
+  commentUserId?: string
+}
+
+// 点赞DTO - 用于通知
+export interface LikeDTO {
+  momentDescription: MomentDescriptionDTO
+  user: SimpleUserDTO
+  createTime: string
+}
+
+// 取消点赞DTO - 用于通知
+export interface UnlikeDTO {
+  momentId: string
+  userId: string
+  publishUserId: string
+}
+
+// 带动态信息的评论DTO - 用于通知
+export interface CommentWithMomentDTO {
+  id: number
+  momentDescription: MomentDescriptionDTO
+  parentCommentId?: number | null
+  user: SimpleUserDTO
+  content: string
+  createTime: string
+  replyUser?: SimpleUserDTO
+}
+
+// 朋友圈动态查询参数
+export interface MomentsQueryParams {
+  lastId?: string
+  pageSize: number
+}
 
 class MomentService {
   /**

@@ -4,11 +4,9 @@ import { useUserStore } from './user'
 import type { 
   MomentDTO, 
   MomentsQueryParams,
-  SimpleUserDTO,
   CommentDTO
-} from '../types/api'
-
-
+} from '../services/moment'
+import type { SimpleUserDTO } from '../services/user'
 
 interface UserMomentStore {
   // 状态
@@ -117,6 +115,7 @@ export const useUserMomentStore = create<UserMomentStore>()((set, get) => ({
           initialized: true,
           lastFetchTime: Date.now()
         })
+        console.log('获取用户动态moments', get().moments)
       } else {
         set({
           error: response.msg || '获取用户动态失败',

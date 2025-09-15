@@ -1,15 +1,32 @@
 import { create } from 'zustand'
-import { MessageNotifyType } from '../types/api'
+import { MessageNotifyType, type MessageNotifyDTO } from '../types/api'
 import type { 
-  NotificationItem, 
-  NotificationStats, 
-  MessageNotifyDTO, 
-  ChatInfoDTO,
-  MomentDTO,
   LikeDTO,
   CommentWithMomentDTO
-} from '../types/api'
+} from '../services/moment'
 import type { FriendApplicationDTO } from '../services/friend'
+import type { ChatInfoDTO } from '../services/chat'
+import type { MomentDTO } from '../services/moment'
+
+// 通知项类型
+export interface NotificationItem {
+  id: string
+  type: MessageNotifyType
+  content: unknown
+  timestamp: string
+  read: boolean
+  title: string
+  message: string
+  avatar?: string
+}
+
+// 通知统计
+export interface NotificationStats {
+  total: number
+  unread: number
+  likeCount: number
+  commentCount: number
+}
 
 interface NotificationStore {
   // 状态
@@ -25,21 +42,10 @@ interface NotificationStore {
   addNotification: (notification: MessageNotifyDTO<unknown>) => void
   markAsRead: (notificationId: string) => void
   markAllAsRead: () => void
-  removeNotification: (notificationId: string) => void
   clearAll: () => void
   toggleNotificationPanel: () => void
   closeNotificationPanel: () => void
   
-  // 通知处理器
-  handleFriendApplicationNotification: (content: FriendApplicationDTO) => void
-  handleGroupChatCreatedNotification: (content: ChatInfoDTO) => void
-  handleGroupChatDeletedNotification: (chatId: string) => void
-  handleMomentPublishedNotification: (content: MomentDTO) => void
-  handleMomentDeletedNotification: (momentId: string) => void
-  handleMomentLikedNotification: (content: LikeDTO) => void
-  handleMomentLikeCancelledNotification: (likeId: string) => void
-  handleMomentCommentedNotification: (content: CommentWithMomentDTO) => void
-  handleCommentDeletedNotification: (commentId: string) => void
   
   // 工具方法
   updateStats: () => void
@@ -198,15 +204,6 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     get().updateStats()
   },
 
-  // 移除通知
-  removeNotification: (notificationId: string) => {
-    set((state) => ({
-      notifications: state.notifications.filter(notification => notification.id !== notificationId)
-    }))
-    
-    get().updateStats()
-  },
-
   // 清空所有通知
   clearAll: () => {
     set({
@@ -254,77 +251,6 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
     set({ error: null })
   },
 
-  // 好友申请通知处理器
-  handleFriendApplicationNotification: (content: FriendApplicationDTO) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.FRIEND_APPLY,
-      content
-    })
-  },
-
-  // 群聊创建通知处理器
-  handleGroupChatCreatedNotification: (content: ChatInfoDTO) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.CHAT_CREATE,
-      content
-    })
-  },
-
-  // 群聊解散通知处理器
-  handleGroupChatDeletedNotification: (chatId: string) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.CHAT_DELETE,
-      content: chatId
-    })
-  },
-
-  // 动态发布通知处理器
-  handleMomentPublishedNotification: (content: MomentDTO) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.MOMENT_CREATE,
-      content
-    })
-  },
-
-  // 动态删除通知处理器
-  handleMomentDeletedNotification: (momentId: string) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.MOMENT_DELETE,
-      content: momentId
-    })
-  },
-
-  // 点赞通知处理器
-  handleMomentLikedNotification: (content: LikeDTO) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.LIKE,
-      content
-    })
-  },
-
-  // 取消点赞通知处理器
-  handleMomentLikeCancelledNotification: (likeId: string) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.UNLIKE,
-      content: likeId
-    })
-  },
-
-  // 评论通知处理器
-  handleMomentCommentedNotification: (content: CommentWithMomentDTO) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.COMMENT,
-      content
-    })
-  },
-
-  // 删除评论通知处理器
-  handleCommentDeletedNotification: (commentId: string) => {
-    get().addNotification({
-      notifyType: MessageNotifyType.COMMENT_DELETE,
-      content: commentId
-    })
-  },
 
   // 获取朋友圈相关通知（点赞、评论）
   getMomentNotifications: () => {

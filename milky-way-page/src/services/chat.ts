@@ -4,9 +4,6 @@ import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { ApiResponse, Slices } from '../types/api'
 import type { SimpleUserDTO } from './user'
 
-// 重新导出常用类型
-export type { Slices } from '../types/api'
-
 // 添加聊天列表接口的返回类型，对应后端的 ChatInfoDTO
 export interface ChatInfoDTO {
   id: string

@@ -1,0 +1,148 @@
+/* 动态列表 */
+.momentsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  background: #fffefe;
+  width: 100%;
+  min-height: calc(100vh - 280px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.momentsListInner {
+  width: 100%;
+  max-width: 400px; /* 竖屏时的默认宽度，适合3张图片 */
+}
+
+/* 横屏时调整宽度适合9张图片 */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .momentsListInner {
+    max-width: 980px; /* 适合9张100px图片 + 间距 + 内边距 */
+  }
+}
+
+/* 更宽屏幕时调整宽度 */
+@media (min-width: 1440px) {
+  .momentsListInner {
+    max-width: 1160px; /* 适合9张120px图片 + 间距 + 内边距 */
+  }
+}
+
+/* 加载状态 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 16px;
+  color: #6b7280;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 加载更多 */
+.loadMore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  gap: 12px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* 没有更多数据 */
+.noMore {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* 空状态 */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.emptyIcon {
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.empty p {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* 发布动态按钮 */
+.publishButton {
+  background: var(--milky-primary);
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  justify-content: center;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.publishButton:hover {
+  background: var(--milky-primary);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.publishButton:active {
+  transform: translateY(0) scale(1);
+  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .momentsList {
+    padding: 16px 12px;
+    min-height: calc(100vh - 220px);
+  }
+  
+  .publishButton {
+    padding: 10px 20px;
+    font-size: 15px;
+    min-width: 120px;
+  }
+}

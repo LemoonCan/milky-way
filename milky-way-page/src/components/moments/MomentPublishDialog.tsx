@@ -13,11 +13,13 @@ import { EmojiText } from '../EmojiText'
 interface MomentPublishDialogProps {
   open: boolean
   onClose: () => void
+  onSuccess?: () => void
 }
 
 export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
   open,
-  onClose
+  onClose,
+  onSuccess
 }) => {
   const [content, setContent] = useState('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
@@ -79,6 +81,10 @@ export const MomentPublishDialog: React.FC<MomentPublishDialogProps> = ({
       previewUrls.forEach(url => URL.revokeObjectURL(url))
       setPreviewUrls([])
       onClose()
+      // 调用成功回调
+      if (onSuccess) {
+        onSuccess()
+      }
     }
   }
 

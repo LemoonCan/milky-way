@@ -1,5 +1,5 @@
 import http from '../lib/http'
-import type { ApiResponse } from '../types/api'
+import type { ApiResponse, Slices } from '../types/api'
 import type { SimpleUserDTO } from './user'
 import type { User } from './user'
 
@@ -39,19 +39,6 @@ export interface FriendOperateRequest {
   friendUserId: string
 }
 
-// 好友列表分页响应 - 基于实际API响应
-export interface FriendListData {
-  items: Friend[]
-  hasNext: boolean
-  size: number
-}
-
-// 好友申请列表分页响应
-export interface FriendApplicationListData {
-  items: FriendApplication[]
-  hasNext: boolean
-  size: number
-}
 
 // 好友列表查询参数
 export interface FriendsQueryParams {
@@ -92,16 +79,16 @@ class FriendService {
   /**
    * 获取好友列表
    */
-  async getFriends(params: FriendsQueryParams): Promise<ApiResponse<FriendListData>> {
-    const response = await http.get<ApiResponse<FriendListData>>('/friends', { params })
+  async getFriends(params: FriendsQueryParams): Promise<ApiResponse<Slices<Friend>>> {
+    const response = await http.get<ApiResponse<Slices<Friend>>>('/friends', { params })
     return response.data
   }
 
   /**
    * 获取好友申请列表
    */
-  async getFriendApplications(params: FriendApplicationsQueryParams): Promise<ApiResponse<FriendApplicationListData>> {
-    const response = await http.get<ApiResponse<FriendApplicationListData>>('/friends/applications', { params })
+  async getFriendApplications(params: FriendApplicationsQueryParams): Promise<ApiResponse<Slices<FriendApplication>>> {
+    const response = await http.get<ApiResponse<Slices<FriendApplication>>>('/friends/applications', { params })
     return response.data
   }
 

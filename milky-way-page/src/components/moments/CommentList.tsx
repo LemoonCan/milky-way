@@ -3,7 +3,7 @@ import { EmojiText } from '../EmojiText'
 import { ProfileModal } from '../ProfileModal'
 import { Avatar } from '../Avatar'
 import { TimeFormatter } from '@/utils/timeFormatter'
-import type { CommentDTO } from '../../types/api'
+import type { CommentDTO } from '../../services/moment'
 import styles from '../../css/moments/CommentList.module.css'
 
 interface CommentListProps {

@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
-import { MoreHorizontal, UserMinus, UserX, UserCheck, FileText } from 'lucide-react'
+import { MoreHorizontal, UserMinus, UserX, UserCheck, FileText, ChevronRight } from 'lucide-react'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { CommunicationActions } from '../CommunicationActions'
 import { useFriendStore } from '../../store/friend'
 import { userService } from '../../services/user'
+import { useNavigate } from 'react-router-dom'
 import type { Friend } from '../../services/friend'
 import type { UserDetailInfo } from '../../services/user'
 import styles from '../../css/friends/FriendDetail.module.css'
@@ -23,6 +24,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const [userDetails, setUserDetails] = useState<UserDetailInfo | null>(null)
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const lastFetchedUserIdRef = useRef<string | null>(null)
+  const navigate = useNavigate()
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
 
   // 获取用户详细信息
@@ -103,6 +105,13 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     setShowMoreActions(false)
   }
 
+  // 跳转到用户动态页面
+  const handleNavigateToUserMoments = () => {
+    navigate(`/main/moments/user/${friend.friend.id}`, {
+      state: { userInfo: userDetails } // 传递用户信息
+    })
+  }
+
   // 格式化动态内容
   const formatMomentContent = (moment: UserDetailInfo['lastMoment']) => {
     if (!moment) return null
@@ -170,9 +179,12 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         </div>
       </div>
 
-      {/* 最新动态区域 */}
-      <div className={styles.momentSection}>
-        <div className={styles.sectionTitle}>最新动态</div>
+      {/* 最新动态按钮 */}
+      <button
+        className={styles.latestMomentButton}
+        onClick={handleNavigateToUserMoments}
+      >
+        <div className={styles.momentLabel}>最新动态</div>
         <div className={styles.momentContent}>
           {userDetails?.lastMoment ? formatMomentContent(userDetails.lastMoment) : (
             <div className={styles.noMoment}>
@@ -181,7 +193,8 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
             </div>
           )}
         </div>
-      </div>
+        <ChevronRight size={16} className={styles.chevronIcon} />
+      </button>
 
       {/* 主要操作按钮 */}
       <CommunicationActions
@@ -191,7 +204,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
         className={styles.primaryActions}
       />
 
-             {/* 更多操作按钮 */}
+      {/* 更多操作按钮 */}
        <div className={styles.moreActionsContainer} ref={moreActionsRef}>
         <button
           onClick={() => setShowMoreActions(!showMoreActions)}
