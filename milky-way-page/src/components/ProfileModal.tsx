@@ -2,10 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Avatar } from "./Avatar";
 import { EmojiText } from "./EmojiText";
+import { CommunicationActions } from "./CommunicationActions";
 import {
-  MessageCircle,
-  Phone,
-  Video,
   FileText,
   ChevronRight,
 } from "lucide-react";
@@ -22,9 +20,6 @@ interface ProfileModalProps {
   onClose: () => void;
   triggerElement?: HTMLElement | null;
   showActions?: boolean; // 是否显示操作按钮（发消息、语音、视频）
-  onMessage?: () => void;
-  onVoiceCall?: () => void;
-  onVideoCall?: () => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -33,9 +28,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   triggerElement,
   showActions = false,
-  onMessage,
-  onVoiceCall,
-  onVideoCall,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const lastRequestedUserIdRef = useRef<string | null>(null);
@@ -246,32 +238,13 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </button>
 
             {/* 操作按钮（仅好友头像显示） */}
-            {showActions && (
+            {showActions && user && (
               <div className={styles.actionButtons}>
-                <button
-                  className={styles.actionBtn}
-                  onClick={onMessage}
-                  title="发消息"
-                >
-                  <MessageCircle size={20} />
-                  <span>发消息</span>
-                </button>
-                <button
-                  className={styles.actionBtn}
-                  onClick={onVoiceCall}
-                  title="语音通话"
-                >
-                  <Phone size={20} />
-                  <span>语音通话</span>
-                </button>
-                <button
-                  className={styles.actionBtn}
-                  onClick={onVideoCall}
-                  title="视频通话"
-                >
-                  <Video size={20} />
-                  <span>视频通话</span>
-                </button>
+                <CommunicationActions
+                  userId={user.id}
+                  userName={user.nickName || "未设置昵称"}
+                  variant="modal"
+                />
               </div>
             )}
           </>

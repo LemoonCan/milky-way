@@ -244,9 +244,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           onClose={handleCloseProfileModal}
           triggerElement={avatarElement}
           showActions={showActions}
-          onMessage={handleMessage}
-          onVoiceCall={handleVoiceCall}
-          onVideoCall={handleVideoCall}
         />
       )}
 
