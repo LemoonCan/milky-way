@@ -177,6 +177,22 @@
   100% { transform: rotate(360deg); }
 }
 
+/* 错误页面 */
+.errorPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.errorMessage {
+  font-size: 16px;
+  color: #ef4444;
+  margin-bottom: 20px;
+}
 
 /* 响应式设计 */
 @media (max-width: 768px) {

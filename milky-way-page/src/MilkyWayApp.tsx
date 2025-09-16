@@ -11,7 +11,6 @@ import { ChatPage } from "./components/chats/ChatPage";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { FriendPage } from "./components/friends/FriendPage";
 import { MomentsPage } from "./components/moments/MomentsPage";
-import { UserMomentsPage } from "./components/moments/UserMomentsPage";
 import { MomentDetailPage } from "./components/moments/MomentDetailPage";
 
 import { useUserStore } from "./store/user";
@@ -83,7 +82,7 @@ function MilkyWayApp() {
         <Route path="/messages" element={<ChatPage />} />
         <Route path="/friends" element={<FriendPage />} />
         <Route path="/moments" element={<MomentsPage />} />
-        <Route path="/moments/user/:userId" element={<UserMomentsPage />} />
+        <Route path="/moments/user/:userId" element={<MomentsPage />} />
         <Route
           path="/moments/detail/:momentId"
           element={<MomentDetailPage />}

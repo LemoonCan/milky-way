@@ -62,24 +62,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     setShowProfileModal(false)
   }
 
-  // 处理发消息（个人信息弹框中）
-  const handleMessage = () => {
-    setShowProfileModal(false)
-    // 已经在当前聊天中，不需要切换
-  }
-
-  // 处理语音通话
-  const handleVoiceCall = () => {
-    setShowProfileModal(false)
-    console.log('发起语音通话:', modalUserId)
-  }
-
-  // 处理视频通话
-  const handleVideoCall = () => {
-    setShowProfileModal(false)
-    console.log('发起视频通话:', modalUserId)
-  }
-
   const isFromMe = isMessageFromMe(message)
 
   // 根据消息类型获取头像信息
