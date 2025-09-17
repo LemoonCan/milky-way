@@ -8,7 +8,7 @@ server:
   port: 443
 
 env:
-  domain: https://api.pilili.xyz/
+  domain: https://api.lemoon-can.site/
   fileAccessUrl: files
 
 # datasource
@@ -35,9 +35,9 @@ logging:
 security:
   cors:
     allowed-origins: #此类-分隔的配置，只能被@ConfigurationProperties方式解析
-      - https://www.pilili.xyz
+      - https://www.lemoon-can.site
       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
   websocket:
     cors-allowed-origins:
-      - https://www.pilili.xyz
+      - https://www.lemoon-can.site
       - chrome-extension://cbcbkhdmedgianpaifchdaddpnmgnknn
