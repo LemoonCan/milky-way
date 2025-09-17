@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { useNotificationStore } from './notification'
 import { useFriendStore } from './friend'
 import { useChatStore } from './chat'
-import { useMomentStore } from './moment'
+import { useMomentStore, MomentType } from './moment'
 import { webSocketClient } from '../services/websocket'
 import type { 
   MessageNotifyDTO
@@ -215,7 +215,8 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()((s
 
       case 'COMMENT_DELETE':
         if (typeof content === 'string') {
-          useMomentStore.getState().refreshMoments()
+          // 评论删除通知，刷新朋友圈动态
+          useMomentStore.getState().fetchMoments(MomentType.FRIEND)
         }
         break
 

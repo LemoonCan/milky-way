@@ -227,6 +227,7 @@ export const useNotificationStore = create<NotificationStore>((set, get) => ({
   // 关闭通知面板
   closeNotificationPanel: () => {
     set({ isNotificationPanelOpen: false })
+    get().clearAll()
   },
 
   // 更新统计信息

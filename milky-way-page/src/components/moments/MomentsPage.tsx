@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { RefreshCw, Edit3, Grape, Citrus, Undo2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar } from "../Avatar";
 import { MomentsList } from "./MomentsList";
+import type { MomentsListRef } from "./MomentsList";
 import { MomentPublishDialog } from "./MomentPublishDialog";
 import NotificationButton from "../NotificationButton";
 import NotificationPanel from "../NotificationPanel";
-import { useMomentStore } from "../../store/moment";
+import { useMomentStore, MomentType } from "../../store/moment";
 import { useUserStore } from "../../store/user";
 import { useNotificationStore } from "../../store/notification";
 import type { UserDetailInfo } from "../../services/user";
@@ -26,23 +27,19 @@ export const MomentsPage: React.FC = () => {
   const [showPublishDialog, setShowPublishDialog] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [targetUser, setTargetUser] = useState<UserDetailInfo | null>(null);
-
   // 从路由状态中获取用户信息
   const userInfoFromState = (location.state as LocationState)?.userInfo;
+  // MomentsList 的 ref
+  const momentsListRef = useRef<MomentsListRef>(null);
 
   // 使用统一的 store
   const {
     moments,
     loading,
-    error,
     hasNext,
-    initialized,
-    momentType,
     fetchMoments,
     loadMoreMoments,
-    refreshMoments,
-    setMomentType,
-    resetState,
+    navigateToMomentPage,
   } = useMomentStore();
 
   const { currentUser } = useUserStore();
@@ -59,59 +56,45 @@ export const MomentsPage: React.FC = () => {
   const momentStats = getMomentStats();
   const momentNotifications = getMomentNotifications();
 
+  // 根据路径确定 momentType
+  const getMomentTypeFromPath = useCallback((): MomentType => {
+    const path = location.pathname;
+    if (path.includes("/moments/friend")) return MomentType.FRIEND;
+    if (path.includes("/moments/mine")) return MomentType.MINE;
+    if (path.includes("/moments/user/")) return MomentType.USER;
+    return MomentType.FRIEND; // 默认值
+  }, [location.pathname]);
+
+  const momentType = getMomentTypeFromPath();
+
   // 初始化加载
   useEffect(() => {
-    if (momentType === "user" && userId) {
-      // 用户模式：显示特定用户的动态
-      console.log("moment useEffect", userId);
-
-      // 使用传递的用户信息
+    if (momentType === MomentType.USER && userId) {
       if (userInfoFromState) {
         setTargetUser(userInfoFromState);
       }
     }
-    if(currentUser) {
-      fetchMoments(userId)
+    if (currentUser) {
+      fetchMoments(momentType);
     }
-  }, [userId, momentType, currentUser]);
-
-  // 处理动态类型切换（仅主页面模式）
-  const handleMomentTypeChange = async (type: "friends" | "mine") => {
-    await setMomentType(type);
-  };
+  }, [userId, currentUser, fetchMoments, userInfoFromState, momentType]);
 
   // 刷新动态
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refreshMoments();
+      await fetchMoments(momentType, userId);
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  // 返回朋友圈页面（仅用户模式）
-  const handleBack = () => {
-    navigate("/main/moments");
-  };
-
   // 处理发布成功
-  const handlePublishSuccess = () => {
+  const handlePublishSuccess = async () => {
+    await fetchMoments(momentType, userId);
+    momentsListRef.current?.scrollToTop();
     setShowPublishDialog(false);
-    refreshMoments();
   };
-
-  // 如果是用户模式但没有userId，返回错误页面
-  if (momentType === "user" && !userId) {
-    return (
-      <div className={styles.errorPage}>
-        <div className={styles.errorMessage}>用户ID不能为空</div>
-        <Button onClick={handleBack} variant="outline">
-          返回好友动态
-        </Button>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.momentsPage}>
@@ -120,12 +103,14 @@ export const MomentsPage: React.FC = () => {
         <div className={styles.coverBackground}>
           {/* 左上角按钮区域 */}
           <div className={styles.topLeftActions}>
-            {momentType === "user" ? (
+            {momentType === MomentType.USER ? (
               // 用户模式：显示返回按钮
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={handleBack}
+                onClick={() =>
+                  navigateToMomentPage(MomentType.FRIEND, navigate)
+                }
                 className={styles.iconButton}
                 title="返回好友动态"
               >
@@ -137,9 +122,11 @@ export const MomentsPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleMomentTypeChange("friends")}
+                  onClick={() =>
+                    navigateToMomentPage(MomentType.FRIEND, navigate)
+                  }
                   className={`${styles.iconButton} ${
-                    momentType === "friends" ? styles.active : ""
+                    momentType === MomentType.FRIEND ? styles.active : ""
                   }`}
                   title="好友动态"
                 >
@@ -149,9 +136,11 @@ export const MomentsPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => handleMomentTypeChange("mine")}
+                  onClick={() =>
+                    navigateToMomentPage(MomentType.MINE, navigate)
+                  }
                   className={`${styles.iconButton} ${
-                    momentType === "mine" ? styles.active : ""
+                    momentType === MomentType.MINE ? styles.active : ""
                   }`}
                   title="我的动态"
                 >
@@ -176,7 +165,7 @@ export const MomentsPage: React.FC = () => {
               <RefreshCw size={20} />
             </Button>
 
-            {momentType != "user" && (
+            {momentType != MomentType.USER && (
               // 主页面模式：显示通知按钮
               <NotificationButton
                 className={styles.iconButton}
@@ -185,7 +174,7 @@ export const MomentsPage: React.FC = () => {
               />
             )}
 
-            {momentType != "user" && (
+            {momentType != MomentType.USER && (
               // 主页面模式或当前用户的动态页面：显示发布按钮
               <Button
                 variant="ghost"
@@ -198,7 +187,7 @@ export const MomentsPage: React.FC = () => {
               </Button>
             )}
             {/* 通知面板 - 仅主页面模式显示 */}
-            {momentType != "user" && (
+            {momentType != MomentType.USER && (
               <NotificationPanel
                 isOpen={isNotificationPanelOpen}
                 onClose={closeNotificationPanel}
@@ -215,7 +204,7 @@ export const MomentsPage: React.FC = () => {
               <span className={styles.userName}>
                 <EmojiText
                   text={
-                    momentType === "user"
+                    momentType === MomentType.USER
                       ? targetUser?.nickName || "未知用户"
                       : currentUser?.nickName || "未登录"
                   }
@@ -225,9 +214,11 @@ export const MomentsPage: React.FC = () => {
             </div>
             <Avatar
               size={64}
-              userId={momentType === "user" ? userId : currentUser?.id}
+              userId={momentType === MomentType.USER ? userId : currentUser?.id}
               avatarUrl={
-                momentType === "user" ? targetUser?.avatar : currentUser?.id
+                momentType === MomentType.USER
+                  ? targetUser?.avatar
+                  : currentUser?.avatar
               }
               className={styles.userAvatar}
             />
@@ -237,14 +228,13 @@ export const MomentsPage: React.FC = () => {
 
       {/* 动态列表 */}
       <MomentsList
+        ref={momentsListRef}
         moments={moments}
         loading={loading}
         hasNext={hasNext}
-        initialized={initialized}
-        error={error}
-        onLoadMore={loadMoreMoments}
+        onLoadMore={() => loadMoreMoments(momentType, userId)}
         onPublish={() => setShowPublishDialog(true)}
-        targetUserId={momentType === "user" ? userId : currentUser?.id}
+        targetUserId={momentType === MomentType.USER ? userId : currentUser?.id}
       />
 
       {/* 发布动态对话框 */}

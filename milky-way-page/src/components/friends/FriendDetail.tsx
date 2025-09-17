@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import type { Friend } from '../../services/friend'
 import type { UserDetailInfo } from '../../services/user'
 import styles from '../../css/friends/FriendDetail.module.css'
+import { useMomentStore, MomentType } from '../../store/moment'
 
 interface FriendDetailProps {
   friend: Friend
@@ -26,6 +27,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const lastFetchedUserIdRef = useRef<string | null>(null)
   const navigate = useNavigate()
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
+  const { navigateToMomentPage } = useMomentStore()
 
   // 获取用户详细信息
   useEffect(() => {
@@ -105,12 +107,6 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
     setShowMoreActions(false)
   }
 
-  // 跳转到用户动态页面
-  const handleNavigateToUserMoments = () => {
-    navigate(`/main/moments/user/${friend.friend.id}`, {
-      state: { userInfo: userDetails } // 传递用户信息
-    })
-  }
 
   // 格式化动态内容
   const formatMomentContent = (moment: UserDetailInfo['lastMoment']) => {
@@ -182,7 +178,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
       {/* 最新动态按钮 */}
       <button
         className={styles.latestMomentButton}
-        onClick={handleNavigateToUserMoments}
+        onClick={() => navigateToMomentPage(MomentType.USER, navigate, userDetails)}
       >
         <div className={styles.momentLabel}>最新动态</div>
         <div className={styles.momentContent}>

@@ -13,6 +13,7 @@ import { userService } from "../services/user";
 import type { UserDetailInfo } from "../services/user";
 import type { ApiResponse } from "../types/api";
 import { handleAndShowError } from '../lib/globalErrorHandler'
+import { useMomentStore, MomentType } from '../store/moment'
 
 interface ProfileModalProps {
   userId: string;
@@ -32,8 +33,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const lastRequestedUserIdRef = useRef<string | null>(null);
   const navigate = useNavigate();
-  const [user, setUser] = useState<UserDetailInfo | null>(null);
+  const [user, setUser] = useState<UserDetailInfo | undefined>(undefined);
   const [shouldShowModal, setShouldShowModal] = useState(false);
+  const { navigateToMomentPage } = useMomentStore();
 
   // 获取用户详细信息
   useEffect(() => {
@@ -66,7 +68,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
         });
     } else if (!isVisible) {
       // 弹框关闭时重置状态
-      setUser(null);
+      setUser(undefined);
       setShouldShowModal(false);
       lastRequestedUserIdRef.current = null;
     }
@@ -74,9 +76,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
   // 跳转到用户动态页面
   const handleNavigateToUserMoments = () => {
-    navigate(`/main/moments/user/${userId}`, {
-      state: { userInfo: user } // 传递用户信息
-    });
+    navigateToMomentPage(MomentType.USER, navigate, user)
     onClose();
   };
 

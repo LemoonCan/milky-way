@@ -81,7 +81,9 @@ function MilkyWayApp() {
         <Route path="/" element={<Navigate to="/main/messages" replace />} />
         <Route path="/messages" element={<ChatPage />} />
         <Route path="/friends" element={<FriendPage />} />
-        <Route path="/moments" element={<MomentsPage />} />
+        <Route path="/moments" element={<Navigate to="/main/moments/friend" replace />} />
+        <Route path="/moments/friend" element={<MomentsPage />} />
+        <Route path="/moments/mine" element={<MomentsPage />} />
         <Route path="/moments/user/:userId" element={<MomentsPage />} />
         <Route
           path="/moments/detail/:momentId"
