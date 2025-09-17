@@ -75,7 +75,7 @@ export const MomentsPage: React.FC = () => {
       }
     }
     if (currentUser) {
-      fetchMoments(momentType);
+      fetchMoments(momentType, userId);
     }
   }, [userId, currentUser, fetchMoments, userInfoFromState, momentType]);
 

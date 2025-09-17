@@ -81,7 +81,7 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         break
       case MomentType.USER:
         if (!userId) {
-          throw new Error('获取用户动态需要提供用户ID')
+          throw new Error('用户ID为空')
         } 
         response = await momentService.getUserMoments(userId, queryParams)
         break
