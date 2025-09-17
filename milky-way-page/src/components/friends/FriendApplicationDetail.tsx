@@ -1,14 +1,16 @@
 import React, { useState } from 'react'
 import { Avatar } from '../Avatar'
-import { UserCheck } from 'lucide-react'
+import { UserCheck, ChevronLeft } from 'lucide-react'
 import { FriendApplicationVerifyDialog } from './FriendApplicationVerifyDialog'
 import { CommunicationActions } from '../CommunicationActions'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import type { FriendApplication } from '../../services/friend'
 import styles from '../../css/friends/FriendApplicationDetail.module.css'
 import { EmojiText } from '../EmojiText'
 
 interface FriendApplicationDetailProps {
   application: FriendApplication
+  onBack?: () => void
 }
 
 // 根据申请渠道获取中文描述
@@ -31,8 +33,9 @@ const getApplyChannelText = (applyChannel?: string): string => {
   }
 }
 
-export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = ({ application }) => {
+export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = ({ application, onBack }) => {
   const [showVerifyDialog, setShowVerifyDialog] = useState(false)
+  const isMobile = useIsMobile()
 
   const handleVerify = () => {
     setShowVerifyDialog(true)
@@ -46,6 +49,15 @@ export const FriendApplicationDetail: React.FC<FriendApplicationDetailProps> = (
   return (
     <>
       <div className={styles.applicationDetail}>
+        {/* 移动端返回按钮 */}
+        {isMobile && onBack && (
+          <div className={styles.mobileHeader}>
+            <button className={styles.backButton} onClick={onBack}>
+              <ChevronLeft size={20} />
+            </button>
+          </div>
+        )}
+        
         {/* 顶部基本信息 */}
         <div className={styles.profileHeader}>
           <div className={styles.avatarContainer}>

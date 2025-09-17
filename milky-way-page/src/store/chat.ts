@@ -48,7 +48,7 @@ export interface ChatStore {
   hasMoreChats: boolean
   lastMessageId?: string
   pendingFriendUserId: string | null // 待处理的好友用户ID
-  setCurrentChat: (chatId: string) => Promise<void>
+  setCurrentChat: (chatId: string | null) => Promise<void>
   loadChatMessages: (chatId: string) => Promise<void>
   loadMoreOlderMessages: (chatId: string) => Promise<void>
   addMessage: (message: ClientMessageDTO) => void
@@ -73,7 +73,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     lastMessageId: undefined,
     pendingFriendUserId: null,
   
-  setCurrentChat: async (chatId: string) => {    
+  setCurrentChat: async (chatId: string | null) => {
+    // 如果传入空字符串或null，直接清除当前聊天状态
+    if (!chatId || chatId.trim() === '') {
+      set({ currentChatId: null })
+      return
+    }
+    
     const state = get()
     const existingChatState = state.chatMessagesMap[chatId]
     // 检查是否需要加载消息：没有缓存消息且没有正在发送的消息时才加载

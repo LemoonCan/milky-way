@@ -4,6 +4,7 @@ import { Avatar } from './Avatar'
 import { ProfileModal } from './ProfileModal'
 import { useUserStore } from '../store/user'
 import { ImageUtils } from './LazyImage'
+import { useIsMobile } from '../hooks/useIsMobile'
 import styles from '../css/SidebarNav.module.css'
 
 interface SidebarNavProps {
@@ -15,6 +16,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
   const { currentUser } = useUserStore()
   const [showProfileModal, setShowProfileModal] = useState(false)
   const avatarRef = useRef<HTMLDivElement>(null)
+  const isMobile = useIsMobile()
 
   // 预加载当前用户头像
   useEffect(() => {
@@ -44,6 +46,39 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
     setShowProfileModal(false)
   }
 
+  // 移动端布局
+  if (isMobile) {
+    return (
+      <div className={styles.sidebar}>
+        <div className={styles.mobileNavContainer}>
+          {/* 导航按钮 */}
+          <div className={styles.mobileNavCenter}>
+            {navItems.map((item) => (
+              <div
+                key={item.id}
+                className={`${styles.sidebarBtn} ${activeTab === item.id ? styles.active : ''}`}
+                onClick={() => onTabChange(item.id)}
+                title={item.label}
+              >
+                <item.icon className={styles.navIcon} />
+              </div>
+            ))}
+            
+            {/* 设置按钮 */}
+            <div
+              className={`${styles.sidebarBtn} ${activeTab === 'settings' ? styles.active : ''}`}
+              onClick={() => onTabChange('settings')}
+              title="设置"
+            >
+              <Settings className={styles.navIcon} />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 桌面端布局（保持原有逻辑）
   return (
     <div className={styles.sidebar}>
       {/* 用户头像 */}

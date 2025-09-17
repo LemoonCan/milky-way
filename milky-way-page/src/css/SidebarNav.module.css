@@ -13,6 +13,27 @@
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
 }
 
+/* 移动端样式 */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 80px;
+    min-width: unset;
+    max-width: unset;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 8px 16px;
+    background: var(--milky-sidebar);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+    border-top: 1px solid var(--milky-border);
+  }
+}
+
 .sidebarBtn {
   width: 44px;
   height: 44px;
@@ -24,6 +45,16 @@
   transition: all 0.25s ease;
   cursor: pointer;
   position: relative;
+}
+
+/* 移动端按钮样式 */
+@media (max-width: 768px) {
+  .sidebarBtn {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 0;
+    border-radius: 16px;
+  }
 }
 
 .sidebarBtn:hover {
@@ -48,10 +79,30 @@
   border-radius: 2px;
 }
 
+/* 移动端激活状态指示器 */
+@media (max-width: 768px) {
+  .sidebarBtn.active::after {
+    right: 50%;
+    top: -4px;
+    transform: translateX(50%);
+    width: 20px;
+    height: 3px;
+  }
+}
+
 .userAvatar {
   margin-bottom: 24px;
   border: 2px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 移动端头像样式 */
+@media (max-width: 768px) {
+  .userAvatar {
+    margin-bottom: 0;
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .navSection {
@@ -61,8 +112,45 @@
   margin-bottom: auto;
 }
 
+/* 移动端导航区域样式 */
+@media (max-width: 768px) {
+  .navSection {
+    flex-direction: row;
+    gap: 0;
+    margin-bottom: 0;
+    justify-content: center;
+    flex: 1;
+  }
+}
+
 .navIcon {
   width: 24px;
   height: 24px; 
   color: #666;
+}
+
+/* 移动端图标样式 */
+@media (max-width: 768px) {
+  .navIcon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* 移动端导航栏容器 */
+@media (max-width: 768px) {
+  .mobileNavContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .mobileNavCenter {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    justify-content: center;
+  }
 }

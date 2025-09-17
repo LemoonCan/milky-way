@@ -16,6 +16,40 @@
   align-items: center;
 }
 
+/* 移动端返回按钮 */
+.backButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--milky-text);
+  margin-right: 8px;
+}
+
+.backButton:hover {
+  background-color: var(--milky-chat-bg);
+}
+
+.backButton:active {
+  transform: scale(0.95);
+}
+
+/* 移动端对齐优化 */
+@media (max-width: 768px) {
+  .chatHeader {
+    padding: 8px 16px 8px 0 !important; /* 左侧无padding，让返回按钮可以精确对齐 */
+  }  
+  .backButton {
+    margin-left: 0; /* 与消息列表的padding保持一致，让按钮左边缘与头像左边缘对齐 */
+  }
+}
+
 .chatHeaderInfo {
   margin-left: 12px;
 }

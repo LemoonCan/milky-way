@@ -253,10 +253,12 @@
     width: 100%;
     min-width: auto;
     max-width: none;
+    border-right: none;
+    height: 100%;
   }
   
-  .searchContainer {
-    padding: 12px 16px;
+  .searchSection {
+    padding: 0 16px 16px;
   }
   
   .sectionHeader {

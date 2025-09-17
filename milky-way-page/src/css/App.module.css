@@ -5,6 +5,15 @@
   flex: 1;
 }
 
+/* 移动端主内容区域 */
+@media (max-width: 768px) {
+  .mainContent {
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
 .emptyState {
   flex: 1;
 }

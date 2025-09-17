@@ -12,6 +12,17 @@
   box-shadow: var(--milky-shadow-card);
 }
 
+/* 移动端聊天列表样式 */
+@media (max-width: 768px) {
+  .chatList {
+    width: 100%;
+    min-width: unset;
+    max-width: unset;
+    border-right: none;
+    height: 100%;
+  }
+}
+
 .chatListContent {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */

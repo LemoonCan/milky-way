@@ -123,6 +123,14 @@
     overflow: hidden;
     background-color: var(--milky-bg);
   }
+  
+  /* 移动端布局调整 */
+  @media (max-width: 768px) {
+    .milky-container {
+      flex-direction: column;
+      padding-bottom: 80px; /* 为底部导航栏留出空间 */
+    }
+  }
 }
 
 @layer utilities {

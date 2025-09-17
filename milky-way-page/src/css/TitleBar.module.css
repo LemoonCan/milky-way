@@ -112,4 +112,30 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* 移动端样式 */
+@media (max-width: 768px) {
+  .header {
+    padding: 8px 16px 12px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .networkIndicator {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+  
+  .networkIcon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .retryIcon {
+    width: 12px;
+    height: 12px;
+  }
 } 

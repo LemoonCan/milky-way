@@ -7,7 +7,11 @@ import { ChatHeader } from './ChatHeader'
 import { useChatStore } from '@/store/chat'
 import styles from '../../css/chats/ChatWindow.module.css'
 
-export const ChatWindow: React.FC = () => {
+interface ChatWindowProps {
+  onBack?: () => void
+}
+
+export const ChatWindow: React.FC<ChatWindowProps> = ({ onBack }) => {
   const [inputValue, setInputValue] = useState('')
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -26,7 +30,7 @@ export const ChatWindow: React.FC = () => {
   return (
     <div className={styles.chatWindow}>
       {/* 聊天头部 */}
-      <ChatHeader chat={currentChat} />
+      <ChatHeader chat={currentChat} onBack={onBack} />
 
       {/* 聊天消息区域 */}
       <MessageList

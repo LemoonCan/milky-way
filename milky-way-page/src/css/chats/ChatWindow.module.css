@@ -52,6 +52,14 @@
   position: relative;
 }
 
+/* 移动端聊天窗口样式 */
+@media (max-width: 768px) {
+  .chatWindow {
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .chatWindowBase {
   flex: 1;
   display: flex;

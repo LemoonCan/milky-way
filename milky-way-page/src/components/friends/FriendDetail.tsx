@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Avatar } from '../Avatar'
 import { EmojiText } from '../EmojiText'
-import { MoreHorizontal, UserMinus, UserX, UserCheck, FileText, ChevronRight } from 'lucide-react'
+import { MoreHorizontal, UserMinus, UserX, UserCheck, FileText, ChevronRight, ChevronLeft } from 'lucide-react'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { CommunicationActions } from '../CommunicationActions'
 import { useFriendStore } from '../../store/friend'
 import { userService } from '../../services/user'
 import { useNavigate } from 'react-router-dom'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import type { Friend } from '../../services/friend'
 import type { UserDetailInfo } from '../../services/user'
 import styles from '../../css/friends/FriendDetail.module.css'
@@ -14,9 +15,10 @@ import { useMomentStore, MomentType } from '../../store/moment'
 
 interface FriendDetailProps {
   friend: Friend
+  onBack?: () => void
 }
 
-export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
+export const FriendDetail: React.FC<FriendDetailProps> = ({ friend, onBack }) => {
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [, setLoading] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -28,6 +30,7 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
   const navigate = useNavigate()
   const { deleteFriend, blockFriend, unblockFriend, isLoading } = useFriendStore()
   const { navigateToMomentPage } = useMomentStore()
+  const isMobile = useIsMobile()
 
   // 获取用户详细信息
   useEffect(() => {
@@ -142,6 +145,15 @@ export const FriendDetail: React.FC<FriendDetailProps> = ({ friend }) => {
 
   return (
     <div className={styles.friendDetail}>
+        {/* 移动端返回按钮 */}
+        {isMobile && onBack && (
+          <div className={styles.mobileHeader}>
+            <button className={styles.backButton} onClick={onBack}>
+              <ChevronLeft size={20} />
+            </button>
+          </div>
+        )}
+      
       {/* 顶部基本信息 */}
       <div className={styles.profileHeader}>
         <div className={styles.avatarContainer}>

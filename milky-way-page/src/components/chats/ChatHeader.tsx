@@ -1,25 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Avatar } from '../Avatar'
-import { Trash2 } from 'lucide-react'
+import { Trash2, ChevronLeft } from 'lucide-react'
 import { EmojiText } from '../EmojiText'
 import { ConfirmDialog } from '../ui/confirm-dialog'
 import { chatService } from '../../services/chat'
 import { useChatStore } from '@/store/chat'
+import { useIsMobile } from '../../hooks/useIsMobile'
 import type { ChatInfoDTO } from '../../services/chat'
 import styles from '../../css/chats/ChatHeader.module.css'
 
 interface ChatHeaderProps {
   chat: ChatInfoDTO
+  onBack?: () => void
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
-  chat
+  chat,
+  onBack
 }) => {
   const [showMoreActions, setShowMoreActions] = useState(false)
   const [showDeleteChatDialog, setShowDeleteChatDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const moreActionsRef = useRef<HTMLDivElement>(null)
   const { removeChat } = useChatStore()
+  const isMobile = useIsMobile()
 
   // 处理更多操作按钮点击
   const handleMoreActionsClick = () => {
@@ -69,6 +73,13 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <div className={styles.chatHeader}>
       <div className={styles.chatHeaderUser}>
+        {/* 移动端返回按钮 */}
+        {isMobile && onBack && (
+          <button className={styles.backButton} onClick={onBack}>
+            <ChevronLeft size={20} />
+          </button>
+        )}
+        
         <Avatar 
           size={40}
           userId={chat.chatType === 'SINGLE' ? chat.friendId : chat.id}

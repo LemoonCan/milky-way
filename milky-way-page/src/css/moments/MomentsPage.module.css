@@ -196,8 +196,17 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .momentsPage {
+    height: 100%;
+  }
+  
   .coverSection {
-    height: 220px;
+    height: 200px;
+  }
+  
+  .topLeftActions {
+    top: 12px;
+    left: 12px;
   }
   
   .topActions {
@@ -216,6 +225,8 @@
   
   .userAvatar {
     border-width: 2px;
+    width: 48px;
+    height: 48px;
   }
   
   .iconButton {
@@ -223,9 +234,7 @@
     height: 36px;
   }
   
-  .divider {
-    max-width: 400px;
-    width: 80%;
-    margin: 0 auto;
+  .userName {
+    font-size: 14px;
   }
 } 
