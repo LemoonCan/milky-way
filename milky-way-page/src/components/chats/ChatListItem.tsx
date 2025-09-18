@@ -11,7 +11,7 @@ interface ChatListItemProps {
   onClick: () => void
 }
 
-export const ChatListItem: React.FC<ChatListItemProps> = ({
+export const ChatListItem: React.FC<ChatListItemProps> = React.memo(({
   chat,
   isActive,
   onClick,
@@ -54,4 +54,15 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
       </div>
     </div>
   )
-} 
+}, (prevProps, nextProps) => {
+  // 自定义比较函数，只有这些属性变化时才重新渲染
+  return (
+    prevProps.chat.id === nextProps.chat.id &&
+    prevProps.chat.title === nextProps.chat.title &&
+    prevProps.chat.lastMessage === nextProps.chat.lastMessage &&
+    prevProps.chat.lastMessageTime === nextProps.chat.lastMessageTime &&
+    prevProps.chat.unreadCount === nextProps.chat.unreadCount &&
+    prevProps.chat.online === nextProps.chat.online &&
+    prevProps.isActive === nextProps.isActive
+  )
+}) 

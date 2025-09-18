@@ -76,7 +76,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setCurrentChat: async (chatId: string | null) => {
     // 如果传入空字符串或null，直接清除当前聊天状态
     if (!chatId || chatId.trim() === '') {
-      set({ currentChatId: null })
+      set({ currentChatId: null, chatMessagesMap: {} })
       return
     }
     

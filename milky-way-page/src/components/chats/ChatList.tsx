@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ChatListItem } from "./ChatListItem";
 import { TitleBar } from "../TitleBar";
 import { CreateGroupChatDialog } from "./CreateGroupChatDialog";
@@ -7,6 +7,7 @@ import { useChatStore } from "@/store/chat";
 import type { ChatInfoDTO } from "../../services/chat";
 import styles from "../../css/chats/ChatList.module.css";
 import { useUserStore } from "@/store/user";
+import { preloadChatListEmojis } from "@/utils/emojiCache";
 
 export const ChatList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,13 +64,26 @@ export const ChatList: React.FC = () => {
     if (!isLoading && pendingFriendUserId) {
       processPendingFriendChat();
     }
-  }, [pendingFriendUserId, isLoading]);
+  }, [pendingFriendUserId, isLoading, ensureFriendChatAndNavigate, setCurrentChat, setPendingFriendUserId]);
 
-  const filteredChats = chats.filter(
-    (chat: ChatInfoDTO) =>
-      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredChats = useMemo(() => 
+    chats.filter(
+      (chat: ChatInfoDTO) =>
+        chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+    ), [chats, searchQuery]
   );
+
+  // 预加载聊天列表中的emoji
+  useEffect(() => {
+    if (chats.length > 0) {
+      // 异步预加载，不阻塞UI
+      preloadChatListEmojis(chats.map(chat => ({
+        title: chat.title,
+        lastMessage: chat.lastMessage
+      })));
+    }
+  }, [chats]);
 
   // 处理滚动加载更多
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {

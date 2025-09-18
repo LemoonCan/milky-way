@@ -17,7 +17,7 @@ interface MessageBubbleProps {
   chatId: string // 聊天ID，用于重发消息
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({
+export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({
   message,
   chatId,
 }) => {
@@ -232,4 +232,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
     </div>
   )
-} 
+}, (prevProps, nextProps) => {
+  // 自定义比较函数，只有消息内容或发送状态变化时才重新渲染
+  return (
+    prevProps.message.id === nextProps.message.id &&
+    prevProps.message.meta.content === nextProps.message.meta.content &&
+    prevProps.message.sendStatus === nextProps.message.sendStatus &&
+    prevProps.message.meta.type === nextProps.message.meta.type &&
+    prevProps.chatId === nextProps.chatId
+  )
+}) 

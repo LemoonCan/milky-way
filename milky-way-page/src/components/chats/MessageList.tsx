@@ -6,6 +6,7 @@ import type { ChatMessagesState } from "@/store/chat";
 import type { ChatInfoDTO } from "../../services/chat";
 import { ChevronsDown } from "lucide-react";
 import styles from "../../css/chats/MessageList.module.css";
+import { preloadMessageListEmojis } from "@/utils/emojiCache";
 
 interface MessageListProps {
   chatState: ChatMessagesState | undefined;
@@ -21,6 +22,14 @@ export const MessageList: React.FC<MessageListProps> = ({
   const messages = useMemo(() => chatState?.messages ?? [], [chatState?.messages]);
   const hasMoreOlder = chatState?.hasMoreOlder ?? false;
   const isLoading = chatState?.isLoading ?? false;
+
+  // 预加载消息列表中的emoji
+  useEffect(() => {
+    if (messages.length > 0) {
+      // 异步预加载，不阻塞UI
+      preloadMessageListEmojis(messages);
+    }
+  }, [messages]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -39,9 +48,6 @@ export const MessageList: React.FC<MessageListProps> = ({
     currentMessage: { sentTime: string; meta: { type: string } },
     previousMessage?: { sentTime: string }
   ) => {
-    // 系统消息不显示时间分隔
-    // if (currentMessage.meta.type === "SYSTEM") return false;
-
     if (!previousMessage) return true; // 第一条消息总是显示时间
 
     const currentTime = new Date(currentMessage.sentTime);
@@ -105,6 +111,7 @@ export const MessageList: React.FC<MessageListProps> = ({
         }, 100);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatId, messages.length]);
 
   // 处理滚动事件，检测滚动方向
@@ -124,10 +131,12 @@ export const MessageList: React.FC<MessageListProps> = ({
     // 只有当滚动距离足够大时才认为是有效的滚动
     const scrollDiff = Math.abs(currentScrollTop - lastScrollTop);
     if (scrollDiff > 20) {
-      setIsScrollingUp(isUp);
+      if(isUp!=isScrollingUp){
+        setIsScrollingUp(isUp);
+      }
       setLastScrollTop(currentScrollTop);
     }
-  }, [lastScrollTop, chatId]);
+  }, [lastScrollTop, chatId, isScrollingUp]);
 
   // 添加滚动监听
   useEffect(() => {

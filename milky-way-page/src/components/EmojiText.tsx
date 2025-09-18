@@ -8,7 +8,7 @@ interface EmojiTextProps {
   size?: number | string // emoji 大小，默认为当前字体大小
 }
 
-export const EmojiText: React.FC<EmojiTextProps> = ({ 
+export const EmojiText: React.FC<EmojiTextProps> = React.memo(({ 
   text, 
   className, 
   style, 
@@ -29,8 +29,12 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
 
     const loadEmoji = async () => {
       try {
-        setIsLoading(true)
-        setUseFallback(false)
+        // 检查是否已缓存，如果已缓存则不显示loading状态
+        const isCached = emojiCache.isCached(text)
+        if (!isCached) {
+          setIsLoading(true)
+          setUseFallback(false)
+        }
         
         // 使用缓存管理器获取emoji SVG（缓存管理器内部会处理尺寸）
         const sizeStr = typeof size === 'number' ? `${size}px` : size
@@ -53,9 +57,11 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
       }
     }
 
-    // 检查是否已缓存（不再需要传递size参数）
+    // 检查是否已缓存
     if (emojiCache.isCached(text)) {
-      // 如果已缓存，立即加载
+      // 如果已缓存，直接加载，不显示loading状态
+      setIsLoading(false)
+      setUseFallback(false)
       loadEmoji()
     } else {
       // 如果未缓存，先显示原始文本，然后异步加载
@@ -104,9 +110,17 @@ export const EmojiText: React.FC<EmojiTextProps> = ({
       dangerouslySetInnerHTML={{ __html: parsedHtml }}
     />
   )
-}
+}, (prevProps, nextProps) => {
+  // 自定义比较函数，只有text或size变化时才重新渲染
+  return (
+    prevProps.text === nextProps.text &&
+    prevProps.size === nextProps.size &&
+    prevProps.className === nextProps.className
+  )
+})
 
 // 高阶组件，用于快速包装任何需要 emoji 支持的文本组件
+// eslint-disable-next-line react-refresh/only-export-components
 export const withEmoji = <P extends object>(
   WrappedComponent: React.ComponentType<P & { children?: React.ReactNode }>
 ) => {
@@ -126,6 +140,7 @@ export const withEmoji = <P extends object>(
 }
 
 // 工具函数：检测文本中是否包含 emoji
+// eslint-disable-next-line react-refresh/only-export-components
 export const hasEmoji = (text: string): boolean => {
   // 使用 Unicode 正则表达式检测 emoji
   const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u

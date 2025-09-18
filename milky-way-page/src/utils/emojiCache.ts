@@ -252,6 +252,62 @@ export const preloadEmojiPickerSize = async (emojis: string[]): Promise<void> =>
   }
 }
 
+// 从文本中提取emoji的函数
+export const extractEmojisFromText = (text: string): string[] => {
+  if (!text) return []
+  
+  // 使用更全面的emoji正则表达式
+  const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]/gu
+  
+  const matches = text.match(emojiRegex)
+  return matches ? [...new Set(matches)] : [] // 去重
+}
+
+// 预加载聊天列表中的emoji
+export const preloadChatListEmojis = async (chats: Array<{title: string, lastMessage: string}>): Promise<void> => {
+  try {
+    const allEmojis = new Set<string>()
+    
+    // 从所有聊天的标题和最后消息中提取emoji
+    chats.forEach(chat => {
+      const titleEmojis = extractEmojisFromText(chat.title)
+      const messageEmojis = extractEmojisFromText(chat.lastMessage)
+      
+      titleEmojis.forEach(emoji => allEmojis.add(emoji))
+      messageEmojis.forEach(emoji => allEmojis.add(emoji))
+    })
+    
+    if (allEmojis.size > 0) {
+      console.log(`🚀 预加载聊天列表emoji: ${allEmojis.size}个`)
+      await emojiCache.preloadEmojis(Array.from(allEmojis))
+    }
+  } catch (error) {
+    console.warn('⚠️ 聊天列表emoji预加载失败:', error)
+  }
+}
+
+// 预加载消息列表中的emoji
+export const preloadMessageListEmojis = async (messages: Array<{meta: {content?: string | null, type: string}}>): Promise<void> => {
+  try {
+    const allEmojis = new Set<string>()
+    
+    // 从所有文本消息中提取emoji
+    messages.forEach(message => {
+      if (message.meta.type === 'TEXT' || message.meta.type === 'SYSTEM') {
+        const messageEmojis = extractEmojisFromText(message.meta.content || '')
+        messageEmojis.forEach(emoji => allEmojis.add(emoji))
+      }
+    })
+    
+    if (allEmojis.size > 0) {
+      console.log(`🚀 预加载消息列表emoji: ${allEmojis.size}个`)
+      await emojiCache.preloadEmojis(Array.from(allEmojis))
+    }
+  } catch (error) {
+    console.warn('⚠️ 消息列表emoji预加载失败:', error)
+  }
+}
+
 // 查看缓存统计信息的便利函数
 export const getEmojiCacheStats = () => {
   const stats = emojiCache.getCacheStats()
