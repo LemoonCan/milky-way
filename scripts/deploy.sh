@@ -247,7 +247,7 @@ health_check() {
     # 检查前端服务
     log_info "检查前端服务..."
     for i in {1..15}; do
-        if curl -f -s "https://www.lemoon-can.site" > /dev/null 2>&1; then
+        if curl -f -s "https://milky.lemoon-can.site" > /dev/null 2>&1; then
             log_info "前端服务健康检查通过"
             break
         fi
@@ -272,13 +272,13 @@ show_deployment_info() {
     echo "          Milky Way 部署信息"
     echo "==============================================="
     echo "后端服务："
-    echo "  - 地址：https://api.lemoon-can.site"
-    echo "  - API文档：https://api.lemoon-can.site/swagger-ui.html"
+    echo "  - 地址：https://milky-api.lemoon-can.site"
+    echo "  - API文档：https://milky-api.lemoon-can.site/swagger-ui.html"
     echo "  - 日志文件：${BACKEND_DIR}/logs/backend.log"
     echo "  - PID文件：${BACKEND_DIR}/logs/backend.pid"
     echo ""
     echo "前端服务："
-    echo "  - 地址：https://www.lemoon-can.site"
+    echo "  - 地址：https://milky.lemoon-can.site"
     echo "  - 日志文件：${FRONTEND_DIR}/logs/frontend.log"
     echo "  - PID文件：${FRONTEND_DIR}/logs/frontend.pid"
     echo ""

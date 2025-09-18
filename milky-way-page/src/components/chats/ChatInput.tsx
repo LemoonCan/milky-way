@@ -151,10 +151,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         placeholder="输入消息..."
         currentChatId={currentChatId}
       />
-      
-      <div className={styles.inputHint}>
-        按 Enter 发送，Shift + Enter 换行
-      </div>
 
       {/* 隐藏的文件输入框 */}
       <input

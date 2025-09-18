@@ -42,3 +42,8 @@
   - 访问
   - 删除
   - 权限控制
+
+## 部署
+构建+部署：zsh deploy.zsh
+仅部署：zsh deploy.zsh only_deploy
+前端构建+部署：zsh deploy_front.zsh

@@ -346,14 +346,6 @@
   box-shadow: 0 4px 12px rgba(252, 214, 108, 0.5);
 }
 
-.inputHint {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--milky-text-light);
-}
-
-
-
 /* 响应式设计 */
 @media (max-width: 768px) {
   .chatHeader {

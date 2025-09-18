@@ -59,13 +59,6 @@ setup_environment() {
     log_info "环境变量检查通过"
 }
 
-build_backend() {
-    log_step "构建后端..."
-    ./gradlew clean
-    ./gradlew build -x test
-    log_info "后端构建完成"
-}
-
 build_frontend() {
     log_step "构建前端..."
     cd $FRONTEND_DIR
@@ -80,19 +73,8 @@ upload_artifacts() {
 
     ssh $SERVER_NAME << EOF
         set -e
-        mkdir -p $REMOTE_BACKEND_DIR
         mkdir -p $REMOTE_FRONTEND_DIR
 EOF
-
-    log_info "上传后端 JAR 包..."
-    pwd
-    ls -l "$BACKEND_DIR/build/libs/milky-way-core-"*.jar
-    scp "$BACKEND_DIR/build/libs/milky-way-core-"*.jar \
-        $SERVER_NAME:$REMOTE_BACKEND_DIR/ || { log_error "后端上传失败"; exit 1; }
-
-    log_info "上传 prod.env 配置文件..."
-    scp "$ENV_FILE" $SERVER_NAME:$REMOTE_BACKEND_DIR/$ENV_FILE || { log_error "prod.env 上传失败"; exit 1; }
-
     log_info "上传前端构建文件..."
     pwd
     ls -l milky-way-page/dist/*
@@ -108,20 +90,8 @@ deploy_remote() {
     ssh $SERVER_NAME << EOF
         set -e
         echo "🛑 停止旧服务..."
-        pkill -f milky-way || true
         pkill -f "npx serve" || true
         sleep 2
-
-        echo "🚀 启动后端..."
-        mkdir -p $REMOTE_BACKEND_DIR/logs
-        pwd
-        cd $REMOTE_BACKEND_DIR
-        source $ENV_FILE
-        nohup java -jar $REMOTE_BACKEND_DIR/milky-way-core-*.jar \
-            --spring.profiles.active=prod \
-            --server.port=$BACKEND_PORT \
-            > $REMOTE_BACKEND_DIR/logs/backend.log 2>&1 &
-        echo \$! > $REMOTE_BACKEND_DIR/logs/backend.pid
 
         echo "🚀 启动前端..."
         mkdir -p $REMOTE_FRONTEND_DIR/logs
@@ -138,10 +108,6 @@ show_deployment_info() {
     echo ""
     echo "=================================================="
     echo "🚀 Milky Way 已部署至云端：$REMOTE_PROJECT_DIR"
-    echo "🌐 后端：https://milky-api.lemoon-can.site"
-    echo "🌐 Swagger：https://milky-api.lemoon-can.site/swagger-ui.html"
-    echo "🧾 后端日志：$REMOTE_BACKEND_DIR/logs/backend.log"
-    echo ""
     echo "🌐 前端：https://milky.lemoon-can.site"
     echo "🧾 前端日志：$REMOTE_FRONTEND_DIR/logs/frontend.log"
     echo ""
@@ -154,26 +120,15 @@ show_deployment_info() {
 
 
 main(){
-  if [[ $# -eq 0 ]]; then
-      build_deploy
-    else
-      only_deploy
-  fi
+  build_deploy
 }
 
 build_deploy() {
     log_info "🚀 开始 Milky Way 一键部署..."
     check_dependencies
     setup_environment
-    build_backend
     build_frontend
     upload_artifacts
-    deploy_remote
-    show_deployment_info
-    log_info "✅ 部署流程已完成"
-}
-
-only_deploy(){
     deploy_remote
     show_deployment_info
     log_info "✅ 部署流程已完成"
