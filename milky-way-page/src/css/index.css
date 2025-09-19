@@ -64,7 +64,10 @@
   }
   
   #root {
-    min-height: 100vh;
+    /* 使用动态viewport高度，支持移动端地址栏变化 */
+    min-height: 100vh; /* fallback for older browsers */
+    min-height: 100svh; /* small viewport height - 最小视口高度 */
+    min-height: 100dvh; /* dynamic viewport height - 动态视口高度 */
     width: 100vw;
     overflow: hidden;
     display: flex;
@@ -116,7 +119,10 @@
 
 @layer components {
   .milky-container {
-    height: 100vh;
+    /* 使用动态viewport高度，支持移动端地址栏变化 */
+    height: 100vh; /* fallback for older browsers */
+    height: 100svh; /* small viewport height - 最小视口高度 */
+    height: 100dvh; /* dynamic viewport height - 动态视口高度 */
     display: flex;
     font-size: 14px;
     width: 100vw;
@@ -129,6 +135,43 @@
     .milky-container {
       flex-direction: column;
       padding-bottom: 80px; /* 为底部导航栏留出空间 */
+      /* 移动端优先使用小视口高度，避免地址栏影响 */
+      height: 100vh; /* fallback */
+      height: 100svh; /* 优先使用小视口高度 */
+    }
+    
+    #root {
+      /* 移动端根元素也使用小视口高度 */
+      min-height: 100vh; /* fallback */
+      min-height: 100svh; /* 优先使用小视口高度 */
+    }
+  }
+  
+  /* 针对iOS Safari的特殊处理 */
+  @supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+      .milky-container {
+        /* iOS Safari优先使用小视口高度 */
+        height: 100svh !important;
+      }
+      
+      #root {
+        min-height: 100svh !important;
+      }
+    }
+  }
+  
+  /* 为不支持新viewport单位的浏览器提供JavaScript fallback */
+  @supports not (height: 100dvh) {
+    @media (max-width: 768px) {
+      .milky-container {
+        /* 使用JavaScript设置的CSS变量 */
+        height: calc(var(--vh, 1vh) * 100);
+      }
+      
+      #root {
+        min-height: calc(var(--vh, 1vh) * 100);
+      }
     }
   }
 }

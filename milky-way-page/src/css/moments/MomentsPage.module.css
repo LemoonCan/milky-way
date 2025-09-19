@@ -1,7 +1,10 @@
 .momentsPage {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  /* 使用动态viewport高度，支持移动端地址栏变化 */
+  height: 100vh; /* fallback for older browsers */
+  height: 100svh; /* small viewport height - 最小视口高度 */
+  height: 100dvh; /* dynamic viewport height - 动态视口高度 */
   background: #f5f5f5;
   position: relative;
   width: 100%;
@@ -14,8 +17,11 @@
 .coverSection {
   position: relative;
   width: 100%;
-  height: 240px;
+  /* 缩短PC端封面高度 */
+  height: 200px;
   overflow: hidden;
+  /* 确保封面区域不会被安全区域影响 */
+  padding-top: env(safe-area-inset-top, 0);
 }
 
 .coverBackground {
@@ -89,6 +95,9 @@
   align-items: center;
   gap: 12px;
   z-index: 10;
+  /* 确保用户信息不会被安全区域遮挡 */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-right: env(safe-area-inset-right, 0);
 }
 
 .userDetails {
@@ -194,29 +203,79 @@
   margin-bottom: 20px;
 }
 
+/* 为不支持新viewport单位的浏览器提供JavaScript fallback */
+@supports not (height: 100dvh) {
+  @media (max-width: 768px) {
+    .momentsPage {
+      /* 使用JavaScript设置的CSS变量 */
+      height: calc(var(--vh, 1vh) * 100);
+      min-height: calc(var(--vh, 1vh) * 100);
+    }
+    
+    .coverSection {
+      /* 封面高度也使用动态计算，进一步缩短高度 */
+      height: max(calc(var(--vh, 1vh) * 16), 120px);
+    }
+  }
+}
+
+/* 针对原生移动浏览器的特殊处理 */
+@media (max-width: 768px) and (display-mode: browser) {
+  .momentsPage {
+    /* 原生浏览器模式下的特殊处理 */
+    height: calc(100vh - env(keyboard-inset-height, 0px));
+    min-height: calc(100vh - env(keyboard-inset-height, 0px));
+  }
+}
+
+/* 使用安全视口高度的额外fallback */
+@media (max-width: 768px) {
+  .momentsPage {
+    /* 使用安全的视口高度变量作为最后的fallback */
+    height: calc(var(--safe-vh, var(--vh, 1vh)) * 100);
+  }
+  
+  .coverSection {
+    /* 封面高度使用相对安全的比例，进一步缩短高度 */
+    height: max(calc(var(--safe-vh, var(--vh, 1vh)) * 16), 120px);
+  }
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .momentsPage {
     height: 100%;
+    /* 针对原生浏览器的特殊处理 */
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
   }
   
   .coverSection {
-    height: 200px;
+    /* 进一步缩短移动端封面高度，减少垂直间隔 */
+    height: 130px;
+    min-height: 120px;
+    /* 使用更小的视口比例 */
+    height: max(130px, 16vh);
   }
   
   .topLeftActions {
-    top: 12px;
-    left: 12px;
+    top: max(12px, env(safe-area-inset-top, 0) + 8px);
+    left: max(12px, env(safe-area-inset-left, 0) + 8px);
   }
   
   .topActions {
-    top: 12px;
-    right: 12px;
+    top: max(12px, env(safe-area-inset-top, 0) + 8px);
+    right: max(12px, env(safe-area-inset-right, 0) + 8px);
   }
   
   .userInfo {
-    bottom: 12px;
-    right: 12px;
+    bottom: max(12px, env(safe-area-inset-bottom, 0) + 8px);
+    right: max(12px, env(safe-area-inset-right, 0) + 8px);
+    /* 保持与PC端一致的横向布局 */
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
   
   .userDetails {
@@ -225,8 +284,9 @@
   
   .userAvatar {
     border-width: 2px;
-    width: 48px;
-    height: 48px;
+    /* 确保头像尺寸正确 */
+    width: 48px !important;
+    height: 48px !important;
   }
   
   .iconButton {

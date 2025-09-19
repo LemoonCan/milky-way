@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styles from '../css/NotificationPanel.module.css'
 import { useNotificationStore } from '../store/notification'
@@ -11,6 +11,7 @@ import { Avatar } from './Avatar'
 import { EmojiText } from './EmojiText'
 import { TimeFormatter } from '@/utils/timeFormatter'
 import { BellDot, Heart, MessageCircle } from 'lucide-react'
+import { Portal } from './Portal'
 
 interface NotificationPanelProps {
   isOpen: boolean
@@ -41,11 +42,11 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   const stats = customStats || defaultStats
 
   // 处理关闭：自动清空通知
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     // 关闭时自动清空通知
     clearAll()
     onClose()
-  }
+  }, [clearAll, onClose])
 
   // 点击外部关闭面板
   useEffect(() => {
@@ -205,75 +206,77 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.panel} ref={panelRef}>
-        <div className={styles.header}>
-          <div className={styles.title}>
-            <span>{title}</span>
-            {stats.unread > 0 && (
-              <span className={styles.badge}>{stats.unread}</span>
+    <Portal>
+      <div className={styles.overlay}>
+        <div className={styles.panel} ref={panelRef}>
+          <div className={styles.header}>
+            <div className={styles.title}>
+              <span>{title}</span>
+              {stats.unread > 0 && (
+                <span className={styles.badge}>{stats.unread}</span>
+              )}
+            </div>
+            <div className={styles.actions}>
+              <button
+                className={styles.closeButton}
+                onClick={handleClose}
+                title="关闭"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.content}>
+            {notifications.length === 0 ? (
+              <div className={styles.empty}>
+                <div className={styles.emptyIcon}><BellDot/></div>
+                <div className={styles.emptyText}>暂无通知</div>
+              </div>
+            ) : (
+              <div className={styles.notificationList}>
+                {notifications.map((notification: NotificationItem) => (
+                  <div
+                    key={notification.id}
+                    className={`${styles.notificationItem} ${
+                      !notification.read ? styles.unread : ''
+                    }`}
+                    onClick={() => handleNotificationClick(notification)}
+                  >
+                    {/* 渲染朋友圈通知内容 */}
+                    {renderMomentNotification(notification)}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-          <div className={styles.actions}>
-            <button
-              className={styles.closeButton}
-              onClick={handleClose}
-              title="关闭"
-            >
-              ×
-            </button>
-          </div>
-        </div>
 
-        <div className={styles.content}>
-          {notifications.length === 0 ? (
-            <div className={styles.empty}>
-              <div className={styles.emptyIcon}><BellDot/></div>
-              <div className={styles.emptyText}>暂无通知</div>
-            </div>
-          ) : (
-            <div className={styles.notificationList}>
-              {notifications.map((notification: NotificationItem) => (
-                <div
-                  key={notification.id}
-                  className={`${styles.notificationItem} ${
-                    !notification.read ? styles.unread : ''
-                  }`}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  {/* 渲染朋友圈通知内容 */}
-                  {renderMomentNotification(notification)}
-                </div>
-              ))}
+          {/* 统计信息 */}
+          {(stats.likeCount > 0 || stats.commentCount > 0) && (
+            <div className={styles.footer}>
+              <div className={styles.statsSection}>
+                {stats.likeCount > 0 && (
+                  <div className={styles.statItem}>
+                    <Heart className={styles.statIcon} size={14} fill="#ef4445" color="#ef4445" />
+                    <span className={styles.statText}>
+                      {stats.likeCount} 个新赞
+                    </span>
+                  </div>
+                )}
+                {stats.commentCount > 0 && (
+                  <div className={styles.statItem}>
+                    <MessageCircle className={styles.statIcon} size={14} />
+                    <span className={styles.statText}>
+                      {stats.commentCount} 条新评论
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
-
-        {/* 统计信息 */}
-        {(stats.likeCount > 0 || stats.commentCount > 0) && (
-          <div className={styles.footer}>
-            <div className={styles.statsSection}>
-              {stats.likeCount > 0 && (
-                <div className={styles.statItem}>
-                  <Heart className={styles.statIcon} size={14} fill="#ef4445" color="#ef4445" />
-                  <span className={styles.statText}>
-                    {stats.likeCount} 个新赞
-                  </span>
-                </div>
-              )}
-              {stats.commentCount > 0 && (
-                <div className={styles.statItem}>
-                  <MessageCircle className={styles.statIcon} size={14} />
-                  <span className={styles.statText}>
-                    {stats.commentCount} 条新评论
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
-    </div>
+    </Portal>
   )
 }
 

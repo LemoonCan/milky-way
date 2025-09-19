@@ -3,7 +3,10 @@
 .friendPage {
   display: flex;
   flex: 1;
-  height: 100vh;
+  /* 使用动态viewport高度，支持移动端地址栏变化 */
+  height: 100vh; /* fallback for older browsers */
+  height: 100svh; /* small viewport height - 最小视口高度 */
+  height: 100dvh; /* dynamic viewport height - 动态视口高度 */
   background-color: var(--milky-bg);
 }
 

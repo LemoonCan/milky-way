@@ -7,6 +7,11 @@
   background: #F5F5F5;
   min-width: 0;
   position: relative;
+  /* 添加视口高度处理，与其他页面保持一致 */
+  height: 100vh; /* fallback for older browsers */
+  height: 100svh; /* small viewport height - 最小视口高度 */
+  height: 100dvh; /* dynamic viewport height - 动态视口高度 */
+  /* 确保不被安全区域影响，但不增加额外padding */
 }
 
 .content {
@@ -223,15 +228,56 @@
   margin-right: 8px;
 }
 
+/* 为不支持新viewport单位的浏览器提供JavaScript fallback */
+@supports not (height: 100dvh) {
+  @media (max-width: 768px) {
+    .container {
+      /* 使用JavaScript设置的CSS变量 */
+      height: calc(var(--vh, 1vh) * 100);
+      min-height: calc(var(--vh, 1vh) * 100);
+    }
+  }
+}
+
+/* 针对原生移动浏览器的特殊处理 */
+@media (max-width: 768px) and (display-mode: browser) {
+  .container {
+    /* 原生浏览器模式下的特殊处理 */
+    height: calc(100vh - env(keyboard-inset-height, 0px));
+    min-height: calc(100vh - env(keyboard-inset-height, 0px));
+  }
+}
+
+/* 使用安全视口高度的额外fallback */
+@media (max-width: 768px) {
+  .container {
+    /* 使用安全的视口高度变量作为最后的fallback */
+    height: calc(var(--safe-vh, var(--vh, 1vh)) * 100);
+    min-height: calc(var(--safe-vh, var(--vh, 1vh)) * 100);
+  }
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .content {
-    padding: 20px 16px;
+    padding: 18px 14px; /* 适当增加内边距 */
     max-width: 100%;
+  }
+  
+  .header {
+    margin-bottom: 18px; /* 适当增加标题底部边距 */
   }
   
   .title {
     font-size: 20px;
+  }
+  
+  .settingsSection {
+    margin-bottom: 24px; /* 适当增加区域间距 */
+  }
+  
+  .sectionTitle {
+    margin: 0 0 10px 0; /* 适当增加分组标题边距 */
   }
   
   .userCard {
@@ -248,13 +294,13 @@
   }
   
   .settingsItem {
-    padding: 14px 16px;
+    padding: 14px 16px; /* 适当增加设置项内边距 */
   }
   
   .itemIcon {
     width: 36px;
     height: 36px;
-    margin-right: 12px;
+    margin-right: 14px; /* 适当增加图标右边距 */
   }
   
   .icon {
@@ -262,11 +308,22 @@
     height: 18px;
   }
   
+  .itemContent {
+    gap: 3px; /* 适当增加文字间距 */
+  }
+  
   .itemTitle {
     font-size: 15px;
+    margin: 0 0 3px 0; /* 适当增加标题底部边距 */
   }
   
   .itemDescription {
     font-size: 13px;
+    line-height: 1.4; /* 适当增加行高 */
   }
-} 
+  
+  .logoutSection {
+    margin-top: auto;
+    padding-top: 20px; /* 适当增加退出按钮顶部边距 */
+  }
+}

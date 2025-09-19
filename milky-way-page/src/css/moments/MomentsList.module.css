@@ -5,7 +5,10 @@
   padding: 20px 16px;
   background: #fffefe;
   width: 100%;
-  min-height: calc(100vh - 280px);
+  /* 使用动态viewport高度计算最小高度 */
+  min-height: calc(100vh - 280px); /* fallback for older browsers */
+  min-height: calc(100svh - 280px); /* small viewport height */
+  min-height: calc(100dvh - 280px); /* dynamic viewport height */
   display: flex;
   flex-direction: column;
   align-items: center;

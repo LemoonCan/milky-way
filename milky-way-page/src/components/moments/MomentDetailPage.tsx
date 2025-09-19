@@ -82,7 +82,7 @@ export const MomentDetailPage: React.FC = () => {
       <div className={styles.coverSection}>
         <div className={styles.coverBackground}>
           {/* 左上角返回按钮 */}
-          <div className={styles.backButton}>
+          <div className={styles.topLeftActions}>
             <Button
               variant="ghost"
               size="icon"

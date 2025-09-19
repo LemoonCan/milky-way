@@ -17,6 +17,7 @@ import { useUserStore } from "./store/user";
 import { useAuthStore } from "./store/auth";
 import { useConnectionManagerStore } from "./store/connectionManager";
 import { ConnectionStatus } from "./services/websocket";
+import { useViewportHeight } from "./hooks/useViewportHeight";
 
 function MilkyWayApp() {
   const { fetchUserInfo } = useUserStore();
@@ -24,6 +25,9 @@ function MilkyWayApp() {
   const location = useLocation();
   const navigate = useNavigate();
   const { connectionStatus } = useConnectionManagerStore();
+  
+  // 初始化动态viewport高度支持
+  useViewportHeight();
 
   // 应用启动时获取用户信息 - 只执行一次
   useEffect(() => {
