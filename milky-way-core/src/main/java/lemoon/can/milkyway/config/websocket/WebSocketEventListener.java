@@ -1,0 +1,66 @@
+package lemoon.can.milkyway.config.websocket;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.simp.user.SimpSession;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+
+import java.security.Principal;
+import java.util.Set;
+
+/**
+ * @author lemoon
+ * @since 2025/9/19
+ */
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class WebSocketEventListener {
+    private final SimpUserRegistry simpUserRegistry;
+    /**
+     * WebSocket连接建立事件
+     */
+    @EventListener
+    public void handleWebSocketConnectListener(SessionConnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String sessionId = headerAccessor.getSessionId();
+
+        // 从认证信息中获取用户ID
+        Principal principal = headerAccessor.getUser();
+
+        if (principal != null) {
+            String userId = principal.getName();
+            log.info("用户 {} 建立WebSocket连接，会话ID: {}", userId, sessionId);
+            if(simpUserRegistry.getUser(userId)!=null){
+                try {
+                    Set<SimpSession> sessions = simpUserRegistry.getUser(userId).getSessions();
+                    log.info("用户 {} 当前所有会话ID: {}", userId, sessions);
+                } catch (NullPointerException e) {
+                    log.info("用户 {} 当前没有其他会话", userId);
+                }
+            }
+        }
+    }
+
+    /**
+     * WebSocket连接断开事件
+     */
+    @EventListener
+    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String sessionId = headerAccessor.getSessionId();
+
+        // 从缓存中获取用户信息
+        Principal principal = headerAccessor.getUser();
+        if (principal != null) {
+            log.info("用户 {} 断开WebSocket连接，会话ID: {}", principal.getName(), sessionId);
+        }
+    }
+
+
+}
