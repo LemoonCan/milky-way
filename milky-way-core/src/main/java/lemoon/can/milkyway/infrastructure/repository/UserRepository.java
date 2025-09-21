@@ -16,4 +16,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByOpenId(String openId);
     Optional<User> findByPhone(String phone);
     boolean existsByOpenId(String openId);
+
+    @Query("SELECT u.loginInfo.lastLoginToken FROM users u WHERE u.id = :id")
+    String findLastLoginTokenBy(String id);
 }

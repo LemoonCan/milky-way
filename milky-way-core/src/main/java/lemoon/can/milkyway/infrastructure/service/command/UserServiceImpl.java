@@ -76,16 +76,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByOpenId(param.getOpenId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "账号不存在"));
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getId(), param.getPassword()));
-
-        LoginInfo loginInfo = LoginInfo.builder()
-                .online(1)
-                .lastLoginTime(LocalDateTime.now())
-                .build();
-        user.login(loginInfo);
-        userRepository.save(user);
-        return jwtTokenProvider.createToken(authentication);
+        return login(param.getPassword(), user);
     }
 
     @Transactional
@@ -94,16 +85,24 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByPhone(param.getPhone())
                 .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "账号不存在"));
 
+        return login(param.getPassword(), user);
+    }
+
+    private String login(String password, User user) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getId(), param.getPassword()));
+                new UsernamePasswordAuthenticationToken(user.getId(), password));
+
+        String token = jwtTokenProvider.createToken(authentication);
 
         LoginInfo loginInfo = LoginInfo.builder()
-                .online(1)
+                .logged(1)
                 .lastLoginTime(LocalDateTime.now())
+                .lastLoginToken(token)
                 .build();
         user.login(loginInfo);
         userRepository.save(user);
-        return jwtTokenProvider.createToken(authentication);
+
+        return token;
     }
 
     @Transactional

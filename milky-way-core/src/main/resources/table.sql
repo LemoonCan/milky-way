@@ -24,6 +24,11 @@ CREATE TABLE users
     id_card_back           VARCHAR(20) COMMENT '身份证反面'
 );
 
+-- TODO 变更生产表结构
+alter table users add column logged TINYINT(1) DEFAULT 0 COMMENT '是否登录' after online;
+alter table users add column last_login_token VARCHAR(255) COMMENT '最后登录token' after last_login_device;
+
+
 -- 索引
 CREATE INDEX idx_users_open_id ON users (open_id);
 CREATE INDEX idx_users_phone ON users (phone);

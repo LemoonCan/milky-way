@@ -17,6 +17,7 @@ export interface AuthStore {
   login: (openId: string, password: string) => Promise<boolean>
   register: (formData: RegisterFormData) => Promise<boolean>
   logout: () => Promise<void>
+  forceLogout: () => void
   checkAuthStatus: () => void
 }
 
@@ -125,6 +126,32 @@ export const useAuthStore = create<AuthStore>()(
           })
           console.log('用户已退出登录')
         }
+      },
+
+      // 强制登出（用于认证失败时）
+      forceLogout: () => {
+        // 清除本地token
+        tokenManager.removeToken()
+        
+        // 清除用户信息缓存
+        const userStore = useUserStore.getState()
+        userStore.clearUser()
+        
+        // 断开WebSocket连接
+        try {
+          useConnectionManagerStore.getState().destroy()
+          console.log('WebSocket连接已断开')
+        } catch (error) {
+          console.error('断开WebSocket连接失败:', error)
+        }
+        
+        // 更新认证状态
+        set({
+          isAuthenticated: false,
+          loading: false,
+        })
+        
+        console.log('用户已被强制退出登录')
       },
 
       // 检查认证状态

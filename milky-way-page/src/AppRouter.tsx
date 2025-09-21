@@ -4,6 +4,7 @@ import { useAuthStore } from './store/auth'
 import { LoginPage } from './components/auth/LoginPage'
 import { RegisterPage } from './components/auth/RegisterPage'
 import { RegisterSuccessDialog } from './components/auth/RegisterSuccessDialog'
+import { AuthFailurePage } from './components/auth/AuthFailurePage'
 import { ErrorToast } from './components/ui/ErrorToast'
 import { useGlobalErrorStore } from './store/globalError'
 import type { RegisterFormData } from './components/auth/RegisterPage'
@@ -137,6 +138,7 @@ const GlobalErrorToastContainer: React.FC = () => {
   )
 }
 
+
 export const AppRouter: React.FC = () => {
   const [isInitialized, setIsInitialized] = useState(false)
   const { isAuthenticated, checkAuthStatus } = useAuthStore()
@@ -187,6 +189,11 @@ export const AppRouter: React.FC = () => {
             <RegisterPageWrapper />
           </PublicRoute>
         } 
+      />
+      
+      <Route 
+        path="/auth-failure" 
+        element={<AuthFailurePage />} 
       />
       
       {/* 主应用路由 */}

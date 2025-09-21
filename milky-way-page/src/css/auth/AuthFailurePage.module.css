@@ -1,0 +1,194 @@
+/* 认证失败页面样式模块 */
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--milky-bg);
+  padding: 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* 图标区域 */
+.iconContainer {
+  position: relative;
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  background: #ff6773;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 32px rgba(255, 71, 87, 0.3);
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+  color: white;
+  stroke-width: 2.5;
+}
+
+/* 文本区域 */
+.textSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--milky-text);
+  margin: 0;
+}
+
+.message {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ff4757;
+  margin: 0;
+  padding: 0 16px;
+}
+
+/* 倒计时区域 */
+.countdownContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(255, 71, 87, 0.05);
+  border: 1px solid rgba(255, 71, 87, 0.2);
+  border-radius: 16px;
+  margin-top: 8px;
+}
+
+.countdownDot {
+  width: 8px;
+  height: 8px;
+  background: #ff6773;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.countdownText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ff6773;
+}
+
+/* 按钮区域 */
+.buttonSection {
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.primaryButton {
+  width: auto;
+  min-width: 160px;
+  height: 52px;
+  padding: 0 32px;
+  background: #ff6773;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primaryButton:hover {
+  background: #ff4757;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(255, 71, 87, 0.3);
+}
+
+.primaryButton:active {
+  transform: translateY(0);
+}
+
+.helpText {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  text-align: center;
+  margin: 0;
+}
+
+/* 底部提示 */
+.footer {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.footerText {
+  font-size: 14px;
+  color: var(--milky-text-light);
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .card {
+    padding: 32px 24px;
+    max-width: 100%;
+    border-radius: 16px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
+  
+  .iconWrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+  
+  .icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .topDecoration {
+    border-radius: 16px 16px 0 0;
+  }
+}

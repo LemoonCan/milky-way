@@ -1,8 +1,11 @@
 package lemoon.can.milkyway.common.utils.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lemoon.can.milkyway.common.exception.CustomSecurityException;
+import lemoon.can.milkyway.common.exception.SecurityErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,7 +14,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -51,9 +53,7 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        if(!validateToken(token)){
-            return null;
-        }
+        validateToken(token);
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
@@ -65,16 +65,14 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
-    public boolean validateToken(String token) {
-        if (!StringUtils.hasLength(token)) {
-            return false;
-        }
+    public void validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+        }catch (ExpiredJwtException e){
+
+            throw new CustomSecurityException(SecurityErrorCode.TOKEN_EXPIRED);
         } catch (Exception e) {
-            log.error("JWT token 无效", e);
-            return false;
+            throw new CustomSecurityException(SecurityErrorCode.TOKEN_INVALID);
         }
     }
 } 

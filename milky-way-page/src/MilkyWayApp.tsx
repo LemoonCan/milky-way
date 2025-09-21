@@ -16,7 +16,6 @@ import { MomentDetailPage } from "./components/moments/MomentDetailPage";
 import { useUserStore } from "./store/user";
 import { useAuthStore } from "./store/auth";
 import { useConnectionManagerStore } from "./store/connectionManager";
-import { ConnectionStatus } from "./services/websocket";
 import { useViewportHeight } from "./hooks/useViewportHeight";
 
 function MilkyWayApp() {
@@ -24,42 +23,45 @@ function MilkyWayApp() {
   const { isAuthenticated } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const { connectionStatus } = useConnectionManagerStore();
   
   // 初始化动态viewport高度支持
   useViewportHeight();
 
-  // 应用启动时获取用户信息 - 只执行一次
-  useEffect(() => {
-    if (connectionStatus === ConnectionStatus.CONNECTED) {
-      fetchUserInfo(true).catch((error) => {
-        console.warn("获取用户信息失败:", error);
-        // 用户信息获取失败不影响应用正常使用
-      });
-    }
-  }, [connectionStatus, fetchUserInfo]);
-
-  // 用户登录后初始化WebSocket连接 - 改进逻辑
+  // 用户登录后的初始化流程 - 先获取用户信息，再初始化WebSocket
   useEffect(() => {
     if (isAuthenticated) {
-      console.log(
-        "[MilkyWayApp] 用户已认证，初始化聊天服务，当前连接状态:",
-        useConnectionManagerStore.getState().isConnected()
-      );
-
-      // 直接调用connectionManager的聊天应用初始化方法
-      useConnectionManagerStore
-        .getState()
-        .initializeApp()
+      console.log("[MilkyWayApp] 用户已认证，开始初始化流程");
+      
+      // 第一步：获取用户信息
+      fetchUserInfo(true)
+        .then(() => {
+          console.log("[MilkyWayApp] 用户信息获取成功，开始初始化WebSocket连接");
+          
+          // 第二步：用户信息获取成功后，初始化WebSocket连接
+          return useConnectionManagerStore.getState().initializeApp();
+        })
+        .then(() => {
+          console.log("[MilkyWayApp] WebSocket连接初始化成功");
+        })
         .catch((error) => {
-          console.error("[MilkyWayApp] 初始化聊天应用失败:", error);
+          console.error("[MilkyWayApp] 初始化流程失败:", error);
+          // 即使获取用户信息失败，也尝试初始化WebSocket（降级处理）
+          if (error.message?.includes('用户信息')) {
+            console.log("[MilkyWayApp] 用户信息获取失败，但仍尝试初始化WebSocket");
+            useConnectionManagerStore
+              .getState()
+              .initializeApp()
+              .catch((wsError) => {
+                console.error("[MilkyWayApp] WebSocket初始化也失败:", wsError);
+              });
+          }
         });
     } else {
       // 用户未认证时确保断开WebSocket连接
       console.log("[MilkyWayApp] 用户未认证，断开WebSocket连接");
       useConnectionManagerStore.getState().destroy();
     }
-  }, [isAuthenticated]); // 移除isConnected依赖，避免重复初始化
+  }, [isAuthenticated, fetchUserInfo]);
 
   // 根据当前路径确定激活的标签
   const getActiveTab = () => {

@@ -3,6 +3,7 @@ import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'a
 import type { ApiResponse, ErrorResponse } from '../types/api'
 import EnvConfig from './env'
 import { handleAndShowError } from './globalErrorHandler'
+import { AuthHandler } from './auth-handler'
 
 // 创建axios实例
 const http: AxiosInstance = axios.create({
@@ -72,13 +73,18 @@ http.interceptors.response.use(
     
     return response
   },
-  (error: AxiosError<ErrorResponse>) => {
+  (error: AxiosError<ErrorResponse | ApiResponse>) => {
     // 处理错误响应
-    if (error.response?.status === 401) {
-      // Token过期或无效，清除本地token并跳转到登录页
-      tokenManager.removeToken()
-      // 使用全局错误处理显示认证失效消息
-      handleAndShowError(new Error('登录已过期，请重新登录'))
+    const status = error.response?.status
+    const responseData = error.response?.data
+    
+    // 处理401和403状态码
+    if (status === 401 || status === 403) {
+      const defaultMessage = status === 401 ? '认证失败' : '权限不足'
+      const errorMessage = AuthHandler.extractErrorMessage(responseData, defaultMessage)
+      
+      // 使用认证处理器处理认证失败，传递状态码
+      AuthHandler.handleAuthFailure(errorMessage, status)
     } else {
       // 其他HTTP错误，使用全局错误处理
       handleAndShowError(error)
