@@ -142,11 +142,7 @@ export class ChatService {
     const url = `/chats${params.toString() ? `?${params.toString()}` : ''}`
     const response = await http.get<ApiResponse<Slices<ChatInfoDTO>>>(url)
     
-    if (response.data.success !== false && response.data.data) {
-      return response.data.data
-    } else {
-      throw new Error(response.data.msg || '获取聊天列表失败')
-    }
+    return response.data.data!
   }
 
   /**
@@ -154,46 +150,27 @@ export class ChatService {
    * @param param 查询参数
    */
   async getChatMessages(param: ChatMessagesQueryParam): Promise<Slices<MessageDTO>> {
-    try {
-      const params = new URLSearchParams()
-      if (param.before) {
-        params.append('before', param.before)
-      }
-      if (param.after) {
-        params.append('after', param.after)
-      }
-      params.append('pageSize', param.pageSize.toString())
-      
-      const url = `/chats/messages/${param.chatId}?${params.toString()}`
-      const response = await http.get<ApiResponse<Slices<MessageDTO>>>(url)
-      
-      if (response.data.success !== false && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '获取聊天消息失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 获取聊天消息失败:', error)
-      throw error
+    const params = new URLSearchParams()
+    if (param.before) {
+      params.append('before', param.before)
     }
+    if (param.after) {
+      params.append('after', param.after)
+    }
+    params.append('pageSize', param.pageSize.toString())
+    
+    const url = `/chats/messages/${param.chatId}?${params.toString()}`
+    const response = await http.get<ApiResponse<Slices<MessageDTO>>>(url)
+    
+    return response.data.data!
   }
 
   /**
    * 获取群聊列表
    */
   async getGroupChats(): Promise<string[]> {
-    try {
-      const response = await http.get<ApiResponse<string[]>>('/chats/groupChats')
-      
-      if (response.data.success !== false && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '获取群聊列表失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 获取群聊列表失败:', error)
-      throw error
-    }
+    const response = await http.get<ApiResponse<string[]>>('/chats/groupChats')
+    return response.data.data!
   }
 
   /**
@@ -201,16 +178,7 @@ export class ChatService {
    * @param request 标记已读请求参数
    */
   async markMessagesAsRead(request: MessageReadRequest): Promise<void> {
-    try {
-      const response = await http.patch<ApiResponse<void>>('/chats/read', request)
-      
-      if (response.data.success === false) {
-        throw new Error(response.data.msg || '标记消息已读失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 标记消息已读失败:', error)
-      throw error
-    }
+    await http.patch<ApiResponse<void>>('/chats/read', request)
   }
 
   /**
@@ -261,19 +229,10 @@ export class ChatService {
    * @param chatId 聊天室ID
    */
   async deleteChat(chatId: string): Promise<void> {
-    try {
-      const response = await http.delete<ApiResponse<void>>(`/chats/${chatId}`)
-      
-      if (response.data.success !== false) {
-        // 取消订阅该聊天室的消息
-        this.unsubscribeFromGroupChat(chatId)
-      } else {
-        throw new Error(response.data.msg || '解散聊天室失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 解散聊天室失败:', error)
-      throw error
-    }
+    await http.delete<ApiResponse<void>>(`/chats/${chatId}`)
+    
+    // 取消订阅该聊天室的消息
+    this.unsubscribeFromGroupChat(chatId)
   }
 
 
@@ -282,18 +241,8 @@ export class ChatService {
    * 创建群聊
    */
   async createGroupChat(request: CreateGroupChatRequest): Promise<ChatInfoDTO> {
-    try {
-      const response = await http.post<ApiResponse<ChatInfoDTO>>('/chats', request)
-      
-      if (response.data.success !== false && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '创建群聊失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 创建群聊失败:', error)
-      throw error
-    }
+    const response = await http.post<ApiResponse<ChatInfoDTO>>('/chats', request)
+    return response.data.data!
   }
 
   /**
@@ -301,18 +250,8 @@ export class ChatService {
    * @param friendUserId 好友用户ID
    */
   async getFriendChat(friendUserId: string): Promise<ChatInfoDTO> {
-    try {
-      const response = await http.get<ApiResponse<ChatInfoDTO>>(`/chats/friendChat?friendUserId=${friendUserId}`)
-      
-      if (response.data.success !== false && response.data.data) {
-        return response.data.data
-      } else {
-        throw new Error(response.data.msg || '获取好友聊天信息失败')
-      }
-    } catch (error) {
-      console.error('[ChatService] 获取好友聊天信息失败:', error)
-      throw error
-    }
+    const response = await http.get<ApiResponse<ChatInfoDTO>>(`/chats/friendChat?friendUserId=${friendUserId}`)
+    return response.data.data!
   }
 }
 

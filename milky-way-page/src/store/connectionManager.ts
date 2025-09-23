@@ -28,8 +28,6 @@ export interface ConnectionManagerStore {
   // 连接管理方法
   initialize: () => Promise<void>
   destroy: () => void
-  reconnect: () => Promise<void>
-  resetConnection: () => Promise<void>
 
   // 私有方法（内部使用）
   _attemptConnection: () => Promise<void>
@@ -275,6 +273,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
 
   destroy: () => {
     webSocketClient.disconnect()
+    webSocketClient.clearAllHandlers() // 同时清理所有handler
     set({ 
       isInitialized: false,
       connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -288,48 +287,19 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     console.log('[ConnectionManager] 连接已销毁')
   },
 
-  reconnect: async () => {
-    console.log('🔄 [ConnectionManager] reconnect() 开始...')
-    console.log('🔧 [ConnectionManager] 重置初始化状态')
-    set({ isInitialized: false })
-
-    // 重新设置状态变更回调，确保重连后状态能正确同步
-    setupStatusHandler(get)
-    
-    try {
-      console.log('🔌 [ConnectionManager] 先断开现有连接')
-      webSocketClient.disconnect()
-      
-      console.log('🔗 [ConnectionManager] 调用带重试的连接')
-      await get()._connectWithRetry()
-      set({ isInitialized: true })
-      console.log('🎉 [ConnectionManager] 重连成功')
-    } catch (error) {
-      console.error('❌ [ConnectionManager] 重连失败:', error)
-      set({ isInitialized: false })  // 失败时确保标志为false
-      throw error
-    }
-  },
-
-  resetConnection: async () => {
-    try {
-      await get().reconnect()
-    } catch (error) {
-      console.error('[ConnectionManager] 重连失败:', error)
-    }
-  },
-
   initializeApp: async () => {
     try {
       console.log('[ConnectionManager] 初始化聊天服务...')
+      
       // 连接WebSocket
       await get().initialize()
       
-      // 添加消息处理器
+      // 清理旧的handler，避免重复注册
+      webSocketClient.clearAllHandlers()
+      
+      // 重新注册所有消息处理器
       webSocketClient.addNewMessageHandler(useMessageManagerStore.getState().handleNewMessage)
       webSocketClient.addReceiptHandler(useMessageManagerStore.getState().handleMessageReceipt)
-      
-      // 添加通知处理器
       webSocketClient.addNotificationHandler(useNotificationManagerStore.getState().handleNotification)
       
       const currentRetryInfo = get().retryInfo

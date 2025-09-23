@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios'
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
 import type { ApiResponse, ErrorResponse } from '../types/api'
 import EnvConfig from './env'
-import { handleAndShowError } from './globalErrorHandler'
+import { handleAndShowError, handleAndShowApiResponseError } from './globalErrorHandler'
 import { AuthHandler } from './auth-handler'
 
 // 创建axios实例
@@ -71,6 +71,15 @@ http.interceptors.response.use(
       tokenManager.setToken(token)
     }
     
+    // 检查响应体中的success字段
+    if (response.data && response.data.success === false) {
+      // 使用全局错误处理显示错误
+      handleAndShowApiResponseError(response.data)
+      // 创建一个错误对象并抛出，这样调用方可以在catch中处理
+      const error = new Error(response.data.msg || '操作失败')
+      return Promise.reject(error)
+    }
+    
     return response
   },
   (error: AxiosError<ErrorResponse | ApiResponse>) => {
@@ -84,7 +93,7 @@ http.interceptors.response.use(
       const errorMessage = AuthHandler.extractErrorMessage(responseData, defaultMessage)
       
       // 使用认证处理器处理认证失败，传递状态码
-      AuthHandler.handleAuthFailure(errorMessage, status)
+      AuthHandler.handleAuthFailure(errorMessage)
     } else {
       // 其他HTTP错误，使用全局错误处理
       handleAndShowError(error)

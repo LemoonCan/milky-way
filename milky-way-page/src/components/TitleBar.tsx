@@ -1,6 +1,7 @@
 import React from 'react'
 import { WifiOff, RefreshCw, Wifi } from 'lucide-react'
 import { useConnectionManagerStore } from '@/store/connectionManager'
+import { useUserStore } from '@/store/user'
 import { ConnectionStatus } from '@/services/websocket'
 import styles from '../css/TitleBar.module.css'
 
@@ -19,31 +20,27 @@ export const TitleBar: React.FC<TitleBarProps> = ({
     isConnecting,
     isFailed,
     isConnected,
-    getConnectionDisplayText,
-    resetConnection
+    getConnectionDisplayText
   } = useConnectionManagerStore()
+  
+  const { fetchUserInfo } = useUserStore()
 
   // 处理网络重连
   const handleRetryConnection = async () => {
-    
     if (isRetrying() || isConnecting()) {
       return
     }
     
     try {
-      console.log('[TitleBar] 开始重新连接...')
-      // 简化逻辑：只进行一次WebSocket重连尝试
-      if (isFailed() || connectionStatus === ConnectionStatus.DISCONNECTED) {
-        console.log('[TitleBar] 调用 connectionManager.resetConnection')
-        await resetConnection()
-        console.log('[TitleBar] connectionManager.resetConnection 完成')
-      } else {
-        console.log('[TitleBar] 调用 connectionManager.resetConnection')
-        await resetConnection()
-        console.log('[TitleBar] connectionManager.resetConnection 完成')
-      }
+      console.log('[TitleBar] 开始重连，刷新用户信息...')
+      
+      // 强制刷新用户信息（验证token），WebSocket连接会由MilkyWayApp自动触发
+      await fetchUserInfo(true)
+      
+      console.log('[TitleBar] 重连触发完成')
     } catch (error) {
-      console.error('[TitleBar] 重新连接失败:', error)
+      console.error('[TitleBar] 重连失败:', error)
+      // 认证错误已被http.ts处理，其他错误在这里记录
     }
   }
 

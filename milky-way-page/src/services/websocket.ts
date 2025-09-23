@@ -368,7 +368,7 @@ export class WebSocketClient {
       }
 
       const result = await response.json()
-      if (result.success !== false && result.data) {
+      if (result.data) {
         const groupChatIds: string[] = result.data
         
         groupChatIds.forEach((chatId) => {
@@ -493,6 +493,16 @@ export class WebSocketClient {
    */
   public removeNotificationHandler(handler: NotificationHandler): void {
     this.notificationHandlers.delete(handler)
+  }
+
+  /**
+   * 清理所有处理器
+   */
+  public clearAllHandlers(): void {
+    this.newMessageHandlers.clear()
+    this.receiptHandlers.clear()
+    this.notificationHandlers.clear()
+    console.log('[WebSocket] 已清理所有handler，准备重新注册')
   }
 
   /**

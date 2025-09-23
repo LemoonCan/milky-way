@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { momentService } from '../services/moment'
 import { fileService, FilePermission } from '../services/file'
 import { useUserStore } from './user'
-import { handleAndShowError } from '../lib/globalErrorHandler'
 import type { 
   MomentDTO, 
   PublishParam, 
@@ -121,14 +120,11 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
           loading: false
         })
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error("动态查询失败"))
         set({
           loading: false
         })
       }
-    } catch (error) {
-      handleAndShowError(error)
+    } catch {
       set({
         loading: false
       })
@@ -162,15 +158,11 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
           loading: false
         })
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error(response.msg || '加载更多失败'))
         set({
           loading: false
         })
       }
-    } catch (error) {
-      // 使用全局错误处理显示错误
-      handleAndShowError(error)
+    } catch {
       set({
         loading: false
       })
@@ -218,16 +210,12 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         // 发布成功后需要在组件中手动刷新，因为不知道当前的momentType
         return true
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error(response.msg || '发布失败'))
         set({
           publishLoading: false
         })
         return false
       }
-    } catch (error) {
-      // 使用全局错误处理显示错误
-      handleAndShowError(error)
+    } catch {
       set({
         publishLoading: false
       })
@@ -254,16 +242,12 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         })
         return true
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error(response.msg || '删除失败'))
         set({
           operationLoading: { ...get().operationLoading, [momentId]: false }
         })
         return false
       }
-    } catch (error) {
-      // 使用全局错误处理显示错误
-      handleAndShowError(error)
+    } catch {
       set({
         operationLoading: { ...get().operationLoading, [momentId]: false }
       })
@@ -306,16 +290,12 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         }
         return true
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error(response.msg || '点赞失败'))
         set({
           operationLoading: { ...get().operationLoading, [`like_${momentId}`]: false }
         })
         return false
       }
-    } catch (error) {
-      // 使用全局错误处理显示错误
-      handleAndShowError(error)
+    } catch {
       set({
         operationLoading: { ...get().operationLoading, [`like_${momentId}`]: false }
       })
@@ -353,16 +333,12 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         }
         return true
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error(response.msg || '取消点赞失败'))
         set({
           operationLoading: { ...get().operationLoading, [`unlike_${momentId}`]: false }
         })
         return false
       }
-    } catch (error) {
-      // 使用全局错误处理显示错误
-      handleAndShowError(error)
+    } catch {
       set({
         operationLoading: { ...get().operationLoading, [`unlike_${momentId}`]: false }
       })
@@ -431,16 +407,12 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
         }
         return true
       } else {
-        // 使用全局错误处理显示错误
-        handleAndShowError(new Error(response.msg || '评论失败'))
         set({
           operationLoading: { ...get().operationLoading, [`comment_${momentId}`]: false }
         })
         return false
       }
-    } catch (error) {
-      // 使用全局错误处理显示错误
-      handleAndShowError(error)
+    } catch {
       set({
         operationLoading: { ...get().operationLoading, [`comment_${momentId}`]: false }
       })
@@ -559,8 +531,7 @@ export const useMomentStore = create<MomentStore>()((set, get) => ({
           console.warn('未知的动态类型:', momentType)
           navigate('/main/moments')
       }
-    } catch (error) {
-      console.error('导航到动态页面失败:', error)
+    } catch {
       // 发生错误时，默认导航到朋友圈页面
       navigate('/main/moments')
     }

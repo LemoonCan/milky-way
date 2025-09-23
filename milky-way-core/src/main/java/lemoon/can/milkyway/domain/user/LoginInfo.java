@@ -52,4 +52,12 @@ public class LoginInfo {
         this.logged = 0;
         this.lastLoginToken = null;
     }
+
+    public void online() {
+        this.online = 1;
+    }
+
+    public void outline() {
+        this.online = 0;
+    }
 }

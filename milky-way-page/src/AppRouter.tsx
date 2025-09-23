@@ -43,15 +43,11 @@ const LoginPageWrapper: React.FC = () => {
       return
     }
 
-    try {
-      const success = await login(username, password)
-      
-      if (success) {
+    const success = await login(username, password)
+    if (success) {
         navigate('/main/messages')
-      } 
-    } catch (error) {
-      console.error('Login error:', error)
-    }
+    } 
+    
   }
 
   // 导航到注册页

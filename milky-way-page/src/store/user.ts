@@ -6,14 +6,12 @@ interface UserStore {
   // 状态
   currentUser: User | null
   loading: boolean
-  error: string | null
   lastFetchTime: number | null
 
   // 方法
   fetchUserInfo: (force?: boolean) => Promise<void>
   updateUserInfo: (userData: Partial<User>) => void
   clearUser: () => void
-  clearError: () => void
 }
 
 // 缓存时间（5分钟）
@@ -23,7 +21,6 @@ export const useUserStore = create<UserStore>()((set, get) => ({
   // 初始状态
   currentUser: null,
   loading: false,
-  error: null,
   lastFetchTime: null,
 
   // 获取用户信息（带缓存）
@@ -42,7 +39,7 @@ export const useUserStore = create<UserStore>()((set, get) => ({
       return
     }
 
-    set({ loading: true, error: null })
+    set({ loading: true })
 
     try {
       const response = await userService.getUserInfo()
@@ -51,24 +48,12 @@ export const useUserStore = create<UserStore>()((set, get) => ({
         set({
           currentUser: response.data,
           loading: false,
-          error: null,
           lastFetchTime: now
         })
-      } else {
-        // 静默处理错误，不在控制台显示
-        set({
-          loading: false,
-          error: response.msg || '获取用户信息失败'
-        })
       }
-    } catch (error) {
-      // 在开发环境中，API 可能不可用，静默处理错误
-      const errorMessage = error instanceof Error ? error.message : '获取用户信息失败'
-      console.debug('用户信息获取失败 (这在开发环境中是正常的):', errorMessage)
-      
+    } finally {   
       set({
-        loading: false,
-        error: errorMessage
+        loading: false
       })
     }
   },
@@ -89,13 +74,7 @@ export const useUserStore = create<UserStore>()((set, get) => ({
     set({
       currentUser: null,
       loading: false,
-      error: null,
       lastFetchTime: null
     })
   },
-
-  // 清除错误
-  clearError: () => {
-    set({ error: null })
-  }
 })) 

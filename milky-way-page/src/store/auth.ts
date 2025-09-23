@@ -2,8 +2,6 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { authService } from '../services/auth'
 import { tokenManager } from '../lib/http'
-import { getErrorMessage } from '../lib/error-handler'
-import { handleAndShowError } from '../lib/globalErrorHandler'
 import { useUserStore } from './user'
 import type { RegisterFormData } from '../components/auth/RegisterPage'
 import { useConnectionManagerStore } from './connectionManager'
@@ -34,7 +32,6 @@ export const useAuthStore = create<AuthStore>()(
         
         // 如果正在登录中，避免重复请求
         if (currentState.loading) {
-          console.warn('登录请求正在进行中，忽略重复请求')
           return false
         }
 
@@ -50,17 +47,12 @@ export const useAuthStore = create<AuthStore>()(
             })
             
             return true
-          } else {
-            throw new Error(result.msg || '登录失败')
-          }
-        } catch (error) {
-          // 使用全局错误处理
-          handleAndShowError(error)
+          } 
+          return false
+        } finally {
           set({
-            isAuthenticated: false,
             loading: false
           })
-          return false
         }
       },
 
@@ -81,18 +73,13 @@ export const useAuthStore = create<AuthStore>()(
             set({
               loading: false
             })
-            console.log('注册成功')
             return true
-          } else {
-            throw new Error(result.msg || '注册失败')
-          }
-        } catch (error) {
-          // 使用全局错误处理
-          handleAndShowError(error)
+          } 
+          return false
+        } finally {
           set({
             loading: false
           })
-          return false
         }
       },
 
@@ -102,8 +89,6 @@ export const useAuthStore = create<AuthStore>()(
         
         try {
           await authService.logout()
-        } catch (error) {
-          console.error('登出请求失败:', getErrorMessage(error))
         } finally {
           // 无论服务端登出是否成功，都清除本地状态
           tokenManager.removeToken()
@@ -113,18 +98,12 @@ export const useAuthStore = create<AuthStore>()(
           userStore.clearUser()
           
           // 断开WebSocket连接
-          try {
-            useConnectionManagerStore.getState().destroy()
-            console.log('WebSocket连接已断开')
-          } catch (error) {
-            console.error('断开WebSocket连接失败:', error)
-          }
+          useConnectionManagerStore.getState().destroy()          
           
           set({
             isAuthenticated: false,
             loading: false,
           })
-          console.log('用户已退出登录')
         }
       },
 
@@ -138,20 +117,14 @@ export const useAuthStore = create<AuthStore>()(
         userStore.clearUser()
         
         // 断开WebSocket连接
-        try {
-          useConnectionManagerStore.getState().destroy()
-          console.log('WebSocket连接已断开')
-        } catch (error) {
-          console.error('断开WebSocket连接失败:', error)
-        }
+        useConnectionManagerStore.getState().destroy()
+        
         
         // 更新认证状态
         set({
           isAuthenticated: false,
           loading: false,
         })
-        
-        console.log('用户已被强制退出登录')
       },
 
       // 检查认证状态

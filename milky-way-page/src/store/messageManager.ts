@@ -121,7 +121,6 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
       }, 15000)
       
     } catch (error) {
-      console.error(`消息发送失败:`, error)
       // 标记消息为发送失败
       get().updateMessageByClientId(chatId, clientMsgId, {
         sendStatus: 'failed'

@@ -1,5 +1,5 @@
 import { showGlobalError } from '../store/globalError'
-import { getErrorMessage } from './error-handler'
+import { getErrorMessage, ErrorHandler } from './error-handler'
 
 /**
  * 全局错误处理工具函数集合
@@ -19,6 +19,24 @@ export const handleAndShowError = (
   }
 ) => {
   const errorMessage = getErrorMessage(error)
+  showGlobalError(errorMessage, options)
+}
+
+/**
+ * 处理并显示 API 响应中success=false的错误
+ * @param responseData 响应数据
+ * @param options 显示选项
+ */
+export const handleAndShowApiResponseError = (
+  responseData: import('../types/api').ApiResponse,
+  options?: {
+    position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center'
+    autoClose?: boolean
+    autoCloseDelay?: number
+  }
+) => {
+  const errorInfo = ErrorHandler.handleApiResponseError(responseData)
+  const errorMessage = ErrorHandler.getUserFriendlyMessage(errorInfo)
   showGlobalError(errorMessage, options)
 }
 

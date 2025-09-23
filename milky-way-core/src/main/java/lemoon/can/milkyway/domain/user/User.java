@@ -152,4 +152,12 @@ public class User {
     public void logout() {
         this.loginInfo.logout();
     }
+
+    public void online() {
+        this.loginInfo.online();
+    }
+
+    public void outline() {
+        this.loginInfo.outline();
+    }
 }

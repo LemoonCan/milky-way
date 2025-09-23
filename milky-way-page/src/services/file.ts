@@ -69,11 +69,7 @@ class FileService {
       }
     })
 
-    if (response.data.success && response.data.data) {
-      return response.data.data
-    } else {
-      throw new Error(response.data.msg || '文件上传失败')
-    }
+    return response.data.data!
   }
 
   /**

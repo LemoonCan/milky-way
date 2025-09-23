@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios'
-import type { ErrorResponse } from '../types/api'
+import type { ErrorResponse, ApiResponse } from '../types/api'
 
 // 错误类型枚举
 export enum ErrorType {
@@ -7,6 +7,7 @@ export enum ErrorType {
   AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR',
   AUTHORIZATION_ERROR = 'AUTHORIZATION_ERROR',
   VALIDATION_ERROR = 'VALIDATION_ERROR',
+  BUSINESS_ERROR = 'BUSINESS_ERROR',
   SERVER_ERROR = 'SERVER_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR'
 }
@@ -33,6 +34,17 @@ export class ErrorHandler {
     return {
       type: ErrorType.UNKNOWN_ERROR,
       message: error instanceof Error ? error.message : '未知错误'
+    }
+  }
+
+  /**
+   * 处理API响应中success=false的情况
+   */
+  static handleApiResponseError(responseData: ApiResponse): ErrorInfo {
+    return {
+      type: ErrorType.BUSINESS_ERROR, // 使用BUSINESS_ERROR类型表示业务逻辑错误
+      message: responseData?.msg || '操作失败',
+      code: responseData?.code
     }
   }
 
@@ -131,6 +143,8 @@ export class ErrorHandler {
         return '权限不足，无法执行此操作'
       case ErrorType.VALIDATION_ERROR:
         return error.message
+      case ErrorType.BUSINESS_ERROR:
+        return error.message // 业务错误直接显示原始消息
       case ErrorType.SERVER_ERROR:
         return '服务器繁忙，请稍后再试'
       default:

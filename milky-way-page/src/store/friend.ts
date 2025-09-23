@@ -3,7 +3,6 @@ import { friendService } from '../services'
 import type { Friend } from '../services/friend'
 import type { FriendApplication } from '../services/friend'
 import type { User } from '../services/user'
-import { handleAndShowError } from '../lib/globalErrorHandler'
 
 interface FriendState {
   // 状态
@@ -121,12 +120,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           lastNickName: newLastNickName,
           isFriendsLoading: false
         })
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isFriendsLoading: false })
       }
-    } catch {
-      handleAndShowError("好友查询失败")
+    } finally {
       set({ isFriendsLoading: false })
     }
   },
@@ -177,12 +172,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           lastApplicationId: newLastApplicationId,
           isApplicationsLoading: false 
         })
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isApplicationsLoading: false })
-      }
-    } catch {
-      handleAndShowError("好友申请查询失败")
+      } 
+    } finally {
       set({ isApplicationsLoading: false })
     }
   },
@@ -205,12 +196,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         set({ isLoading: false })
         // 刷新好友申请列表
         await get().fetchFriendApplications(true)
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isLoading: false })
-      }
-    } catch {
-      handleAndShowError("添加好友失败")
+      } 
+    } finally {
       set({ isLoading: false })
     }
   },
@@ -238,16 +225,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           get().fetchApplicationsCount()
         ])
         return true // 返回成功标识
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isLoading: false })
-        return false // 返回失败标识
-      }
-    } catch {
-      handleAndShowError("处理好友申请失败")
+      } 
+    } finally {
       set({ isLoading: false })
-      return false // 返回失败标识
     }
+    return false
   },
 
   // 删除好友
@@ -265,12 +247,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
         })
         // 更新好友总数
         get().fetchFriendsCount()
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isLoading: false })
-      }
-    } catch {
-      handleAndShowError("删除好友失败")
+      } 
+    } finally {
       set({ isLoading: false })
     }
   },
@@ -295,12 +273,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           selectedFriend: updatedSelectedFriend,
           isLoading: false 
         })
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isLoading: false })
-      }
-    } catch {
-      handleAndShowError("拉黑好友失败")
+      } 
+    } finally {
       set({ isLoading: false })
     }
   },
@@ -325,12 +299,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
           selectedFriend: updatedSelectedFriend,
           isLoading: false 
         })
-      } else {
-        handleAndShowError(new Error(response.msg))
-        set({ isLoading: false })
       }
-    } catch {
-      handleAndShowError("解除拉黑失败")
+    } finally {
       set({ isLoading: false })
     }
   },
@@ -345,13 +315,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success && response.data) {
         return response.data
-      } else {
-        return null
-      }
+      } 
     } catch {
       set({ isLoading: false })
-      return null
     }
+    return null
   },
 
   // 通过手机号搜索用户
@@ -364,14 +332,11 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success && response.data) {
         return response.data
-      } else {
-        // 搜索结果为空不应该设置全局错误，由调用方处理
-        return null
-      }
+      } 
     } catch {
       set({ isLoading: false })
-      return null
     }
+    return null
   },
 
   // 获取好友总数
@@ -389,10 +354,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success && typeof response.data === 'number') {
         set({ totalFriendsCount: response.data, isCountLoading: false })
-      } else {
-        set({ isCountLoading: false })
-      }
-    } catch {
+      } 
+    } finally {
       set({ isCountLoading: false })
     }
   },
@@ -412,10 +375,8 @@ export const useFriendStore = create<FriendState>((set, get) => ({
       
       if (response.success && typeof response.data === 'number') {
         set({ pendingApplicationsCount: response.data, isApplicationCountLoading: false })
-      } else {
-        set({ isApplicationCountLoading: false })
-      }
-    } catch {
+      } 
+    } finally {
       set({ isApplicationCountLoading: false })
     }
   },
