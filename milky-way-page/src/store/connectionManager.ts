@@ -97,7 +97,7 @@ const setupStatusHandler = (get: () => ConnectionManagerStore) => {
 // 重试配置
 const RETRY_CONFIG = {
   maxAttempts: 2,
-  delays: [10000, 60000] // 10秒, 60秒
+  delays: [10000, 30000] // 10秒, 30秒
 }
 
 // 延迟函数
