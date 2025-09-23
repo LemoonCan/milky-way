@@ -1,8 +1,37 @@
 import { create } from 'zustand'
-import { ConnectionStatus, type RetryInfo } from '../services/websocket'
+import { Status } from '../services/websocket'
 import { webSocketClient } from '../services/websocket'
 import { useMessageManagerStore } from './messageManager'
 import { useNotificationManagerStore } from './notificationManager'
+import { useUserStore } from './user'
+
+// 连接状态枚举
+export enum ConnectionStatus {
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  RETRYING = 'retrying',
+  FAILED = 'failed'
+}
+
+// 连接步骤枚举
+export enum ConnectionStep {
+  FETCH_USER_INFO = 'fetch_user_info',
+  SETUP_STATUS_HANDLER = 'setup_status_handler',
+  WEBSOCKET_CONNECT = 'websocket_connect',
+  REGISTER_HANDLERS = 'register_handlers',
+  COMPLETED = 'completed'
+}
+
+// 重试状态接口
+export interface RetryInfo {
+  currentAttempt: number
+  maxAttempts: number
+  status: ConnectionStatus
+  error?: string
+  lastCompletedStep?: ConnectionStep  // 最后完成的步骤
+  failedStep?: ConnectionStep         // 失败的步骤
+}
 
 /**
  * 连接管理Store - 统一管理WebSocket连接状态和操作
@@ -12,7 +41,7 @@ export interface ConnectionManagerStore {
   connectionStatus: ConnectionStatus
   connectionError: string | null
   retryInfo: RetryInfo
-  isInitialized: boolean
+  initializing: boolean
 
   // 状态查询方法
   isConnected: () => boolean
@@ -29,9 +58,9 @@ export interface ConnectionManagerStore {
   initialize: () => Promise<void>
   destroy: () => void
 
-  // 私有方法（内部使用）
-  _attemptConnection: () => Promise<void>
   _connectWithRetry: () => Promise<void>
+  _executeConnectionStep: (step: ConnectionStep) => Promise<void>
+  _getNextStep: (currentStep?: ConnectionStep) => ConnectionStep | null
 
   // 初始化聊天服务
   initializeApp: () => Promise<void>
@@ -39,13 +68,11 @@ export interface ConnectionManagerStore {
 
 // 内部函数：设置WebSocket状态回调
 const setupStatusHandler = (get: () => ConnectionManagerStore) => {
-  webSocketClient.setStatusChangeHandler((status, error) => {
-    console.log('📡 [ConnectionManager] 收到WebSocket状态变更:', { status, error })
-    
+  webSocketClient.setStatusChangeHandler((status, error) => {    
     const currentState = get()
     
     // 只处理WebSocket能确定的状态，避免与重试逻辑冲突
-    if (status === ConnectionStatus.CONNECTED) {
+    if (status === Status.CONNECTED) {
       // 连接成功，重置重试信息
       get().updateConnectionState({
         currentAttempt: 0,
@@ -53,7 +80,7 @@ const setupStatusHandler = (get: () => ConnectionManagerStore) => {
         status: ConnectionStatus.CONNECTED,
         error: undefined
       })
-    } else if (status === ConnectionStatus.DISCONNECTED) {
+    } else if (status === Status.DISCONNECTED) {
       // 连接断开，但不覆盖正在进行的重试状态
       if (currentState.connectionStatus !== ConnectionStatus.RETRYING && 
           currentState.connectionStatus !== ConnectionStatus.CONNECTING) {
@@ -62,19 +89,15 @@ const setupStatusHandler = (get: () => ConnectionManagerStore) => {
           status: ConnectionStatus.DISCONNECTED,
           error: error || '连接断开'
         })
-      } else {
-        console.log('[ConnectionManager] 正在重试中，忽略WebSocket断开状态')
-      }
+      } 
     }
-    // 忽略WebSocket的FAILED、CONNECTING、RETRYING状态，这些完全由connectionManager控制
-    console.log('[ConnectionManager] 当前状态管理由connectionManager控制:', currentState.connectionStatus)
   })
 }
 
 // 重试配置
 const RETRY_CONFIG = {
   maxAttempts: 2,
-  delays: [3000, 15000] // 3秒, 15秒
+  delays: [10000, 60000] // 10秒, 60秒
 }
 
 // 延迟函数
@@ -89,7 +112,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     maxAttempts: RETRY_CONFIG.maxAttempts,
     status: ConnectionStatus.DISCONNECTED
   },
-  isInitialized: false,
+  initializing: false,
 
   // 状态查询方法
   isConnected: () => {
@@ -149,26 +172,71 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     }))
   },
 
-  // 私有方法：单次连接尝试
-  _attemptConnection: async (): Promise<void> => {
-    try {
-      await webSocketClient.connect()
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '连接失败'
-      throw new Error(message)
+  // 获取下一个需要执行的步骤
+  _getNextStep: (currentStep?: ConnectionStep): ConnectionStep | null => {
+    if (!currentStep) {
+      return ConnectionStep.FETCH_USER_INFO
+    }
+    
+    switch (currentStep) {
+      case ConnectionStep.FETCH_USER_INFO:
+        return ConnectionStep.SETUP_STATUS_HANDLER
+      case ConnectionStep.SETUP_STATUS_HANDLER:
+        return ConnectionStep.WEBSOCKET_CONNECT
+      case ConnectionStep.WEBSOCKET_CONNECT:
+        return ConnectionStep.REGISTER_HANDLERS
+      case ConnectionStep.REGISTER_HANDLERS:
+        return ConnectionStep.COMPLETED
+      case ConnectionStep.COMPLETED:
+        return null
+      default:
+        return ConnectionStep.FETCH_USER_INFO
     }
   },
 
-  // 私有方法：带重试的连接
-  _connectWithRetry: async (): Promise<void> => {
-    console.log('🔄 [ConnectionManager] 开始带重试的连接尝试')
-    
+  // 执行单个连接步骤
+  _executeConnectionStep: async (step: ConnectionStep): Promise<void> => {    
+    switch (step) {
+      case ConnectionStep.FETCH_USER_INFO:
+        await useUserStore.getState().fetchUserInfo(true)
+        break
+        
+      case ConnectionStep.SETUP_STATUS_HANDLER:
+        setupStatusHandler(get)
+        break
+        
+      case ConnectionStep.WEBSOCKET_CONNECT:
+        await webSocketClient.connect()
+        break
+        
+      case ConnectionStep.REGISTER_HANDLERS:
+        // 清理旧的handler，避免重复注册
+        webSocketClient.clearAllHandlers()
+        
+        // 重新注册所有消息处理器
+        webSocketClient.addNewMessageHandler(useMessageManagerStore.getState().handleNewMessage)
+        webSocketClient.addReceiptHandler(useMessageManagerStore.getState().handleMessageReceipt)
+        webSocketClient.addNotificationHandler(useNotificationManagerStore.getState().handleNotification)
+        break
+        
+      case ConnectionStep.COMPLETED:
+        break
+        
+      default:
+        throw new Error(`未知的连接步骤: ${step}`)
+    }
+  },
+
+  // 私有方法：带重试的连接（步骤化）
+  _connectWithRetry: async (): Promise<void> => {    
     // 重置重试状态
     set(state => ({
       retryInfo: {
         ...state.retryInfo,
         currentAttempt: 0,
-        error: undefined
+        error: undefined,
+        lastCompletedStep: undefined,
+        failedStep: undefined
       }
     }))
 
@@ -176,7 +244,6 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     const totalAttempts = RETRY_CONFIG.maxAttempts + 1
     
     for (let attempt = 0; attempt < totalAttempts; attempt++) {
-      console.log(`[ConnectionManager] 连接尝试 ${attempt + 1}/${totalAttempts}`)
       
       // 更新重试状态
       const status = attempt === 0 ? ConnectionStatus.CONNECTING : ConnectionStatus.RETRYING
@@ -190,9 +257,26 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
       }))
 
       try {
-        await get()._attemptConnection()
-        console.log('🎉 [ConnectionManager] 连接成功')
+        // 从上次失败的步骤开始，或从第一步开始
+        const currentState = get()
+        let currentStep = get()._getNextStep(currentState.retryInfo.lastCompletedStep)
         
+        // 执行所有剩余步骤
+        while (currentStep && currentStep !== ConnectionStep.COMPLETED) {
+          await get()._executeConnectionStep(currentStep)
+          
+          // 更新已完成的步骤
+          set(state => ({
+            retryInfo: {
+              ...state.retryInfo,
+              lastCompletedStep: currentStep as ConnectionStep,
+              failedStep: undefined
+            }
+          }))
+          
+          currentStep = get()._getNextStep(currentStep)
+        }
+                
         // 连接成功，重置重试计数
         set(state => ({
           connectionStatus: ConnectionStatus.CONNECTED,
@@ -200,20 +284,25 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
             ...state.retryInfo,
             currentAttempt: 0,
             status: ConnectionStatus.CONNECTED,
-            error: undefined
+            error: undefined,
+            lastCompletedStep: ConnectionStep.COMPLETED,
+            failedStep: undefined
           }
         }))
         return
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '连接失败'
-        console.error(`[ConnectionManager] 第${attempt + 1}次连接失败:`, errorMessage)
         
-        // 更新错误信息
+        // 更新错误信息和失败步骤
+        const currentState = get()
+        const failedStep = get()._getNextStep(currentState.retryInfo.lastCompletedStep)
+        
         set(state => ({
           retryInfo: {
             ...state.retryInfo,
             currentAttempt: attempt + 1,
-            error: errorMessage
+            error: errorMessage,
+            failedStep: failedStep || ConnectionStep.FETCH_USER_INFO
           }
         }))
 
@@ -222,14 +311,12 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
           // 确保延迟数组索引不越界
           const delayIndex = Math.min(attempt, RETRY_CONFIG.delays.length - 1)
           const delayMs = RETRY_CONFIG.delays[delayIndex]
-          console.log(`[ConnectionManager] ${delayMs/1000}秒后进行第${attempt + 2}次尝试`)
           await delay(delayMs)
         }
       }
     }
     
     // 所有尝试都失败了
-    console.error(`[ConnectionManager] 所有连接尝试都失败了`)
     set(state => ({
       connectionStatus: ConnectionStatus.FAILED,
       retryInfo: {
@@ -242,31 +329,21 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
   },
 
   // 连接管理方法
-  initialize: async () => {
-    console.log('🔄 [ConnectionManager] initialize() 开始...')
-    
+  initialize: async () => {    
     // 检查是否真正连接，而不只是初始化标志
     const state = get()
-    if (state.isInitialized && webSocketClient.isConnected()) {
-      console.log('✅ [ConnectionManager] 连接已初始化且WebSocket已连接，跳过')
+    if (state.initializing) {
       return
     }
 
-    console.log('🔧 [ConnectionManager] 重置初始化状态')
-    set({ isInitialized: false })
-
-    // 设置状态变更回调，让WebSocket通过这个回调更新状态
-    setupStatusHandler(get)
+    set({ initializing: true })
 
     try {
-      console.log('🔗 [ConnectionManager] 调用带重试的连接')
       // 使用带重试的连接方法
       await get()._connectWithRetry()
-      set({ isInitialized: true })
-      console.log('🎉 [ConnectionManager] 连接初始化成功')
+      set({ initializing: false })
     } catch (error) {
-      console.error('❌ [ConnectionManager] 连接初始化失败:', error)
-      set({ isInitialized: false })  // 失败时确保标志为false
+      set({ initializing: false })  // 失败时确保标志为false
       throw error
     }
   },
@@ -275,7 +352,7 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
     webSocketClient.disconnect()
     webSocketClient.clearAllHandlers() // 同时清理所有handler
     set({ 
-      isInitialized: false,
+      initializing: false,
       connectionStatus: ConnectionStatus.DISCONNECTED,
       connectionError: null,
       retryInfo: {
@@ -284,31 +361,17 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
         status: ConnectionStatus.DISCONNECTED
       }
     })
-    console.log('[ConnectionManager] 连接已销毁')
   },
 
   initializeApp: async () => {
-    try {
-      console.log('[ConnectionManager] 初始化聊天服务...')
-      
-      // 连接WebSocket
+    try {      
+      // 连接WebSocket（现在包含所有步骤：用户信息获取、连接、处理器注册）
       await get().initialize()
-      
-      // 清理旧的handler，避免重复注册
-      webSocketClient.clearAllHandlers()
-      
-      // 重新注册所有消息处理器
-      webSocketClient.addNewMessageHandler(useMessageManagerStore.getState().handleNewMessage)
-      webSocketClient.addReceiptHandler(useMessageManagerStore.getState().handleMessageReceipt)
-      webSocketClient.addNotificationHandler(useNotificationManagerStore.getState().handleNotification)
       
       const currentRetryInfo = get().retryInfo
       get().updateConnectionState(currentRetryInfo)
       
-      console.log('[ConnectionManager] 聊天服务初始化完成')
-    } catch (error) {
-      console.error('[ConnectionManager] 初始化聊天服务失败:', error)
-      
+    } catch (error) {      
       // 调用错误回调
       get().setConnectionStatus(ConnectionStatus.FAILED, error instanceof Error ? error.message : '未知错误')
       
