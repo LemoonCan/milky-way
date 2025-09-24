@@ -26,7 +26,6 @@ export enum ConnectionStep {
 // 重试状态接口
 export interface RetryInfo {
   currentAttempt: number
-  maxAttempts: number
   status: ConnectionStatus
   error?: string
   lastCompletedStep?: ConnectionStep  // 最后完成的步骤
@@ -70,26 +69,33 @@ export interface ConnectionManagerStore {
 const setupStatusHandler = (get: () => ConnectionManagerStore) => {
   webSocketClient.setStatusChangeHandler((status, error) => {    
     const currentState = get()
+
+    if (currentState.connectionStatus == ConnectionStatus.RETRYING || 
+      currentState.connectionStatus == ConnectionStatus.CONNECTING){
+        return
+    }
     
     // 只处理WebSocket能确定的状态，避免与重试逻辑冲突
     if (status === Status.CONNECTED) {
       // 连接成功，重置重试信息
       get().updateConnectionState({
         currentAttempt: 0,
-        maxAttempts: currentState.retryInfo.maxAttempts,
         status: ConnectionStatus.CONNECTED,
-        error: undefined
+        error: undefined,
+        lastCompletedStep: ConnectionStep.COMPLETED,
+        failedStep: undefined
       })
     } else if (status === Status.DISCONNECTED) {
       // 连接断开，但不覆盖正在进行的重试状态
-      if (currentState.connectionStatus !== ConnectionStatus.RETRYING && 
-          currentState.connectionStatus !== ConnectionStatus.CONNECTING) {
+      
         get().updateConnectionState({
           ...currentState.retryInfo,
           status: ConnectionStatus.DISCONNECTED,
-          error: error || '连接断开'
+          error: error || '连接断开',
+          lastCompletedStep: ConnectionStep.COMPLETED,
+          failedStep: undefined
         })
-      } 
+      
     }
   })
 }
@@ -109,7 +115,6 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
   connectionError: null,
   retryInfo: {
     currentAttempt: 0,
-    maxAttempts: RETRY_CONFIG.maxAttempts,
     status: ConnectionStatus.DISCONNECTED
   },
   initializing: false,
@@ -278,10 +283,9 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
         }
                 
         // 连接成功，重置重试计数
-        set(state => ({
+        set(() => ({
           connectionStatus: ConnectionStatus.CONNECTED,
           retryInfo: {
-            ...state.retryInfo,
             currentAttempt: 0,
             status: ConnectionStatus.CONNECTED,
             error: undefined,
@@ -336,6 +340,11 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
       return
     }
 
+    // 如果已经连接，直接返回
+    if (state.connectionStatus === ConnectionStatus.CONNECTED) {
+      return
+    }
+
     set({ initializing: true })
 
     try {
@@ -350,14 +359,13 @@ export const useConnectionManagerStore = create<ConnectionManagerStore>((set, ge
 
   destroy: () => {
     webSocketClient.disconnect()
-    webSocketClient.clearAllHandlers() // 同时清理所有handler
+    webSocketClient.clearAllHandlers()
     set({ 
       initializing: false,
       connectionStatus: ConnectionStatus.DISCONNECTED,
       connectionError: null,
       retryInfo: {
         currentAttempt: 0,
-        maxAttempts: RETRY_CONFIG.maxAttempts,
         status: ConnectionStatus.DISCONNECTED
       }
     })

@@ -33,12 +33,53 @@ function MilkyWayApp() {
         .getState()
         .initializeApp()
         .catch((error) => {
-          console.error("[MilkyWayApp] 初始化聊天应用失败:", error);
+          console.error("[MilkyWayApp] 初始化失败:", error);
         });
     } else {
       // 用户未认证时确保断开WebSocket连接
       useConnectionManagerStore.getState().destroy();
     }
+  }, [isAuthenticated]);
+
+  // 页面可见性检测 - 重新进入页面时自动连接
+  useEffect(() => {
+    let reconnectTimer: NodeJS.Timeout | null = null;
+
+    const handleVisibilityChange = () => {
+      // 清除之前的定时器
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+
+      // 只在页面变为可见且用户已认证时处理
+      if (!document.hidden && isAuthenticated) {
+        // 添加短暂延迟，避免页面快速切换时的频繁连接尝试
+        reconnectTimer = setTimeout(() => {
+          const connectionManager = useConnectionManagerStore.getState();
+          
+          // 检查连接状态，如果断开且没有正在连接，则重新连接
+          if (!connectionManager.isConnected() && 
+              !connectionManager.isConnecting() && 
+              !connectionManager.isRetrying()) {
+            connectionManager.initializeApp().catch((error) => {
+              console.error("[MilkyWayApp] 初始化失败:", error);
+            });
+          }
+        }, 1000); // 1秒延迟
+      }
+    };
+
+    // 添加页面可见性变化监听器
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // 清理监听器和定时器
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+    };
   }, [isAuthenticated]);
 
   // 根据当前路径确定激活的标签
