@@ -48,12 +48,6 @@ public class WebSocketEventListener {
                     user.online();
                     userRepository.save(user);
                 }
-                try {
-                    Set<SimpSession> sessions = simpUserRegistry.getUser(userId).getSessions();
-                    log.info("用户 {} 当前所有会话ID: {}", userId, sessions);
-                } catch (NullPointerException e) {
-                    log.info("用户 {} 当前没有其他会话", userId);
-                }
             }
         }
     }
@@ -73,12 +67,11 @@ public class WebSocketEventListener {
             String userId = principal.getName();
             try {
                 Set<SimpSession> sessions = simpUserRegistry.getUser(userId).getSessions();
-                log.info("用户 {} 当前所有会话ID: {}", userId, sessions);
                 if(CollectionUtils.isEmpty(sessions)) return;
                 Optional<User> userOptional = userRepository.findById(userId);
                 if(userOptional.isPresent()){
                     User user = userOptional.get();
-                    user.online();
+                    user.outline();
                     userRepository.save(user);
                 }
             } catch (NullPointerException e) {
