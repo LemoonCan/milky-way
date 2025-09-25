@@ -142,7 +142,6 @@ export const CommentList: React.FC<CommentListProps> = ({
           isVisible={showProfileModal}
           onClose={() => setShowProfileModal(false)}
           triggerElement={triggerElement}
-          showActions={false}
         />
       )}
     </div>

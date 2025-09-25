@@ -56,7 +56,6 @@ export const LikeList: React.FC<LikeListProps> = ({ likes }) => {
           isVisible={showProfileModal}
           onClose={() => setShowProfileModal(false)}
           triggerElement={avatarRefs.current[selectedUser.id]}
-          showActions={false}
         />
       )}
     </div>

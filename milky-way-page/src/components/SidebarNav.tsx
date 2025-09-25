@@ -121,7 +121,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }
           isVisible={showProfileModal}
           onClose={handleCloseProfileModal}
           triggerElement={avatarRef.current}
-          showActions={false}
         />
       )}
     </div>

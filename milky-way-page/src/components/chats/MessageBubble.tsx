@@ -27,7 +27,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({
   // 个人信息弹框状态
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [modalUserId, setModalUserId] = useState<string | null>(null)
-  const [showActions, setShowActions] = useState(false)
   const [avatarElement, setAvatarElement] = useState<HTMLElement | null>(null)
   
 
@@ -43,13 +42,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({
   }
 
   // 处理头像点击
-  const handleAvatarClick = (isFromMe: boolean, element: HTMLElement, userId: string) => {
+  const handleAvatarClick = (_isFromMe: boolean, element: HTMLElement, userId: string) => {
     // 确保在设置弹框状态前，先设置触发元素
     setAvatarElement(element)
     
     // 直接使用传入的userId
     setModalUserId(userId)
-    setShowActions(!isFromMe) // 点击自己的头像不显示操作按钮，点击他人头像显示
     
     // 使用 setTimeout 确保 DOM 更新后再显示弹框
     setTimeout(() => {
@@ -225,7 +223,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = React.memo(({
           isVisible={showProfileModal}
           onClose={handleCloseProfileModal}
           triggerElement={avatarElement}
-          showActions={showActions}
         />
       )}
 

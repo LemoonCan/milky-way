@@ -260,7 +260,6 @@ export const MomentItem: React.FC<MomentItemProps> = ({ moment, expandComments =
         isVisible={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         triggerElement={avatarRef.current}
-        showActions={true}
       />
 
       {/* 删除动态确认弹框 */}

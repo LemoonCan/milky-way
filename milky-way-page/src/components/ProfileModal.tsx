@@ -14,13 +14,13 @@ import type { UserDetailInfo } from "../services/user";
 import type { ApiResponse } from "../types/api";
 import { handleAndShowError } from '../lib/globalErrorHandler'
 import { useMomentStore, MomentType } from '../store/moment'
+import { useUserStore } from '../store/user'
 
 interface ProfileModalProps {
   userId: string;
   isVisible: boolean;
   onClose: () => void;
   triggerElement?: HTMLElement | null;
-  showActions?: boolean; // 是否显示操作按钮（发消息、语音、视频）
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -28,7 +28,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   isVisible,
   onClose,
   triggerElement,
-  showActions = false,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const lastRequestedUserIdRef = useRef<string | null>(null);
@@ -36,6 +35,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [user, setUser] = useState<UserDetailInfo | undefined>(undefined);
   const [shouldShowModal, setShouldShowModal] = useState(false);
   const { navigateToMomentPage } = useMomentStore();
+  const { currentUser } = useUserStore();
+  
+  // 智能判断是否显示通信按钮：只有当查看的不是当前用户时才显示
+  const shouldShowActions = currentUser?.id !== userId;
 
   // 获取用户详细信息
   useEffect(() => {
@@ -94,7 +97,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
     const rect = triggerElement.getBoundingClientRect();
     const modalWidth = 320;
-    const modalHeight = showActions ? 380 : 320; 
+    const modalHeight = shouldShowActions ? 380 : 320; 
 
     // 弹框默认出现在触发元素右侧，垂直居中对齐
     let top = rect.top + rect.height / 2 - modalHeight / 2;
@@ -237,8 +240,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <ChevronRight size={16} className={styles.chevronIcon} />
             </button>
 
-            {/* 操作按钮（仅好友头像显示） */}
-            {showActions && user && (
+            {/* 操作按钮（仅非当前用户显示） */}
+            {shouldShowActions && user && (
               <div className={styles.actionButtons}>
                 <CommunicationActions
                   userId={user.id}
