@@ -13,9 +13,11 @@ CREATE TABLE users
     update_time            TIMESTAMP  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     -- 登录信息嵌入字段
     online                 TINYINT(1) DEFAULT 0 COMMENT '是否在线',
+    logged TINYINT(1) DEFAULT 0 COMMENT '是否登录',
     last_login_time        TIMESTAMP  DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后登录时间',
     last_login_ip          VARCHAR(50) COMMENT '最后登录IP',
     last_login_device      VARCHAR(50) COMMENT '最后登录设备',
+    last_login_token VARCHAR(255) COMMENT '最后登录token',
     -- 实名信息嵌入字段
     name                   VARCHAR(64) COMMENT '真实姓名',
     gender                 VARCHAR(8) COMMENT '性别',
@@ -23,11 +25,6 @@ CREATE TABLE users
     id_card_front          VARCHAR(20) COMMENT '身份证正面',
     id_card_back           VARCHAR(20) COMMENT '身份证反面'
 );
-
--- TODO 变更生产表结构
-alter table users add column logged TINYINT(1) DEFAULT 0 COMMENT '是否登录' after online;
-alter table users add column last_login_token VARCHAR(255) COMMENT '最后登录token' after last_login_device;
-
 
 -- 索引
 CREATE INDEX idx_users_open_id ON users (open_id);
