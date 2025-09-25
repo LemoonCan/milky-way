@@ -65,7 +65,7 @@ public class WebSocketEventListener {
             String userId = principal.getName();
             try {
                 Set<SimpSession> sessions = simpUserRegistry.getUser(userId).getSessions();
-                if(CollectionUtils.isEmpty(sessions)) return;
+                if(!CollectionUtils.isEmpty(sessions)) return;
                 Optional<User> userOptional = userRepository.findById(userId);
                 if(userOptional.isPresent()){
                     User user = userOptional.get();
