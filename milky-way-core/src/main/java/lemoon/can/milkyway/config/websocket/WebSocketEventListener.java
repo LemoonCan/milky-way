@@ -41,13 +41,11 @@ public class WebSocketEventListener {
         if (principal != null) {
             String userId = principal.getName();
             log.info("用户 {} 建立WebSocket连接，会话ID: {}", userId, sessionId);
-            if(simpUserRegistry.getUser(userId)!=null){
-                Optional<User> userOptional = userRepository.findById(userId);
-                if(userOptional.isPresent()){
-                    User user = userOptional.get();
-                    user.online();
-                    userRepository.save(user);
-                }
+            Optional<User> userOptional = userRepository.findById(userId);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                user.online();
+                userRepository.saveAndFlush(user);
             }
         }
     }
@@ -72,10 +70,16 @@ public class WebSocketEventListener {
                 if(userOptional.isPresent()){
                     User user = userOptional.get();
                     user.outline();
-                    userRepository.save(user);
+                    userRepository.saveAndFlush(user);
                 }
             } catch (NullPointerException e) {
                 log.info("用户 {} 查询会话异常", userId);
+                Optional<User> userOptional = userRepository.findById(userId);
+                if(userOptional.isPresent()){
+                    User user = userOptional.get();
+                    user.outline();
+                    userRepository.saveAndFlush(user);
+                }
             }
         }
     }
