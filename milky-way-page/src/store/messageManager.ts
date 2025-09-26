@@ -101,7 +101,6 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
     messageType: MessageMeta['type'], 
     clientMsgId: string
   ): Promise<void> => {
-    console.log(`[MessageManager] 开始发送到WebSocket - chatId: ${chatId}, clientMsgId: ${clientMsgId}`)
     
     try {
       await chatService.sendMessage({
@@ -120,13 +119,13 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
         }
       }, 15000)
       
-    } catch (error) {
+    } catch {
       // 标记消息为发送失败
       get().updateMessageByClientId(chatId, clientMsgId, {
         sendStatus: 'failed'
       })
       
-      throw error
+      // throw error
     }
   },
 

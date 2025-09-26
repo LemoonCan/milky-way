@@ -39,10 +39,6 @@ export const ChatList: React.FC = () => {
   useEffect(() => {
     const processPendingFriendChat = async () => {
       try {
-        console.log(
-          "[ChatList] 聊天列表加载完成，开始处理好友聊天:",
-          pendingFriendUserId
-        );
         if(!pendingFriendUserId){
           return;
         }

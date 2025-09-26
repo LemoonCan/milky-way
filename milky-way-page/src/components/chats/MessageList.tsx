@@ -121,7 +121,6 @@ export const MessageList: React.FC<MessageListProps> = ({
 
     // 如果聊天ID与记录的不一致，说明正在切换
     if (prevChatIdRef.current !== chatId) {
-      console.log("检测到聊天切换，忽略滚动事件");
       return;
     }
 

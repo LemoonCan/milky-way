@@ -278,7 +278,6 @@ export const preloadChatListEmojis = async (chats: Array<{title: string, lastMes
     })
     
     if (allEmojis.size > 0) {
-      console.log(`🚀 预加载聊天列表emoji: ${allEmojis.size}个`)
       await emojiCache.preloadEmojis(Array.from(allEmojis))
     }
   } catch (error) {
@@ -300,7 +299,6 @@ export const preloadMessageListEmojis = async (messages: Array<{meta: {content?:
     })
     
     if (allEmojis.size > 0) {
-      console.log(`🚀 预加载消息列表emoji: ${allEmojis.size}个`)
       await emojiCache.preloadEmojis(Array.from(allEmojis))
     }
   } catch (error) {

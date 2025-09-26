@@ -69,8 +69,6 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
 
   // 显示所有好友申请，不只是待处理的
   const displayApplications = useMemo(() => {
-    console.log(`[FriendList] 好友申请列表更新，长度: ${friendApplications?.length || 0}`)
-    console.log(`[FriendList] 申请列表内容:`, friendApplications?.map(app => ({ id: app.id, nickName: app.fromUser.nickName, status: app.status })) || [])
     return friendApplications || []
   }, [friendApplications])
 
@@ -96,7 +94,6 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     // 当滚动到距离底部50px时，触发加载更多
     if (scrollHeight - scrollTop - clientHeight < 50) {
       if (hasNextApplicationsPage && !isApplicationsLoading) {
-        console.log('[FriendList] 加载更多好友申请数据')
         fetchMoreFriendApplications()
       }
     }
@@ -119,7 +116,6 @@ export const FriendList: React.FC<FriendListProps> = ({ onAddFriend }) => {
     // 当滚动到距离底部50px时，触发加载更多
     if (scrollHeight - scrollTop - clientHeight < 50) {
       if (hasNextPage && !isFriendsLoading) {
-        console.log('[FriendList] 加载更多好友数据')
         fetchMoreFriends()
       }
     }

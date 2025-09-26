@@ -22,8 +22,6 @@ import type { ChatInfoDTO } from "../services/chat";
 const convertDTOToApplication = (
   dto: FriendApplicationDTO
 ): FriendApplication => {
-  console.log("开始转换DTO:", dto);
-
   const toUser = dto.toUser || {
     id: "unknown",
     openId: null,
@@ -54,7 +52,6 @@ const convertDTOToApplication = (
     updateTime: dto.createTime,
   };
 
-  console.log("转换完成:", converted);
   return converted;
 };
 
@@ -99,8 +96,6 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()(
 
     // 通知处理器 - 无UI依赖版本
     handleNotification: (notification: MessageNotifyDTO<unknown>) => {
-      console.log("收到通知:", notification);
-
       const { notifyType, content } = notification;
 
       // 添加到通知系统
@@ -137,10 +132,6 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()(
 
             // 如果是群聊，自动订阅该群聊的消息频道
             if (chatInfo.chatType === "GROUP") {
-              console.log(
-                "[NotificationManager] 自动订阅新群聊消息:",
-                chatInfo.id
-              );
               webSocketClient.subscribeToGroupChat(chatInfo.id);
             }
           }
@@ -152,10 +143,6 @@ export const useNotificationManagerStore = create<NotificationManagerStore>()(
             const chatStore = useChatStore.getState();
             const chat = chatStore.chats.find((c) => c.id === content);
             if (chat && chat.chatType === "GROUP") {
-              console.log(
-                "[NotificationManager] 取消订阅已删除的群聊:",
-                content
-              );
               webSocketClient.unsubscribeFromGroupChat(content);
             }
 

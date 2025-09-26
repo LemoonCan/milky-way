@@ -41,11 +41,6 @@ class FileService {
         const compressionResult = await compressImage(file);
         processedFile = compressionResult.file;
         
-        // 输出压缩信息到控制台
-        console.log(`图片压缩完成: ${file.name}`);
-        console.log(`原始大小: ${ImageCompressor.formatFileSize(compressionResult.originalSize)}`);
-        console.log(`压缩后大小: ${ImageCompressor.formatFileSize(compressionResult.compressedSize)}`);
-        console.log(`压缩率: ${(compressionResult.compressionRatio * 100).toFixed(1)}%`);
       } catch (error) {
         console.warn('图片压缩失败，使用原始文件上传:', error);
         // 压缩失败时仍然使用原文件上传

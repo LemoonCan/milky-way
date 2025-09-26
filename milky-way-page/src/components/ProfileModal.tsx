@@ -45,7 +45,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     if (isVisible && userId) {
       // 如果是重复请求相同的用户ID，避免重复
       if (lastRequestedUserIdRef.current === userId && user) {
-        console.log("用户详情已存在，跳过重复请求，用户ID:", userId);
         setShouldShowModal(true);
         return;
       }

@@ -55,8 +55,6 @@ export const CommunicationActions: React.FC<CommunicationActionsProps> = ({
     }
 
     try {
-      console.log('Starting chat with user:', userName, 'userId:', userId)
-      
       // 设置待处理的好友用户ID到全局状态
       setPendingFriendUserId(userId)
       
@@ -76,7 +74,6 @@ export const CommunicationActions: React.FC<CommunicationActionsProps> = ({
       return
     }
     
-    console.log('Voice call to:', userName, 'userId:', userId)
     // TODO: 实现语音通话功能
   }
 
@@ -87,7 +84,6 @@ export const CommunicationActions: React.FC<CommunicationActionsProps> = ({
       return
     }
     
-    console.log('Video call to:', userName, 'userId:', userId)
     // TODO: 实现视频通话功能
   }
 

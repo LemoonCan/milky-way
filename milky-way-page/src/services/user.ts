@@ -62,11 +62,8 @@ class UserService {
     // 检查缓存
     const cached = this.userDetailCache.get(userId)
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      console.log('Using cached user detail data for:', userId)
       return cached.data
     }
-
-    console.log('Fetching user detail data from API for:', userId)
     const response = await http.get<ApiResponse<UserDetailInfo>>(`/users/userDetail?id=${userId}`)
     const result = response.data
 
@@ -96,11 +93,8 @@ class UserService {
     // 检查缓存
     const cached = this.userCache.get(openId)
     if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
-      console.log('Using cached user data for:', openId)
       return cached.data
     }
-
-    console.log('Fetching user data from API for:', openId)
     const response = await http.post<ApiResponse<User>>(`/users/matchByOpenId?openId=${openId}`)
     const result = response.data
 

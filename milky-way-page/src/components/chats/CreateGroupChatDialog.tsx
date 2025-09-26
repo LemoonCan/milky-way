@@ -99,11 +99,9 @@ export const CreateGroupChatDialog: React.FC<CreateGroupChatDialogProps> = ({
       }
       
       const chatId = await createGroupChat(request)
-      console.log('创建群聊成功:', chatId)
       
       // 创建成功后立即订阅该群聊的消息
       chatService.subscribeToGroupChat(chatId)
-      console.log('已订阅群聊消息:', chatId)
       
       // 调用成功回调
       setCurrentChat(chatId)

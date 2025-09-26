@@ -44,7 +44,6 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
       // 解散成功后，从聊天列表中移除该群聊
       removeChat(chat.id)
       setShowDeleteChatDialog(false)
-      console.log('群聊解散成功')
     } catch (error) {
       console.error('解散群聊失败:', error)
       // 这里可以添加错误提示

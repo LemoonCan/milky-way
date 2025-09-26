@@ -14,8 +14,6 @@ export const AuthFailurePage: React.FC = () => {
   const message = searchParams.get('message') || '认证失败'
 
   const handleComplete = useCallback(() => {
-    console.log('[AuthFailurePage] 倒计时结束，开始清理token和跳转')
-    
     // 1. 先清理token和用户状态
     forceLogout()
     
