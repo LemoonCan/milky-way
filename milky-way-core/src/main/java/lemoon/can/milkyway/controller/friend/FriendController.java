@@ -49,6 +49,9 @@ public class FriendController {
     @PostMapping("/applications/add")
     @Operation(summary = "添加好友")
     public ResponseEntity<Result<Void>> addFriend(@RequestBody @Valid FriendApplyParam param) {
+        if(param.getToUserId().equals(UserInfoHolder.id())) {
+            return ResponseEntity.ok(Result.fail("无法添加自己为好友🤒"));
+        }
         param.setFromUserId(UserInfoHolder.id());
         friendService.addFriend(param);
         return ResponseEntity.ok(Result.success());

@@ -38,6 +38,13 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ open, onClose 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
+    // 验证是否为用户本人
+    if (currentUser?.openId === searchQuery.trim()) {
+      setSearchError('你自己的账号🤒')
+      setSearchResult(null)
+      return
+    }
+
     try {
       // 默认使用 openId 搜索
       const user = await searchUserByOpenId(searchQuery.trim())
