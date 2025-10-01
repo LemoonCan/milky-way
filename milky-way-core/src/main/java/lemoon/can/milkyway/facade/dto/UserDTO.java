@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.facade.dto;
 
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -33,5 +34,6 @@ public class UserDTO implements Serializable {
     /**
      * 个性签名
      */
+    @Size(max=100, message = "个性签名不能超过100个字符")
     protected String individualSignature;
 }

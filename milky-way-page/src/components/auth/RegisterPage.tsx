@@ -61,17 +61,15 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
     // 验证账号
     if (!formData.username.trim()) {
       newErrors.username = '请输入账号'
-    } else if (formData.username.length < 3) {
-      newErrors.username = '账号至少需要3位字符'
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = '账号只能包含字母、数字和下划线'
+    } else if (!/^[a-zA-Z0-9_]{4,20}$/.test(formData.username)) {
+      newErrors.username = '账号需由4-20位字母、数字或下划线组成'
     }
 
     // 验证密码
     if (!formData.password) {
       newErrors.password = '请输入密码'
-    } else if (formData.password.length < 6) {
-      newErrors.password = '密码至少需要6位'
+    } else if (!/^[a-zA-Z0-9!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]{6,20}$/.test(formData.password)) {
+      newErrors.password = '密码需由6-20位字母、数字或特殊字符组成'
     }
 
     // 验证确认密码
@@ -143,7 +141,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
             <label className={styles.label}>账号</label>
             <Input
               type="text"
-              placeholder="请输入账号（字母、数字、下划线）"
+              placeholder="请输入账号（4-20位字母、数字、下划线）"
               value={formData.username}
               onChange={(e) => handleInputChange('username', e.target.value)}
               disabled={loading}
@@ -163,7 +161,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onRegister, onNaviga
             <label className={styles.label}>密码</label>
             <Input
               type="password"
-              placeholder="请输入密码（至少6位）"
+              placeholder="请输入密码（6-20位字母、数字、特殊字符）"
               value={formData.password}
               onChange={(e) => handleInputChange('password', e.target.value)}
               disabled={loading}
