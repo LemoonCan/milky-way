@@ -20,6 +20,13 @@ public interface FileService {
     FileInfoDTO upload(MultipartFile multipartFile, FileParam fileParam);
 
     /**
+     * 删除文件
+     *
+     * @param fileId 文件ID
+     */
+    void delete(String fileId);
+
+    /**
      * 访问文件
      *
      * @param fileId 文件ID
@@ -83,4 +90,12 @@ public interface FileService {
      * @return
      */
     boolean expire(String temporaryAccessUrl);
+
+    /**
+     * 从临时访问链接中获取文件ID
+     *
+     * @param temporaryAccessUrl 临时访问链接
+     * @return 文件ID
+     */
+    String getFileId(String temporaryAccessUrl);
 }

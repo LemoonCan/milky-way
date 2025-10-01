@@ -3,6 +3,7 @@ package lemoon.can.milkyway.infrastructure.repository.mapper;
 import lemoon.can.milkyway.infrastructure.repository.dos.MessageDO;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -30,4 +31,13 @@ public interface MessageMapper {
      * @return 消息列表
      */
     List<MessageDO> getMessagesAfter(Long chatId, Long after, int pageSize);
+
+    /**
+     * 查询指定时间之前的多媒体消息
+     *
+     * @param afterId    起始消息ID
+     * @param beforeTime 指定时间
+     * @return 多媒体消息列表
+     */
+    List<MessageDO> getMediaMessagesBefore(Long afterId, LocalDateTime beforeTime);
 }

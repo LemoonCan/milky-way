@@ -67,7 +67,7 @@ public class AccessTokenManager {
      * @param secretKey  密钥
      * @return AccessToken 对象
      */
-    public AccessToken parseAndValidate(String accessCode, String secretKey) {
+    public AccessToken parseAndValidate(String accessCode, String secretKey, boolean... dontChecks) {
         // 1. Base64 解码
         String raw = new String(Base64.getUrlDecoder().decode(accessCode), StandardCharsets.UTF_8);
         String[] parts = raw.split("\\.");
@@ -80,8 +80,10 @@ public class AccessTokenManager {
         String sig8 = parts[2];
 
         // 2. 过期检查
-        if (System.currentTimeMillis() / 1000 > expireAtSec) {
-            throw new IllegalArgumentException("令牌已过期");
+        if (dontChecks.length==0) {
+            if (System.currentTimeMillis() / 1000 > expireAtSec) {
+                throw new IllegalArgumentException("令牌已过期");
+            }
         }
 
         // 3. 签名校验

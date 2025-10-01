@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.infrastructure.service.command;
 
+import lemoon.can.milkyway.common.constant.FileConstant;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.Snowflake;
@@ -91,7 +92,7 @@ public class FileServiceImpl implements FileService {
                 return fileInfoDTO;
             }
             case PRIVATE -> {
-                long defaultExpireInSeconds = 7 * 24 * 60 * 60L;
+                long defaultExpireInSeconds = FileConstant.PRIVATE_FILE_VALID_DAYS * 24 * 60 * 60L;
                 String url = generateTemporaryAccessUrl(fileId, defaultExpireInSeconds);
                 FileInfoDTO fileInfoDTO = new FileInfoDTO();
                 fileInfoDTO.setFileId(fileId);
@@ -107,6 +108,24 @@ public class FileServiceImpl implements FileService {
             //如果是视频文件，生成封面图
             videoService.generateCoverImage(fileMetaInfo);
         }
+    }
+
+    @Override
+    public void delete(String fileId) {
+        FileMetaInfo fileMetaInfo = fileMetaInfoRepository.findById(fileId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND, "文件元数据不存在"));
+
+        //1.删除文件
+        boolean flag = fileRepository.clear(fileMetaInfo.getStoragePath());
+        if (!flag) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "源文件删除失败");
+        }
+        if (fileMetaInfo.isVideo()) {
+            delete(fileMetaInfo.getVideoCoverImage());
+        }
+
+        //2.删除元信息
+        fileMetaInfoRepository.deleteById(fileId);
     }
 
     @Override
@@ -191,8 +210,17 @@ public class FileServiceImpl implements FileService {
         }
     }
 
+    @Override
+    public String getFileId(String temporaryAccessUrl) {
+        AccessToken accessToken = accessTokenManager.parseAndValidate(accessCode(temporaryAccessUrl), secretKey, true);
+        return accessToken.getObjectId();
+    }
+
+    private String accessCode(String temporaryAccessUrl) {
+        return temporaryAccessUrl.substring(temporaryAccessUrl.indexOf("accessCode=") + 11);
+    }
+
     private AccessToken getAccessToken(String temporaryAccessUrl) {
-        String accessCode = temporaryAccessUrl.substring(temporaryAccessUrl.indexOf("accessCode=") + 11);
-        return accessTokenManager.parseAndValidate(accessCode, secretKey);
+        return accessTokenManager.parseAndValidate(accessCode(temporaryAccessUrl), secretKey);
     }
 }

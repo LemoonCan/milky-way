@@ -60,4 +60,14 @@
         </association>
     </resultMap>
 
+    <select id="getMediaMessagesBefore" resultType="lemoon.can.milkyway.infrastructure.repository.dos.MessageDO">
+        SELECT id,type,content FROM message
+        WHERE
+        type IN ('IMAGE', 'VIDEO', 'FILE')
+        <if test="afterId != null">
+            AND id &gt; #{afterId}
+        </if>
+        AND sent_time <![CDATA[ < ]]> #{beforeTime}
+    </select>
+
 </mapper>

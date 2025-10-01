@@ -1,14 +1,15 @@
 package lemoon.can.milkyway.infrastructure.repository.impl;
 
 import lemoon.can.milkyway.common.enums.FilePermissionEnum;
-import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
+import lemoon.can.milkyway.facade.param.FileParam;
 import lemoon.can.milkyway.infrastructure.repository.FileRepository;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -64,6 +65,28 @@ public class FileRepositoryImpl implements FileRepository {
     }
 
     @Override
+    public boolean clear(String filePath) {
+        File file = new File(filePath);
+        if (file.exists()) {
+            boolean res = file.delete();
+            clearEmptyParentDirs(file);
+            return res;
+        }
+        return true;
+    }
+
+    private void clearEmptyParentDirs(File file) {
+        File parent = file.getParentFile();
+        while (parent != null && parent.isDirectory() && CollectionUtils.isEmpty(CollectionUtils.arrayToList(parent.list()))) {
+            boolean deleted = parent.delete();
+            if (!deleted) {
+                break;
+            }
+            parent = parent.getParentFile();
+        }
+    }
+
+    @Override
     public String filePath(FilePermissionEnum permission, String userId, String fileId, String extension) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -71,9 +94,5 @@ public class FileRepositoryImpl implements FileRepository {
         File directory = new File(dir);
         directory.mkdirs();
         return dir + fileId + extension;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(System.getProperty("user.dir"));
     }
 }

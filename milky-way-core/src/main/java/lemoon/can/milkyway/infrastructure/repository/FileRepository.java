@@ -25,6 +25,14 @@ public interface FileRepository {
     String storage(InputStream inputStream, FileParam fileParam, String userId, String fileId, String fileType) throws IOException;
 
     /**
+     * 清除文件
+     *
+     * @param filePath 文件路径
+     * @return 是否成功
+     */
+    boolean clear(String filePath);
+
+    /**
      * 获取文件存储路径
      *
      * @param permission 文件权限

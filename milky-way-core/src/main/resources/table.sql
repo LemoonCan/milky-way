@@ -154,3 +154,15 @@ CREATE TABLE likes
     create_time  TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     PRIMARY KEY (moment_id, like_user_id)
 );
+
+-- 额外信息表
+CREATE TABLE ext_info
+(
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY NOT NULL COMMENT 'ID',
+    key_name    VARCHAR(255)                       NOT NULL COMMENT '键名',
+    key_value   VARCHAR(255) COMMENT '键值',
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+);
+
+select * from message where id>874 and type in('IMAGE','FILE','VIDEO') order by id limit 100;
