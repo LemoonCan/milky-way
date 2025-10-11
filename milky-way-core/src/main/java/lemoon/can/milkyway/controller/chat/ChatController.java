@@ -77,6 +77,13 @@ public class ChatController {
         return ResponseEntity.ok(Result.success());
     }
 
+    public ResponseEntity<Slices<SimpleUserDTO>> getChatMembers(@PathVariable String chatId,
+                                                              @RequestParam(required = false) String lastUserId,
+                                                              @RequestParam Integer pageSize) {
+        Slices<SimpleUserDTO> members = chatQueryService.getChatMembers(chatId, lastUserId, pageSize);
+        return ResponseEntity.ok(members);
+    }
+
     @GetMapping("/friendChat")
     @Operation(summary = "获取与好友的私聊ID")
     public ResponseEntity<Result<ChatInfoDTO>> getFriendChat(@RequestParam String friendUserId) {

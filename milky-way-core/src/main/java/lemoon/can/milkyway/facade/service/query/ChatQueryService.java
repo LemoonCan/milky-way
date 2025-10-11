@@ -2,6 +2,7 @@ package lemoon.can.milkyway.facade.service.query;
 
 import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.dto.MessageInfoDTO;
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.param.ChatMessagesQueryParam;
 
@@ -42,4 +43,13 @@ public interface ChatQueryService {
      * @return 消息列表
      */
     Slices<MessageInfoDTO> getChatMessages(ChatMessagesQueryParam param);
+
+    /**
+     * 获取聊天室成员列表
+     * @param chatId 聊天室ID
+     * @param lastUserId 游标，用于分页查询的起始位置，为null则从头开始
+     * @param pageSize 每页数量
+     * @return 成员信息分页结果
+     */
+    Slices<SimpleUserDTO> getChatMembers(String chatId, String lastUserId, Integer pageSize);
 }

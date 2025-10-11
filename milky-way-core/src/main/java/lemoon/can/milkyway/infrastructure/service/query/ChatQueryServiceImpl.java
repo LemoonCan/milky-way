@@ -2,6 +2,7 @@ package lemoon.can.milkyway.infrastructure.service.query;
 
 import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.dto.MessageInfoDTO;
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.facade.dto.Slices;
 import lemoon.can.milkyway.facade.param.ChatMessagesQueryParam;
 import lemoon.can.milkyway.facade.service.query.ChatQueryService;
@@ -109,5 +110,10 @@ public class ChatQueryServiceImpl implements ChatQueryService {
         }
 
         return new Slices<>(messageDTOS, hasNext);
+    }
+
+    @Override
+    public Slices<SimpleUserDTO> getChatMembers(String chatId, String lastUserId, Integer pageSize) {
+        return null;
     }
 }
