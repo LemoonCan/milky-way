@@ -56,8 +56,12 @@ public class ChatServiceImpl implements ChatService {
                 .map(ChatMember::new)
                 .collect(Collectors.toList());
 
-        Chat chat = switch (param.getChatType()) {
-            case GROUP -> new GroupChat(param.getTitle(), members);
+        Chat<?> chat = switch (param.getChatType()) {
+            case GROUP -> {
+                GroupChat groupChat = new GroupChat(param.getTitle(), members);
+                groupChat.admin(param.getOperateUserId());
+                yield groupChat;
+            }
             case SINGLE -> new SingleChat(param.getTitle(), members);
             default -> throw new BusinessException(ErrorCode.UNSUPPORTED, "不支持的聊天室类型");
         };

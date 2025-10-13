@@ -55,10 +55,11 @@ public class ChatRepositoryImpl implements ChatRepository {
     }
 
     @Override
-    public <T extends Chat> Long save(T chat) {
+    public <T extends Chat<?>> Long save(T chat) {
         ChatDO chatDO = new ChatDO();
         chatDO.setTitle(chat.getTitle());
         chatDO.setType(chat.type());
+        chatDO.setExtraInfo(chat.extraInfo());
         chatMapper.insert(chatDO);
 
         List<ChatMemberDO> chatMemberDOList = chat.getMembers()

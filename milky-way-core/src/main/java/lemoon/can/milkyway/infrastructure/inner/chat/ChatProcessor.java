@@ -11,7 +11,7 @@ import java.util.List;
  * @since 2025/5/18
  */
 public interface ChatProcessor {
-    void pushMessage(Chat chat, MessageDTO message);
+    void pushMessage(Chat<?> chat, MessageDTO message);
     /**
      * 聊天室创建
      * @param chatId 群聊ID

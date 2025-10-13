@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.domain.chat;
 
+import com.alibaba.fastjson2.JSON;
 import lemoon.can.milkyway.common.enums.ChatType;
 import lombok.Getter;
 import org.springframework.util.StringUtils;
@@ -13,10 +14,11 @@ import java.util.List;
  * @since 2025/5/16
  */
 @Getter
-public abstract class Chat {
+public abstract class Chat<T> {
     protected Long id;
     protected String title;
     protected List<ChatMember> members;
+    protected T extraInfo;
 
     public Chat(Long id, String title, List<ChatMember> members) {
         this.id = id;
@@ -34,4 +36,8 @@ public abstract class Chat {
      * @return 聊天类型
      */
     public abstract ChatType type();
+
+    public String extraInfo() {
+        return extraInfo == null ? null : JSON.toJSONString(extraInfo);
+    }
 }

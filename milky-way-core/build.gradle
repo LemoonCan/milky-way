@@ -25,6 +25,7 @@ dependencies {
     implementation "org.mapstruct:mapstruct"
     annotationProcessor "org.mapstruct:mapstruct-processor"
     implementation "com.belerweb:pinyin4j"
+    implementation 'com.alibaba.fastjson2:fastjson2:2.0.9.graal'
 }
 
 test {

@@ -10,7 +10,7 @@ import java.util.List;
  * @author lemoon
  * @since 2025/5/16
  */
-public class SingleChat extends Chat {
+public class SingleChat extends Chat<Void> {
     public SingleChat(Long id, String title, List<ChatMember> members) {
         super(id, title, members);
     }

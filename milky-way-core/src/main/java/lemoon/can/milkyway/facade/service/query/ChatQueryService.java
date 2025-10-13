@@ -45,11 +45,18 @@ public interface ChatQueryService {
     Slices<MessageInfoDTO> getChatMessages(ChatMessagesQueryParam param);
 
     /**
+     * 获取群聊信息
+     * @param chatId 聊天室ID
+     * @return 聊天室信息
+     */
+    ChatInfoDTO getGroupChatInfo(String chatId);
+
+    /**
      * 获取聊天室成员列表
      * @param chatId 聊天室ID
      * @param lastUserId 游标，用于分页查询的起始位置，为null则从头开始
      * @param pageSize 每页数量
      * @return 成员信息分页结果
      */
-    Slices<SimpleUserDTO> getChatMembers(String chatId, String lastUserId, Integer pageSize);
+    Slices<SimpleUserDTO> getGroupChatMembers(String chatId, String lastUserId, Integer pageSize);
 }

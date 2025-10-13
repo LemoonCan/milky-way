@@ -27,4 +27,9 @@ public class ChatDO {
      * 聊天室公告
      */
     private String bulletin;
+
+    /**
+     * 额外信息
+     */
+    private String extraInfo;
 }

@@ -31,7 +31,7 @@ public class SingleChatProcessor implements ChatProcessor {
      * @param message 消息对象
      */
     @Override
-    public void pushMessage(Chat chat, MessageDTO message) {
+    public void pushMessage(Chat<?> chat, MessageDTO message) {
         // 遍历参与者，向除发送者外的参与者推送消息
         for (ChatMember member : chat.getMembers()) {
             // 跳过发送者自己

@@ -1,6 +1,7 @@
 package lemoon.can.milkyway.infrastructure.repository.mapper;
 
 import lemoon.can.milkyway.common.enums.ChatType;
+import lemoon.can.milkyway.facade.dto.SimpleUserDTO;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatDO;
 import lemoon.can.milkyway.infrastructure.repository.dos.ChatInfoDO;
 import org.apache.ibatis.annotations.*;
@@ -16,7 +17,7 @@ public interface ChatMapper {
     @Select("SELECT COUNT(*)>0 FROM chat WHERE id = #{id}")
     boolean existsById(Long id);
 
-    @Insert("INSERT INTO chat(id, type, title, bulletin) VALUES(#{id}, #{type}, #{title}, #{bulletin})")
+    @Insert("INSERT INTO chat(id, type, title, bulletin,extra_info) VALUES(#{id}, #{type}, #{title}, #{bulletin}, #{extraInfo})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     Long insert(ChatDO chatDO);
 
@@ -58,4 +59,17 @@ public interface ChatMapper {
             "where type='single' " +
             "and id in(select chat_id from chat_member where user_id in(#{userId1}, #{userId2}) group by chat_id having count(*)=2)")
     List<Long> selectSingleChatIdByMember(String userId1, String userId2);
+
+    @Select("SELECT id,title,bulletin,extra_info FROM chat WHERE id = #{id} AND type = 'group'")
+    ChatDO selectGroupChatInfo(Long id);
+
+    @Select("SELECT u.id, u.open_id, u.nick_name, u.nick_name_first_letter, u.avatar " +
+            "FROM chat_member cm " +
+            "JOIN users u ON cm.user_id = u.id " +
+            "WHERE cm.chat_id = #{chatId} " +
+            "AND (#{lastUserId} IS NULL OR cm.user_id > #{lastUserId}) " +
+            "LIMIT #{pageSize}")
+    List<SimpleUserDTO> findChatMembers(@Param("chatId") String chatId,
+                                        @Param("lastUserId") String lastUserId,
+                                        @Param("pageSize") Integer pageSize);
 }
