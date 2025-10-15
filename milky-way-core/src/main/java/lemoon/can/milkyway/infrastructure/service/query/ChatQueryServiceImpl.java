@@ -113,11 +113,6 @@ public class ChatQueryServiceImpl implements ChatQueryService {
     }
 
     @Override
-    public ChatInfoDTO getGroupChatInfo(String chatId) {
-        return null;
-    }
-
-    @Override
     public Slices<SimpleUserDTO> getGroupChatMembers(String chatId, String lastUserId, Integer pageSize) {
         int size = pageSize != null && pageSize > 0 ? Math.min(pageSize, 50) : 20;
 

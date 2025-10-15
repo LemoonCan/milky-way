@@ -57,4 +57,9 @@ public class ChatInfoDTO implements Serializable {
      * 是否在线(单聊时显示对方在线状态，群聊时无效)
      */
     private boolean online;
+
+    /**
+     * 群主
+     */
+    private String adminUserId;
 }

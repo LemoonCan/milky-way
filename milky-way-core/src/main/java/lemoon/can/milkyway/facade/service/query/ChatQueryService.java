@@ -14,7 +14,7 @@ import java.util.List;
  */
 public interface ChatQueryService {
     /**
-     * 获取两个用户之间的私聊ID
+     * 获取两个用户之间的私聊会话
      * @param userId 用户ID
      * @param friendUserId 朋友用户ID
      * @return 私聊ID，如果不存在则返回null
@@ -43,13 +43,6 @@ public interface ChatQueryService {
      * @return 消息列表
      */
     Slices<MessageInfoDTO> getChatMessages(ChatMessagesQueryParam param);
-
-    /**
-     * 获取群聊信息
-     * @param chatId 聊天室ID
-     * @return 聊天室信息
-     */
-    ChatInfoDTO getGroupChatInfo(String chatId);
 
     /**
      * 获取聊天室成员列表

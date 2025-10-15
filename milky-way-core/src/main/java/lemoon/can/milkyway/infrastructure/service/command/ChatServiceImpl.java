@@ -6,7 +6,6 @@ import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.domain.chat.*;
-import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.param.*;
 import lemoon.can.milkyway.facade.service.command.ChatService;

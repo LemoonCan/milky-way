@@ -19,8 +19,6 @@ public class GroupChat extends Chat<GroupChat.ExtraInfo> {
     @Setter
     private String bulletin;
 
-    private ExtraInfo extraInfo;
-
     @Data
     public static class ExtraInfo{
         private String adminUserId;

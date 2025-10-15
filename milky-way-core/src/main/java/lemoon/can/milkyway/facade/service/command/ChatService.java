@@ -1,6 +1,5 @@
 package lemoon.can.milkyway.facade.service.command;
 
-import lemoon.can.milkyway.facade.dto.ChatDTO;
 import lemoon.can.milkyway.facade.dto.ChatInfoDTO;
 import lemoon.can.milkyway.facade.param.*;
 

@@ -63,6 +63,7 @@
         SELECT
         c.id, -- 会话 ID
         c.type AS chatType, -- 会话类型：SINGLE 或 GROUP
+        c.extra_info AS extraInfo, -- 会话额外信息（JSON 格式）
 
         -- 会话标题：单聊优先显示朋友备注、其次昵称，群聊显示群名称
         CASE
