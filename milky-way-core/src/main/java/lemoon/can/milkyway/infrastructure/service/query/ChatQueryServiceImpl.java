@@ -115,8 +115,7 @@ public class ChatQueryServiceImpl implements ChatQueryService {
     @Override
     public Slices<SimpleUserDTO> getGroupChatMembers(String chatId, String lastUserId, Integer pageSize) {
         int size = pageSize != null && pageSize > 0 ? Math.min(pageSize, 50) : 20;
-
-        List<SimpleUserDTO> members = chatMapper.findChatMembers(chatId, lastUserId, size);
+        List<SimpleUserDTO> members = chatMapper.findChatMembers(secureIdConverterHelper.decodeChatId(chatId), lastUserId, size);
         boolean hasNext = members.size() > size;
         if (hasNext) {
             members = members.subList(0, size);

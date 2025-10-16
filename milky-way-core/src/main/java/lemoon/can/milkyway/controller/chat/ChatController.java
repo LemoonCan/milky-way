@@ -55,7 +55,7 @@ public class ChatController {
     }
 
     @PostMapping("/members")
-    @Operation(summary = "删除聊天室成员")
+    @Operation(summary = "添加聊天室成员")
     public ResponseEntity<Result<Void>> addMember(@RequestParam String chatId,
                                                   @RequestParam String userId) {
         chatService.addMember(chatId, userId);
@@ -63,7 +63,7 @@ public class ChatController {
     }
 
     @DeleteMapping("/members")
-    @Operation(summary = "添加聊天室成员")
+    @Operation(summary = "删除聊天室成员")
     public ResponseEntity<Result<Void>> deleteMember(@RequestParam String chatId,
                                                      @RequestParam String userId) {
         chatService.deleteMember(chatId, userId);

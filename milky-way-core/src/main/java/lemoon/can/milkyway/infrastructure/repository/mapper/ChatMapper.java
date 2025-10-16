@@ -69,7 +69,7 @@ public interface ChatMapper {
             "WHERE cm.chat_id = #{chatId} " +
             "AND (#{lastUserId} IS NULL OR cm.user_id > #{lastUserId}) " +
             "LIMIT #{pageSize}")
-    List<SimpleUserDTO> findChatMembers(@Param("chatId") String chatId,
+    List<SimpleUserDTO> findChatMembers(@Param("chatId") Long chatId,
                                         @Param("lastUserId") String lastUserId,
                                         @Param("pageSize") Integer pageSize);
 }
