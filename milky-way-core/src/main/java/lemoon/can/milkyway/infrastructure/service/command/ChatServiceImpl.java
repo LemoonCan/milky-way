@@ -12,6 +12,7 @@ import lemoon.can.milkyway.facade.service.command.ChatService;
 import lemoon.can.milkyway.infrastructure.converter.ChatConverter;
 import lemoon.can.milkyway.infrastructure.converter.helper.SecureIdConverterHelper;
 import lemoon.can.milkyway.infrastructure.inner.chat.ChatProcessorManager;
+import lemoon.can.milkyway.infrastructure.inner.chat.GroupChatProcessor;
 import lemoon.can.milkyway.infrastructure.repository.ChatRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageReadCursorRepository;
 import lemoon.can.milkyway.infrastructure.repository.MessageRepository;
@@ -45,6 +46,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final ChatProcessorManager chatProcessorManager;
     private final ChatConverter chatConverter;
+    private final GroupChatProcessor groupChatProcessor;
 
     @Transactional
     @Override
@@ -131,6 +133,15 @@ public class ChatServiceImpl implements ChatService {
         member.setChatId(realChatId);
         member.setUserId(userId);
         chatMemberMapper.insert(member);
+
+        ChatInfoDTO chatInfoDTO = chatConverter.toDto(chatMapper.selectChatInfoById(realChatId));
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                groupChatProcessor.pushAddMemberMsg(userId, chatInfoDTO);
+            }
+        });
     }
 
     @Override
@@ -138,6 +149,13 @@ public class ChatServiceImpl implements ChatService {
     public void deleteMember(String chatId, String userId) {
         Long realChatId = secureId.simpleDecode(chatId, secureId.getChatSalt());
         chatMemberMapper.deleteByChatIdAndUserId(realChatId, userId);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                groupChatProcessor.pushDeleteMemberMsg(userId, realChatId);
+            }
+        });
     }
 
     @Override

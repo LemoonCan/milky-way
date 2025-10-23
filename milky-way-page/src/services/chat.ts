@@ -16,6 +16,8 @@ export interface ChatInfoDTO {
   unreadCount: number;
   online: boolean;
   friendId?: string; // 好友ID，仅在单聊时有值
+  adminUserId?: string; // 群管理员ID，仅在群聊时有值
+  memberCount?: number; // 群成员数量
 }
 
 // 消息元数据类型
@@ -174,6 +176,44 @@ export class ChatService {
   async getGroupChats(): Promise<string[]> {
     const response = await http.get<ApiResponse<string[]>>("/chats/groupChats");
     return response.data.data!;
+  }
+
+  /**
+   * 获取群聊成员
+   */
+  async getChatMembers(
+    chatId: string,
+    options?: { pageSize?: number; lastId?: string }
+  ): Promise<Slices<SimpleUserDTO>> {
+    const response = await http.get<ApiResponse<Slices<SimpleUserDTO>>>(
+      `/chats/members/${chatId}`,
+      {
+        params: {
+          pageSize: options?.pageSize ?? 20,
+          ...(options?.lastId ? { lastId: options.lastId } : {}),
+        },
+      }
+    );
+    
+    return response.data.data!;
+  }
+
+  /**
+   * 添加群成员
+   */
+  async addChatMember(chatId: string, userId: string): Promise<void> {
+    await http.post<ApiResponse<void>>(
+      `/chats/members?chatId=${chatId}&userId=${userId}`
+    );
+  }
+
+  /**
+   * 移除群成员
+   */
+  async removeChatMember(chatId: string, userId: string): Promise<void> {
+    await http.delete<ApiResponse<void>>(
+      `/chats/members?chatId=${chatId}&userId=${userId}`
+    );
   }
 
   /**

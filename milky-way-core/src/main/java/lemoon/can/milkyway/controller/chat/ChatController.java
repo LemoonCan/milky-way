@@ -78,11 +78,11 @@ public class ChatController {
     }
 
     @GetMapping("/members/{chatId}")
-    public ResponseEntity<Slices<SimpleUserDTO>> getGroupChatMembers(@PathVariable String chatId,
+    public ResponseEntity<Result<Slices<SimpleUserDTO>>> getGroupChatMembers(@PathVariable String chatId,
                                                                      @RequestParam(required = false) String lastUserId,
                                                                      @RequestParam Integer pageSize) {
         Slices<SimpleUserDTO> members = chatQueryService.getGroupChatMembers(chatId, lastUserId, pageSize);
-        return ResponseEntity.ok(members);
+        return ResponseEntity.ok(Result.success(members));
     }
 
     @GetMapping("/friendChat")

@@ -60,9 +60,6 @@ public interface ChatMapper {
             "and id in(select chat_id from chat_member where user_id in(#{userId1}, #{userId2}) group by chat_id having count(*)=2)")
     List<Long> selectSingleChatIdByMember(String userId1, String userId2);
 
-    @Select("SELECT id,title,bulletin,extra_info FROM chat WHERE id = #{id} AND type = 'group'")
-    ChatDO selectGroupChatInfo(Long id);
-
     @Select("SELECT u.id, u.open_id, u.nick_name, u.nick_name_first_letter, u.avatar " +
             "FROM chat_member cm " +
             "JOIN users u ON cm.user_id = u.id " +

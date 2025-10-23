@@ -1,0 +1,372 @@
+/* AddGroupMemberDialog 样式 */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.dialog {
+  width: 520px;
+  max-width: 92vw;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.2s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.4);
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--milky-text);
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--milky-text-light);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: rgba(232, 234, 237, 0.35);
+}
+
+.content {
+  flex: 1;
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.searchContainer {
+  margin-bottom: 16px;
+}
+
+.searchInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: var(--milky-text-light);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  border: 1px solid rgba(232, 234, 237, 0.6);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--milky-primary);
+  box-shadow: 0 0 0 3px rgba(252, 214, 108, 0.18);
+}
+
+.selectedSection {
+  margin-bottom: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(252, 214, 108, 0.35);
+  background-color: rgba(252, 214, 108, 0.12);
+}
+
+.selectedLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  margin-bottom: 12px;
+}
+
+.selectedFriends {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selectedFriend {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 4px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.selectedFriend:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.selectedFriendName {
+  margin: 0 8px;
+  font-size: 14px;
+  color: var(--milky-text);
+  max-width: 120px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.removeFriendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--milky-text-light);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.removeFriendButton:hover {
+  background-color: rgba(232, 234, 237, 0.35);
+  color: var(--milky-text);
+}
+
+.friendsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.friendsLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+}
+
+.friendsList {
+  border: 1px solid rgba(232, 234, 237, 0.35);
+  border-radius: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--milky-text-light);
+  font-size: 14px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+.friendItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(232, 234, 237, 0.25);
+  transition: background-color 0.2s ease;
+}
+
+.friendItem:last-child {
+  border-bottom: none;
+}
+
+.friendItem:hover {
+  background-color: rgba(232, 234, 237, 0.18);
+}
+
+.selected {
+  background-color: rgba(252, 214, 108, 0.16);
+  border-left: 3px solid var(--milky-primary);
+}
+
+.friendInfo {
+  flex: 1;
+  margin-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.friendName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--milky-text);
+  line-height: 1.3;
+}
+
+.friendSignature {
+  font-size: 12px;
+  color: var(--milky-text-light);
+  line-height: 1.3;
+}
+
+.checkIcon {
+  color: var(--milky-primary);
+}
+
+.loadMoreButton {
+  align-self: center;
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 234, 237, 0.6);
+  background: transparent;
+  color: var(--milky-text-light);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.loadMoreButton:hover:not(:disabled) {
+  background-color: rgba(232, 234, 237, 0.2);
+  border-color: rgba(232, 234, 237, 0.8);
+}
+
+.loadMoreButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid rgba(232, 234, 237, 0.4);
+  background: #fff;
+}
+
+.cancelButton {
+  min-width: 84px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(232, 234, 237, 0.6);
+  background: transparent;
+  color: var(--milky-text-light);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background-color: rgba(232, 234, 237, 0.25);
+  border-color: rgba(232, 234, 237, 0.8);
+}
+
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirmButton {
+  min-width: 110px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--milky-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background-color: var(--milky-primary-hover);
+}
+
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonSpinner {
+  animation: spin 1s linear infinite;
+}
+
+@media (max-width: 640px) {
+  .dialog {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .footer {
+    padding: 16px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

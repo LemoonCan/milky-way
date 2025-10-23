@@ -102,13 +102,15 @@
   top: 100%;
   right: 0;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   border: 1px solid var(--milky-border);
-  min-width: 140px;
+  min-width: 320px;
+  max-width: 360px;
   z-index: 1000;
-  margin-top: 4px;
+  margin-top: 6px;
   animation: fadeInDown 0.2s ease-out;
+  overflow: hidden;
 }
 
 .moreActionItem {
@@ -150,6 +152,226 @@
   color: #ff6666;
 }
 
+.groupMenuHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px 0 18px;
+}
+
+.groupMenuTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--milky-text);
+}
+
+.groupMenuCount {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(232, 234, 237, 0.4);
+  color: var(--milky-text-light);
+}
+
+.groupMenuContent {
+  padding: 12px 18px 0 18px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.memberGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 16px 12px;
+}
+
+.memberItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  cursor: default;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.memberItemRemovable {
+  cursor: pointer;
+}
+
+.memberItemRemovable:hover {
+  background-color: rgba(232, 234, 237, 0.35);
+}
+
+.memberItemProtected {
+  cursor: not-allowed;
+}
+
+.memberAvatarWrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+}
+
+.memberRemoveBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #ff5555;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.memberName {
+  font-size: 12px;
+  color: var(--milky-text);
+  max-width: 70px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.memberActionItem {
+  border: none;
+  background-color: rgba(232, 234, 237, 0.16);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.memberActionItem:hover {
+  background-color: rgba(232, 234, 237, 0.28);
+  transform: translateY(-1px);
+}
+
+.memberActionIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background-color: rgba(232, 234, 237, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--milky-text);
+}
+
+.memberEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 0;
+  font-size: 14px;
+  color: var(--milky-text-light);
+}
+
+.memberError {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+  font-size: 14px;
+  color: var(--milky-text-light);
+}
+
+.memberErrorInline {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--milky-text-light);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+.memberErrorInline button {
+  background: none;
+  border: none;
+  color: var(--milky-primary);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+}
+
+.retryButton {
+  border: none;
+  border-radius: 18px;
+  padding: 6px 16px;
+  background-color: var(--milky-primary);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.groupMenuSection {
+  padding: 16px 18px 0 18px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--milky-text);
+  margin-bottom: 12px;
+}
+
+.groupNameWrapper {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background-color: rgba(232, 234, 237, 0.2);
+  font-size: 14px;
+  color: var(--milky-text);
+  word-break: break-word;
+}
+
+.groupMenuFooter {
+  padding: 16px 18px 20px 18px;
+}
+
+.groupActionButton {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background-color: rgba(255, 68, 68, 0.1);
+  color: #ff4d4f;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.groupActionButton:hover {
+  background-color: rgba(255, 68, 68, 0.18);
+  transform: translateY(-1px);
+}
+
+.groupActionButton:active {
+  transform: translateY(0);
+}
+
+.groupActionButton.dangerAction {
+  background-color: rgba(255, 68, 68, 0.12);
+  color: #ff4d4f;
+}
+
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -165,5 +387,13 @@
 @media (max-width: 768px) {
   .chatHeader {
     padding: 8px 16px;
+  }
+
+  .groupMenuContent {
+    max-height: 50vh;
+  }
+
+  .groupMenuFooter {
+    padding-bottom: 16px;
   }
 }

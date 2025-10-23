@@ -168,12 +168,19 @@
         select c.id,
                c.type as chat_type,
                c.title,
+               c.extra_info,
                m.id as last_message_id,
                m.type as last_message_type,
                m.content as last_message,
                m.sent_time as last_message_time
         from chat c
-        join message m on c.id = m.chat_id
+        LEFT JOIN message m ON m.id = (
+            SELECT id
+            FROM message
+            WHERE chat_id = c.id
+            ORDER BY sent_time DESC
+            LIMIT 1
+        )
         where c.id = #{id}
     </select>
 </mapper>
