@@ -164,5 +164,3 @@ CREATE TABLE ext_info
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 );
-
-select * from message where id>874 and type in('IMAGE','FILE','VIDEO') order by id limit 100;
