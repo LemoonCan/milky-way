@@ -51,6 +51,9 @@ subprojects {
             dependency "org.mapstruct:mapstruct:1.6.3"
             dependency "org.mapstruct:mapstruct-processor:1.6.3"
             dependency "com.belerweb:pinyin4j:2.5.1"
+            dependency 'com.alibaba.fastjson2:fastjson2:2.0.9.graal'
+            dependency 'org.springframework.ai:spring-ai-vertex-ai-gemini-spring-boot-starter:1.0.0-M6'
+            dependency 'com.google.protobuf:protobuf-java:4.33.0-RC1'
         }
     }
 }

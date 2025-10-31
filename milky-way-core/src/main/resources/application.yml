@@ -3,6 +3,6 @@ spring:
     name: milky-way
   profiles:
     active: local
-    include: datasource,security,openapi
+    include: datasource,security,openapi,ai
   jackson:
     default-property-inclusion: non_null
