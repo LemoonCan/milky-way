@@ -174,12 +174,21 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
       msg.clientMsgId === clientMsgId ? updatedMessage : msg
     )
 
+    // 检查更新的消息是否是最新的消息（在消息列表末尾）
+    const isNewestMessage = chatMessages.messages[chatMessages.messages.length - 1]?.clientMsgId === clientMsgId
+    
+    // 如果是最新消息且更新了ID，需要同步更新newestMessageId
+    const newNewestMessageId = isNewestMessage && updates.id 
+      ? updates.id 
+      : chatMessages.newestMessageId
+
     useChatStore.setState({
       chatMessagesMap: {
         ...useChatStore.getState().chatMessagesMap,
         [chatId]: {
           ...chatMessages,
-          messages: updatedMessages
+          messages: updatedMessages,
+          newestMessageId: newNewestMessageId
         }
       }
     })
@@ -215,12 +224,12 @@ export const useMessageManagerStore = create<MessageManagerStore>()((_set, get) 
         [chatId]: {
           ...chatMessages,
           messages: reorderedMessages,
-          newestMessageId: targetMessage.id
+          newestMessageId: updatedMessage.id
         }
       }
     })
     
-    return targetMessage
+    return updatedMessage
   },
 
   /**

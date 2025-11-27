@@ -51,4 +51,11 @@ public interface ChatService {
      * @param param
      */
     void read(MessageReadParam param);
+
+    /**
+     * AI回复
+     * @param chatId 聊天室ID
+     * @param userId 用户ID
+     */
+    String aiReply(String chatId, String userId);
 }

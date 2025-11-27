@@ -78,6 +78,7 @@ public class ChatController {
     }
 
     @GetMapping("/members/{chatId}")
+    @Operation(summary = "获取群聊成员列表")
     public ResponseEntity<Result<Slices<SimpleUserDTO>>> getGroupChatMembers(@PathVariable String chatId,
                                                                      @RequestParam(required = false) String lastUserId,
                                                                      @RequestParam Integer pageSize) {
@@ -129,5 +130,12 @@ public class ChatController {
         param.setUserId(UserInfoHolder.id());
         chatService.read(param);
         return ResponseEntity.ok(Result.success());
+    }
+
+    @GetMapping("ai/reply/{chatId}")
+    @Operation(summary = "AI回复建议")
+    public ResponseEntity<Result<String>> aiReply(@PathVariable String chatId){
+        String reply = chatService.aiReply(chatId, UserInfoHolder.id());
+        return ResponseEntity.ok(Result.success(reply));
     }
 }

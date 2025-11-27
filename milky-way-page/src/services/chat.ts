@@ -289,6 +289,19 @@ export class ChatService {
     );
     return response.data.data!;
   }
+
+  /**
+   * 获取AI助手回复
+   * @param chatId 聊天ID
+   */
+  async getAiReply(chatId: string): Promise<string> {
+    const url = `/chats/ai/reply/${chatId}`;
+    // AI回复可能需要较长时间，设置60秒超时
+    const response = await http.get<ApiResponse<string>>(url, {
+      timeout: 60000
+    });
+    return response.data.data!;
+  }
 }
 
 // 创建全局聊天服务实例
