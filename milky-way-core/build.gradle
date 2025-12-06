@@ -26,7 +26,12 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor"
     implementation "com.belerweb:pinyin4j"
     implementation 'com.alibaba.fastjson2:fastjson2'
-    implementation 'com.google.genai:google-genai'
+    implementation('com.google.genai:google-genai') {
+        exclude group: "commons-logging", module: "commons-logging"
+    }
+    implementation('com.alibaba:dashscope-sdk-java') {
+        exclude group: "org.slf4j", module: "slf4j-simple"
+    }
 }
 
 test {

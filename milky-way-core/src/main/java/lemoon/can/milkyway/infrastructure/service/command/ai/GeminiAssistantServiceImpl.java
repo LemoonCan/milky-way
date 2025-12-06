@@ -8,6 +8,7 @@ import com.google.genai.types.Part;
 import lemoon.can.milkyway.facade.dto.SimpleMessageDTO;
 import lemoon.can.milkyway.facade.service.command.AiAssistantService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
  * @since 2025/10/31
  */
 @Service("geminiAssistantService")
+@ConditionalOnProperty(name = "ai.assistant.provider", havingValue = "gemini")
 public class GeminiAssistantServiceImpl implements AiAssistantService {
     private final Client client;
     @Value("${gemini.model}")

@@ -1,3 +1,11 @@
+ai:
+  assistant:
+    provider: qwen
+
 gemini:
   api-key: ${GEMINI_API_KEY}
   model: gemini-2.5-flash
+
+qwen:
+  app-id: ${QWEN_APP_ID}
+  api-key: ${QWEN_API_KEY}

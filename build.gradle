@@ -53,6 +53,7 @@ subprojects {
             dependency "com.belerweb:pinyin4j:2.5.1"
             dependency 'com.alibaba.fastjson2:fastjson2:2.0.9.graal'
             dependency 'com.google.genai:google-genai:1.9.0'
+            dependency 'com.alibaba:dashscope-sdk-java:2.22.2'
         }
     }
 }
