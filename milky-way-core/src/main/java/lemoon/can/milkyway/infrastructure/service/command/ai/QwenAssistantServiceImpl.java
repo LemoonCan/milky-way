@@ -10,6 +10,7 @@ import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
 import lemoon.can.milkyway.facade.dto.SimpleMessageDTO;
 import lemoon.can.milkyway.facade.service.command.AiAssistantService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,14 +25,17 @@ import java.util.List;
  * API调用文档 https://help.aliyun.com/zh/model-studio/qwen-api-reference
  * 文生文prompt指南 https://help.aliyun.com/zh/model-studio/prompt-engineering-guide
  */
-@Service
 @ConditionalOnProperty(name = "ai.assistant.provider", havingValue = "qwen")
+@Service
+@RequiredArgsConstructor
 @Slf4j
 public class QwenAssistantServiceImpl implements AiAssistantService {
     @Value("${qwen.api-key}")
     private String apiKey;
     @Value("${qwen.app-id}")
     private String appId;
+
+    private final Application application;
 
     @Override
     public String messagesReply(List<SimpleMessageDTO> contexts, String imitateUser) {
@@ -58,7 +62,6 @@ public class QwenAssistantServiceImpl implements AiAssistantService {
                 .prompt(systemPrompt+"\n" + JSON.toJSONString(messages))
                 .build();
 
-        Application application = new Application();
         try {
             ApplicationResult result = application.call(param);
             return result.getOutput().getText();
