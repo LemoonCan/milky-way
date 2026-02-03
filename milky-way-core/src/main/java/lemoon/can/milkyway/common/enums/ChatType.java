@@ -12,6 +12,7 @@ import lombok.Getter;
 public enum ChatType {
     SINGLE("单聊"),
     GROUP("群聊"),
+    ROBOT("机聊"),
     ;
     private final String desc;
 }
