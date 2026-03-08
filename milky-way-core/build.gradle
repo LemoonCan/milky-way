@@ -33,6 +33,7 @@ dependencies {
         exclude group: "org.slf4j", module: "slf4j-simple"
     }
     implementation('com.anthropic:anthropic-java')
+    implementation('com.squareup.okhttp3:okhttp')
 }
 
 test {

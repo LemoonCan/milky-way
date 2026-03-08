@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,8 @@ import java.util.List;
  * @author lemoon
  * @since 2025/10/31
  */
-@RestController("/ai/assistant")
+@RestController
+@RequestMapping("/ai/assistant")
 @RequiredArgsConstructor
 @Slf4j
 public class AiAssistantController {
@@ -28,17 +28,16 @@ public class AiAssistantController {
         return aiAssistantService.messagesReply(messages, imitateUser);
     }
 
-    @GetMapping("/stream/{chatId}")
-    public SseEmitter streamChat(
-            @PathVariable Long chatId,
-            @RequestParam String message,
-            Principal principal) {
-        log.info("收到 AI 流式请求: chatId={}, user={}, message={}",
-                chatId, principal.getName(), message);
+    @GetMapping("/stream")
+    public SseEmitter streamReply(@RequestParam String message) {
+        SseEmitter emitter = aiAssistantService.streamReply(new ArrayList<>(), message);
+        emitter.onCompletion(() -> log.info("[AI SSE] 完成: message={}", message));
+        emitter.onTimeout(() -> {
+            log.warn("[AI SSE] 超时: message={}", message);
+            emitter.complete();
+        });
+        emitter.onError(e -> log.error("[AI SSE] 出错: message={}", message));
 
-        // 1. 获取历史消息（最近20条）
-
-        // 2. 调用流式服务
-        return aiAssistantService.streamChatReply(chatId, message, new ArrayList<>());
+        return emitter;
     }
 }

@@ -19,14 +19,13 @@ public interface AiAssistantService {
     String messagesReply(List<SimpleMessageDTO> contexts, String imitateUser);
 
     /**
-     * AI 聊天流式响应（SSE）
+     * AI消息流式响应（SSE）
      * 流式输出文档 <a href="https://help.aliyun.com/zh/model-studio/stream#1dfacd7d3d4ip"/>
-     * @param chatId 聊天ID
-     * @param userMessage 用户消息内容
-     * @param conversationHistory 对话历史
+     * @param context 对话历史
+     * @param userPrompt 用户输入的消息
      * @return SseEmitter
      */
-    default SseEmitter streamChatReply(Long chatId, String userMessage, List<SimpleMessageDTO> conversationHistory){
+    default SseEmitter streamReply(List<SimpleMessageDTO> context, String userPrompt){
         return null;
     }
 
