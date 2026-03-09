@@ -149,7 +149,7 @@ public class ClaudeAssistantServiceImpl implements AiAssistantService {
 
                             String text = delta.getString("text");
 
-                            emitter.send(text);
+                            emitter.send(SseEmitter.event().data(text).reconnectTime(0));
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package lemoon.can.milkyway.config.http;
 
+import jakarta.servlet.DispatcherType;
 import lemoon.can.milkyway.common.utils.security.SecureId;
 import lemoon.can.milkyway.config.properties.SecurityProperties;
 import lemoon.can.milkyway.infrastructure.repository.UserRepository;
@@ -49,6 +50,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .securityMatcher(request ->
+                        request.getDispatcherType() == DispatcherType.REQUEST)
                 .headers(headers -> headers
                         .addHeaderWriter(new XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN)))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // 跨域
