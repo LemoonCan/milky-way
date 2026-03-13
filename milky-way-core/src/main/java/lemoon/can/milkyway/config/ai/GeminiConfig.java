@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2025/11/25
  */
 @Configuration
-@ConditionalOnProperty(name = "ai.assistant.provider", havingValue = "gemini")
+@ConditionalOnProperty(name = "ai.model.provider", havingValue = "gemini")
 public class GeminiConfig {
     @Value("${gemini.api-key}")
     private String apiKey;

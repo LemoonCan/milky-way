@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  * @since 2025/12/7
  */
 @Configuration
-@ConditionalOnProperty(name = "ai.assistant.provider", havingValue = "qwen")
+@ConditionalOnProperty(name = "ai.model.provider", havingValue = "qwen")
 public class QwenConfig {
     @Bean
     public Application getQwenApplication() {

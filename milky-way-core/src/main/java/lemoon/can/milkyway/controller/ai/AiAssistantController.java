@@ -25,12 +25,12 @@ public class AiAssistantController {
     @PostMapping("/replyMessage")
     public String replyMessage(@RequestBody List<SimpleMessageDTO> messages,
                                @RequestParam String imitateUser) {
-        return aiAssistantService.messagesReply(messages, imitateUser);
+        return aiAssistantService.imitateUserReply(messages, imitateUser);
     }
 
     @GetMapping("/stream")
     public SseEmitter streamReply(@RequestParam String message) {
-        SseEmitter emitter = aiAssistantService.streamReply(new ArrayList<>(), message);
+        SseEmitter emitter = aiAssistantService.friendReply(new ArrayList<>(), message);
         emitter.onCompletion(() -> log.info("[AI SSE] 完成: message={}", message));
         emitter.onTimeout(() -> {
             log.warn("[AI SSE] 超时: message={}", message);

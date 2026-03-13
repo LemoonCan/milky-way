@@ -1,25 +1,18 @@
-package lemoon.can.milkyway.infrastructure.service.command.ai;
+package lemoon.can.milkyway.infrastructure.inner.ai;
 
 import com.alibaba.dashscope.app.Application;
 import com.alibaba.dashscope.app.ApplicationParam;
 import com.alibaba.dashscope.app.ApplicationResult;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
-import com.alibaba.fastjson2.JSON;
 import lemoon.can.milkyway.common.exception.BusinessException;
 import lemoon.can.milkyway.common.exception.ErrorCode;
-import lemoon.can.milkyway.facade.dto.SimpleMessageDTO;
-import lemoon.can.milkyway.facade.service.command.AiAssistantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * @author lemoon
@@ -27,11 +20,11 @@ import java.util.concurrent.Executors;
  * API调用文档 <a href="https://help.aliyun.com/zh/model-studio/qwen-api-reference"/>
  * 文生文prompt指南 <a href="https://help.aliyun.com/zh/model-studio/prompt-engineering-guide"/>
  */
-@ConditionalOnProperty(name = "ai.assistant.provider", havingValue = "qwen")
+@ConditionalOnProperty(name = "ai.model.provider", havingValue = "qwen")
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class QwenAssistantServiceImpl implements AiAssistantService {
+public class QwenAiModelGatewayImpl implements AiModelGateway {
     @Value("${qwen.api-key}")
     private String apiKey;
     @Value("${qwen.app-id}")
@@ -39,35 +32,12 @@ public class QwenAssistantServiceImpl implements AiAssistantService {
 
     private final Application application;
 
-    // 线程池用于异步处理
-    private final ExecutorService executor = Executors.newCachedThreadPool();
-
-    // SSE 超时时间（60秒）
-    private static final Long SSE_TIMEOUT = 60_000L;
-
     @Override
-    public String messagesReply(List<SimpleMessageDTO> contexts, String imitateUser) {
-        // 1. 构造系统提示词 + 聊天上下文
-        String systemPrompt = """
-                你现在是 %s，性格幽默、偶尔调侃，发言简洁。
-                请根据我给的聊天记录，生成该角色的下一条回复。
-                要求：
-                - 保持说话风格
-                - 回复简短1句话
-                - 不要重复聊天记录内容
-                - 可以略带幽默但不要夸张
-                - 只给回复内容，不要带任何多余信息
-                """.formatted(imitateUser);
-
-        List<String> messages = new ArrayList<>();
-        for (SimpleMessageDTO item : contexts) {
-            messages.add(item.getSenderOpenId() + "：" + item.getContent());
-        }
-
+    public String output(AiModelInput input) {
         ApplicationParam param = ApplicationParam.builder()
                 .apiKey(apiKey)
                 .appId(appId)
-                .prompt(systemPrompt + "\n" + JSON.toJSONString(messages))
+                .prompt(input.getSystemPrompt() + "\n" + input.getContext())
                 .build();
 
         try {
@@ -82,4 +52,8 @@ public class QwenAssistantServiceImpl implements AiAssistantService {
         }
     }
 
+    @Override
+    public SseEmitter streamOutput(AiModelInput input) {
+        throw new BusinessException(ErrorCode.UNSUPPORTED, "当前模型暂不支持流式输出");
+    }
 }

@@ -1,14 +1,13 @@
-package lemoon.can.milkyway.infrastructure.service.command.ai;
+package lemoon.can.milkyway.infrastructure.inner.ai;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.anthropic.client.AnthropicClient;
 import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.TextBlock;
-import lemoon.can.milkyway.facade.dto.SimpleMessageDTO;
-import lemoon.can.milkyway.facade.service.command.AiAssistantService;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +17,7 @@ import org.springframework.security.concurrent.DelegatingSecurityContextRunnable
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.BufferedReader;
@@ -30,50 +30,44 @@ import java.util.concurrent.Executors;
  * @author lemoon
  * @since 2026/3/4
  */
-@ConditionalOnProperty(name = "ai.assistant.provider", havingValue = "claude")
+@ConditionalOnProperty(name = "ai.model.provider", havingValue = "claude")
 @Service
 @Slf4j
-public class ClaudeAssistantServiceImpl implements AiAssistantService {
+public class ClaudeAiModelGatewayImpl implements AiModelGateway {
     @Value("${claude.api-key}")
     private String apiKey;
     @Value("${claude.base-url}")
     private String baseUrl;
+    @Value("${claude.model}")
+    private String model;
 
     @Override
-    public String messagesReply(List<SimpleMessageDTO> contexts, String imitateUser) {
+    public String output(AiModelInput input) {
         AnthropicClient client = AnthropicOkHttpClient.builder()
                 .apiKey(apiKey)
                 .baseUrl(baseUrl)
                 .build();
 
-        String systemPrompt = """
-                你现在是 %s，性格幽默、偶尔调侃，发言简洁。
-                请根据下面的聊天记录，生成该角色的下一条回复。
-                要求：
-                - 保持说话风格
-                - 回复简短 1-2 句话
-                - 不要重复聊天记录内容
-                - 可以略带幽默但不要夸张
-                """.formatted(imitateUser);
-
-        List<String> messagesText = new ArrayList<>();
-        for (SimpleMessageDTO item : contexts) {
-            messagesText.add(item.getSenderOpenId() + "：" + item.getContent());
-        }
-
         MessageCreateParams params = MessageCreateParams.builder()
-                .model("claude-sonnet-4-6")
+                .model(model)
                 .maxTokens(500L)
-                .addUserMessage(systemPrompt + "\n" + JSON.toJSONString(messagesText))
+                .addUserMessage(input.getSystemPrompt() + "\n" + input.getContext())
                 .build();
 
         Message message = client.messages().create(params);
-        Optional<TextBlock> optional = message.content().get(0).text();
-        return optional.map(TextBlock::text).orElse("");
+        List<ContentBlock> contentBlockList = message.content();
+        if(CollectionUtils.isEmpty(contentBlockList)) {
+            return "";
+        }
+        StringBuilder replyText = new StringBuilder();
+        for (ContentBlock contentBlock : contentBlockList) {
+            contentBlock.text().map(TextBlock::text).ifPresent(replyText::append);
+        }
+        return replyText.toString();
     }
 
     @Override
-    public SseEmitter streamReply(List<SimpleMessageDTO> context, String userPrompt) {
+    public SseEmitter streamOutput(AiModelInput input) {
         SseEmitter emitter = new SseEmitter(0L);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -85,27 +79,27 @@ public class ClaudeAssistantServiceImpl implements AiAssistantService {
                 String url = baseUrl + "/v1/messages";
 
                 Map<String, Object> body = new HashMap<>();
-                body.put("model", "claude-sonnet-4-6");
+                body.put("model", model);
                 body.put("max_tokens", 500);
                 body.put("stream", true);
 
                 List<Map<String, String>> messages = new ArrayList<>();
 
-                for (SimpleMessageDTO msg : context) {
+                if (input.getContext() != null && !input.getContext().isBlank()) {
                     messages.add(Map.of(
                             "role", "user",
-                            "content", msg.getContent()
+                            "content", input.getContext()
                     ));
                 }
 
                 messages.add(Map.of(
                         "role", "user",
-                        "content", userPrompt
+                        "content", input.getUserPrompt()
                 ));
 
                 body.put("messages", messages);
 
-                Request request = new Request.Builder()
+                Request httpRequest = new Request.Builder()
                         .url(url)
                         .addHeader("x-api-key", apiKey)
                         .addHeader("anthropic-version", "2023-06-01")
@@ -117,7 +111,7 @@ public class ClaudeAssistantServiceImpl implements AiAssistantService {
                         ))
                         .build();
 
-                Response response = httpClient.newCall(request).execute();
+                Response response = httpClient.newCall(httpRequest).execute();
 
                 BufferedReader reader = new BufferedReader(
                         new InputStreamReader(response.body().byteStream())
@@ -126,7 +120,6 @@ public class ClaudeAssistantServiceImpl implements AiAssistantService {
                 String line;
 
                 while ((line = reader.readLine()) != null) {
-
                     if (!line.startsWith("data:")) {
                         continue;
                     }
@@ -138,17 +131,12 @@ public class ClaudeAssistantServiceImpl implements AiAssistantService {
                     }
 
                     JSONObject event = JSON.parseObject(json);
-
                     String type = event.getString("type");
 
                     if ("content_block_delta".equals(type)) {
-
                         JSONObject delta = event.getJSONObject("delta");
-
                         if ("text_delta".equals(delta.getString("type"))) {
-
                             String text = delta.getString("text");
-
                             emitter.send(SseEmitter.event().data(text).reconnectTime(0));
                         }
                     }
@@ -157,9 +145,7 @@ public class ClaudeAssistantServiceImpl implements AiAssistantService {
                 emitter.complete();
 
             } catch (Exception e) {
-
                 log.error("Claude stream error", e);
-
                 emitter.completeWithError(e);
             }
         }, securityContext);

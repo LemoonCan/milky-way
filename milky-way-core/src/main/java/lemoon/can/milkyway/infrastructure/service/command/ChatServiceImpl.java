@@ -218,6 +218,6 @@ public class ChatServiceImpl implements ChatService {
             item.setContent(messageDOS.get(i).getContent());
             contexts.add(item);
         }
-        return aiAssistantService.messagesReply(contexts, userMapper.selectOpenIdById(userId));
+        return aiAssistantService.imitateUserReply(contexts, userMapper.selectOpenIdById(userId));
     }
 }

@@ -1,5 +1,5 @@
 ai:
-  assistant:
+  model:
     provider: claude
 
 gemini:
@@ -13,3 +13,4 @@ qwen:
 claude:
   api-key: ${CLAUDE_API_KEY}
   base-url: ${CLAUDE_BASE_URL}
+  model: gpt-5-codex-mini
